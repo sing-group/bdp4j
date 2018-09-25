@@ -13,6 +13,9 @@ import java.util.LinkedHashMap;
 import java.util.Set;
 import java.util.Collection;
 
+import java.lang.reflect.Modifier;
+import java.lang.reflect.Field;
+
 import org.bdp4j.pipe.Pipe;
 
 
@@ -68,7 +71,7 @@ public class Instance implements Serializable {
 
     Map<String, Object> properties = new LinkedHashMap<>();
 
-    private Object data; // The input data in digested form, e.g. a FeatureVector
+    private Serializable data; // The input data in digested form, e.g. a FeatureVector
 
     private Object target; // The output data in digested form, e.g. a Label
 
@@ -83,22 +86,77 @@ public class Instance implements Serializable {
      */
     private boolean isValid = true;
 
-    public Instance(Object data, Object target, Object name, Object source) {
+    public Instance(Serializable data, Object target, Object name, Object source) {
         this.data = data;
         this.target = target;
         this.name = name;
         this.source = source;
     }
 
+    /**
+	  * Clone the instance into a new type
+	  * @return a new instance cloning the original one 
+	  */
+    public Instance clone(){
+    	return new Instance((Serializable)cloneObject((Object)data),target,name,source);
+    }
 
-    public Object getData() {
+    /**
+	  * This is a copy method based on instrospection API. A sealization-based method is still posible
+	  * Lets see if this solution is good enought
+	  * @param obj Object to clone
+	  * @return A new copy of the source object
+	  */
+	private static Object cloneObject(Object obj){
+		    Object clone = null;
+			
+	        try{
+	            clone = obj.getClass().newInstance();
+	            for (Field field : obj.getClass().getDeclaredFields()) {
+	                field.setAccessible(true);
+	                if(field.get(obj) == null || Modifier.isFinal(field.getModifiers())){
+	                    continue;
+	                }
+	                if(field.getType().isPrimitive() || field.getType().equals(String.class)
+	                        || field.getType().getSuperclass().equals(Number.class)
+	                        || field.getType().equals(Boolean.class)){
+	                    field.set(clone, field.get(obj));
+	                }else{
+	                    Object childObj = field.get(obj);
+	                    if(childObj == obj){
+	                        field.set(clone, clone);
+	                    }else{
+	                        field.set(clone, cloneObject(field.get(obj)));
+	                    }
+	                }
+	            }
+	            return clone;
+	        }catch(Exception e){
+	            return null;
+	        }
+			//return clone;
+	}
+  
+    /**
+	  * Returns the data object included in the Instance
+	  * @return The data object included in the Instance
+      */
+    public Serializable getData() {
         return data == null ? "NULL" : data;
     }
 
-    public void setData(Object d) {
+    /**
+      * Stablish the data for the current instance
+	  * @param d Data to be included in the instance
+	  */
+    public void setData(Serializable d) {
         data = d;
     }
 
+    /**
+	  * Retrieve the target classification (label) of the instance
+	  * @return the target classification (label) of the instance
+	  */
     public Object getTarget() {
         return target == null ? "NULL" : target;
     }
