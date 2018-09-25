@@ -9,8 +9,9 @@ package org.bdp4j.ia.types;
 import java.io.File;
 import java.io.Serializable;
 import java.util.Map;
-import java.util.concurrent.ConcurrentHashMap;
-//import org.apache.commons.lang3.StringEscapeUtils;
+import java.util.LinkedHashMap;
+import java.util.Set;
+import java.util.Collection;
 
 import org.bdp4j.pipe.Pipe;
 
@@ -63,14 +64,16 @@ public class Instance implements Serializable {
      * Serial version UID
      */
     private static final long serialVersionUID = -8139659995227189017L;
-    //Pipe pipe = null; // The Pipe through which this instance had its fields set
-    Map<String, Object> properties = new ConcurrentHashMap<>();
-   //PropertyList properties = null;
-    boolean locked = false;
-    //   private static Logger logger = MalletLogger.getLogger(Instance.class.getName());
+
+
+    Map<String, Object> properties = new LinkedHashMap<>();
+
     private Object data; // The input data in digested form, e.g. a FeatureVector
+
     private Object target; // The output data in digested form, e.g. a Label
+
     private Object name; // A readable name of the source, e.g. for ML error analysis
+
     private Object source; /* The input in a reproducable form, e.g. enabling re-print of
     string w/ POS tags, usually without target information,
     e.g. an un-annotated RegionList. */
@@ -93,10 +96,7 @@ public class Instance implements Serializable {
     }
 
     public void setData(Object d) {
-        if (!locked)
-            data = d;
-        else
-            throw new IllegalStateException("Instance is locked.");
+        data = d;
     }
 
     public Object getTarget() {
@@ -104,10 +104,7 @@ public class Instance implements Serializable {
     }
 
     public void setTarget(Object t) {
-        if (!locked)
-            target = t;
-        else
-            throw new IllegalStateException("Instance is locked.");
+        target = t;
     }
 
     public Object getName() {
@@ -115,10 +112,7 @@ public class Instance implements Serializable {
     }
 
     public void setName(Object n) {
-        if (!locked)
-            name = n;
-        else
-            throw new IllegalStateException("Instance is locked.");
+         name = n;
     }
 
     public Object getSource() {
@@ -126,22 +120,24 @@ public class Instance implements Serializable {
     }
 
     public void setSource(Object s) {
-        if (!locked)
-            source = s;
-        else
-            throw new IllegalStateException("Instance is locked.");
+        source = s;
     }
 
-    public Map<String, Object> getProperties() {
-        return properties;
+
+    public synchronized Set<String> getPropertyList(){
+    	return properties.keySet();
     }
+	
+	public synchronized Collection<Object> getValueList(){
+		return properties.values();
+	}
 
     // Setting and getting properties
-    public void setProperty(String key, Object value) {
+    public synchronized void setProperty(String key, Object value) {
         properties.put(key, value);
     }
 
-    public Object getProperty(String key) {
+    public synchronized Object getProperty(String key) {
         return properties.get(key);
     }
 
