@@ -1,3 +1,9 @@
+/* Copyright (C) 2002 Univ. of Vigo, SING Group
+   This file has been modified from the original one belonging to "MALLET"
+   (MAchine Learning for LanguagE Toolkit) project. Consequently this file
+   and the rest of the project is publised under the Common Plublic License, 
+   version 1.0, as published by http://www.opensource.org. For further information
+   see, seee the file 'LICENSE' included in this distribution. */
 /* Copyright (C) 2002 Univ. of Massachusetts Amherst, Computer Science Dept.
    This file is part of "MALLET" (MAchine Learning for LanguagE Toolkit).
    http://www.cs.umass.edu/~mccallum/mallet
@@ -37,29 +43,11 @@ import org.bdp4j.pipe.Pipe;
  * It is up to each pipe which fields in the Instance it modifies; the most common
  * case is that the pipe modifies the data field.
  *
- * <p>Generally speaking, there are two modes of operation for
- * Instances.  (1) An instance gets created and passed through a
- * Pipe, and the resulting data/target/name/source fields are used.
- * This is generally done for training instances.  (2) An instance
- * gets created with raw values in its slots, then different users
- * of the instance call newPipedCopy() with their respective
- * different pipes.  This might be done for test instances at
- * "performance" time.
- *
- * <p>Instances can be made immutable if locked.
- * Although unlocked Instances are mutable, typically the only code that
- * changes the values in the four slots is inside Pipes.
- *
- * <p> Note that constructing an instance with a pipe argument means
- * "Construct the instance and then run it through the pipe".
- * {@link es.uvigo.esei.ia.types.InstanceList} uses this method
- * when adding instances through a pipeInputIterator.
- *
  * @author Andrew McCallum <a href="mailto:mccallum@cs.umass.edu">mccallum@cs.umass.edu</a>
  * @modified José Ramón Méndez Reboredo
+ * @modified Yeray Lage
+ * @modified Maria Novo
  * @see Pipe
- * @see Alphabet
- * @see InstanceList
  */
 
 public class Instance implements Serializable {
@@ -68,30 +56,61 @@ public class Instance implements Serializable {
      */
     private static final long serialVersionUID = -8139659995227189017L;
 
+    /**
+	  * A linked hashmap with the properties
+	  */
+    private Map<String, Object> properties = new LinkedHashMap<>();
 
-    Map<String, Object> properties = new LinkedHashMap<>();
+    /**
+	  * The input/output data for pipes
+	  */
+    private Serializable data; 
 
-    private Serializable data; // The input data in digested form, e.g. a FeatureVector
+    /**
+	  * The target (label) of the instance
+	  */
+    private Object target;
 
-    private Object target; // The output data in digested form, e.g. a Label
+    /**
+	  * A readable name of the source (for instance the original file or an id)
+	  * this useful for ML analysis
+	  */
+    private Object name; 
 
-    private Object name; // A readable name of the source, e.g. for ML error analysis
-
-    private Object source; /* The input in a reproducable form, e.g. enabling re-print of
-    string w/ POS tags, usually without target information,
-    e.g. an un-annotated RegionList. */
+    /**
+	  * The instance in its oririnal form (for instance the original file where is stored)
+	  */
+    private Object source;
 
     /**
      * Represents whether the instance is valid or not
      */
     private boolean isValid = true;
 
+    /**
+	  * Build an Instance from the original attributes keeping properties of the instance void
+	  * @param data The data to be included in the instance
+	  * @param target The target (label) of the instance
+	  * @param name The name (id) of the instance
+	  * @param source The original form of the instance (often this is the same as data)
+	  */
     public Instance(Serializable data, Object target, Object name, Object source) {
         this.data = data;
         this.target = target;
         this.name = name;
         this.source = source;
     }
+	
+	/**
+	  * Creates an instance using the information of another one (the new instance is a clon from the older one)
+	  * @param i The instance to be used as source for creating the new one
+	  */
+    public Instance(Instance i) {
+        this.data = (Serializable)cloneObject((Object)data);
+        this.target = target;
+        this.name = name;
+        this.source = source;
+    }	
 
     /**
 	  * Clone the instance into a new type
@@ -160,51 +179,93 @@ public class Instance implements Serializable {
     public Object getTarget() {
         return target == null ? "NULL" : target;
     }
-
+    
+	/**
+	  * Changes the target classification (label) of the instance
+	  * @param t target classification of the instance
+	  */
     public void setTarget(Object t) {
         target = t;
     }
 
+    /**
+	  * Retrieve the name of the current instance (id)
+	  * @return name (id) of the current instance
+	  */
     public Object getName() {
         return name == null ? "NULL" : name;
     }
 
+    /**
+	  * Changes the name of the current instance (id)
+	  * @param n New name (id) for the current instance
+	  */
     public void setName(Object n) {
          name = n;
     }
 
+    /**
+	  * Rerieve the source of the current instance (usually the file where is stored)
+	  * @return source of the current instance (usually a file)
+	  */
     public Object getSource() {
         return source == null ? "NULL" : source;
     }
 
+    /**
+	  * Changes the source of the current instance (the file where the original instance data is stored)
+	  * @param s The new source especification for the data (usually a file)
+      */
     public void setSource(Object s) {
         source = s;
     }
 
-
+    /**
+	  * Compiles a set of sorted properties for the current instance
+	  * @return sorted set contaninig all stored properties  
+	  */
     public synchronized Set<String> getPropertyList(){
     	return properties.keySet();
     }
 	
+	/**
+	  * Compile a sorted set of values for the current instance
+	  * @return set of values of all properties stored 
+	  */
 	public synchronized Collection<Object> getValueList(){
 		return properties.values();
 	}
 
-    // Setting and getting properties
+    /**
+	  * Changes (or add) a specific property for the instance
+	  * @param key The key to be stored
+	  * @param value The value for the key 
+	  */
     public synchronized void setProperty(String key, Object value) {
         properties.put(key, value);
     }
 
+    /**
+	  * Retrieves a property of an instance
+	  * @param key The key for the property
+	  * @return the value for the specific key
+	  */
     public synchronized Object getProperty(String key) {
         return properties.get(key);
     }
 
-    public boolean hasProperty(String key) {
+    /**
+	  * Indicates if a speficic property is present in the Instance
+	  * @param key The specific key
+	  * @return true if the key exists, false otherwise
+	  */
+    public synchronized boolean hasProperty(String key) {
         return (properties != null && properties.containsKey(key));
     }
 
     /**
-     * String representation of a instance
+     * Returns the string representation of a instance
+	 * @return A String representation of an instance
      */
     public String toString() {
         if (name instanceof File)
@@ -223,7 +284,6 @@ public class Instance implements Serializable {
 
     /**
      * Determine whether the instance is valid or not
-     *
      * @return A boolean indicating if the instance is valid or not
      */
     public boolean isValid() {
