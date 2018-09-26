@@ -1,11 +1,21 @@
+/* Copyright (C) 2002 Univ. of Vigo, SING Group
+   This file has been modified from the original one belonging to "MALLET"
+   (MAchine Learning for LanguagE Toolkit) project. Consequently this file
+   and the rest of the project is publised under the Common Plublic License, 
+   version 1.0, as published by http://www.opensource.org. For further information
+   see, seee the file 'LICENSE' included in this distribution. */
+/* Copyright (C) 2002 Univ. of Massachusetts Amherst, Computer Science Dept.
+   This file is part of "MALLET" (MAchine Learning for LanguagE Toolkit).
+   http://www.cs.umass.edu/~mccallum/mallet
+   This software is provided under the terms of the Common Public License,
+   version 1.0, as published by http://www.opensource.org.  For further
+   information, see the file `LICENSE' included with this distribution. */
 package org.bdp4j.pipe;
 
 import java.util.Collection;
 import java.util.Iterator;
-// import org.ski4spam.ia.util.PropertyList;
 
 import org.bdp4j.ia.types.Instance;
-
 
 /**
  * The abstract superclass of all Pipes, which transform one data type to another.
@@ -18,26 +28,30 @@ import org.bdp4j.ia.types.Instance;
  * its output to the "data" field of an instance.
  * <p>
  * Pipes can be hierachically composed. In a typical usage, a SerialPipe is created which
- * holds instances of other pipes in an ordered list. Piping
- * in instance through a SerialPipe means piping the instance through the child pipes
+ * holds instances of other pipes in an ordered list. Piping in instance through a 
+ * SerialPipe means piping the instance through the child pipes
  * in sequence.
- * <p>
- * A pipe holds onto two separate Alphabets: one for the symbols (feature names)
- * encountered in the data fields of the instances processed through the pipe,
- * and one for the symbols encountered in the target fields.
  *
  * @author Andrew McCallum <a href="mailto:mccallum@cs.umass.edu">mccallum@cs.umass.edu</a>
- * @modified Jos� Ram�n M�ndez Reboredo
+ * @modified Jose Ramon Mendez
+ * @modified Maria Novo
+ * @modified Yeray Lage
  */
 public abstract class Pipe {
-    Pipe parent = null;
+	/**
+	  * Marks if the next instance to pipe will be the last one to pipe
+	  */
     boolean isLast = false;
+	
+	/**
+	  * The parent pipe for this one
+	  */
+	Pipe parent;
 
     /**
      * Construct a pipe with no data and target dictionaries
      */
     public Pipe() {
-        //this((Class)null, (Class)null);
     }
 
     /**
@@ -67,34 +81,40 @@ public abstract class Pipe {
         return carriers;
     }
 
-    public Pipe getParent() {
-        return parent;
-    }
-
-    // Note: This must be called *before* this Pipe has been added to
-    // the parent's collection of pipes, otherwise in
-    // DictionariedPipe.setParent() we will simply get back this Pipe's
-    // Alphabet information.
-    public void setParent(Pipe p) {
-        if (parent != null)
-            throw new IllegalStateException("Parent already set.");
-
-        parent = p;
-    }
-
-    public Pipe getParentRoot() {
-
-        if (parent == null)
-
-            return this;
-
-        Pipe p = parent;
-
-        while (p.parent != null)
-            p = p.parent;
-
-        return p;
-    }
+    /**
+		* Finds the parent Pipe
+		* @return the partent Pipe
+		*/
+	 public Pipe getParent() { 
+	     return parent; 
+	 } 
+ 
+    /**
+		* Stablished the parent pipe for this one
+		* @param p The parent Pipe for this one
+		*/
+	 public void setParent(Pipe p) { 
+	     if (parent != null) 
+	         throw new IllegalStateException("Parent already set."); 
+ 
+	      parent = p; 
+	 } 
+ 
+    /**
+		* Finds the parent root
+		* @return the root parent
+		*/
+	 public Pipe getParentRoot() { 
+	     if (parent == null) 
+	         return this; 
+ 
+	     Pipe p = parent; 
+ 
+	     while (p.parent != null) 
+	         p = p.parent; 
+ 
+	     return p; 
+	 } 
     
     /**
      * Say whether the current Instance is the last being processed
