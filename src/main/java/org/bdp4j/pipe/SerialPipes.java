@@ -1,3 +1,9 @@
+/* Copyright (C) 2002 Univ. of Vigo, SING Group
+   This file has been modified from the original one belonging to "MALLET"
+   (MAchine Learning for LanguagE Toolkit) project. Consequently this file
+   and the rest of the project is publised under the Common Plublic License, 
+   version 1.0, as published by http://www.opensource.org. For further information
+   see, seee the file 'LICENSE' included in this distribution. */
 /* Copyright (C) 2002 Univ. of Massachusetts Amherst, Computer Science Dept.
    This file is part of "MALLET" (MAchine Learning for LanguagE Toolkit).
    http://www.cs.umass.edu/~mccallum/mallet
@@ -18,6 +24,8 @@ import org.bdp4j.ia.types.Instance;
  * Convert an instance through a sequence of pipes.
  *
  * @author Andrew McCallum <a href="mailto:mccallum@cs.umass.edu">mccallum@cs.umass.edu</a>
+ * @modified Maria Novo Loures
+ * @modified José Ramón Méndez
  */
 
 
@@ -38,7 +46,7 @@ public class SerialPipes extends Pipe {
     }
 
     /**
-     * Pipes
+     * Pipe list
      */
     private ArrayList<Pipe> pipes;
 
@@ -53,13 +61,11 @@ public class SerialPipes extends Pipe {
     public SerialPipes(Pipe[] pipes) {
         this.pipes = new ArrayList<Pipe>(pipes.length);
 
-        //System.out.println ("SerialPipes init this = "+this);
         for (Pipe pipe : pipes) this.add(pipe);
     }
 
 
-    public SerialPipes(ArrayList<Pipe> pipeList //added by Fuchun
-    ) {
+    public SerialPipes(ArrayList<Pipe> pipeList) {
         this.pipes = new ArrayList<Pipe>(pipeList.size());
 
         for (Pipe aPipeList : pipeList) {
@@ -110,7 +116,7 @@ public class SerialPipes extends Pipe {
 
                 outputType = pipe.getInputType();
             } else {
-                logger.error("[SERIAL PIPE ADD] BAD compatibility between Pipes.");
+                logger.fatal("[SERIAL PIPE ADD] BAD compatibility between Pipes.");
                 System.exit(0);
             }
         } else {
@@ -127,8 +133,8 @@ public class SerialPipes extends Pipe {
         // Last pipe con ArrayList
         Pipe lastPipe = pipes.get(pipes.size() - 1);
 
-        System.out.println("Last pipe - " + lastPipe.getInputType() + " | " + lastPipe.getOutputType());
-        System.out.println("New pipe - " + pipe.getInputType() + " | " + pipe.getOutputType());
+        //System.out.println("Last pipe - " + lastPipe.getInputType() + " | " + lastPipe.getOutputType());
+        //System.out.println("New pipe - " + pipe.getInputType() + " | " + pipe.getOutputType());
 
         return lastPipe.getOutputType() == pipe.getInputType();
     }
@@ -166,13 +172,15 @@ public class SerialPipes extends Pipe {
     }
 
     // Call this version when you are not training and don't want conjunctions to mess up the decoding.
+	 /*
     public Instance pipe(Instance carrier, int startingIndex,
                          boolean growAlphabet) {
-        System.out.print("*");
+        //System.out.print("*");
         carrier = getInstance(carrier, startingIndex);
         return carrier;
     }
-
+    */
+		 
     @Override
     public Collection<Instance> pipeAll(Collection<Instance> carriers) {
         for (int i = 0; i < pipes.size(); i++) {
@@ -186,7 +194,7 @@ public class SerialPipes extends Pipe {
                     while (it.hasNext()) {
                         Instance carrier=it.next();
                         if (carrier.isValid()) {
-                            System.out.println("INST " + carrier.getName());
+                            //System.out.println("INST " + carrier.getName());
                             carrier = p.pipe(carrier);
                         }else{
                              logger.info("Skipping invalid instance " + carrier.toString());
@@ -207,9 +215,7 @@ public class SerialPipes extends Pipe {
         try {
             pipes.remove(index);
         } catch (Exception e) {
-            System.err.println(
-                    "Error removing pipe. Index = " + index + ".  " +
-                            e.getMessage());
+            logger.error("Error removing pipe. Index = " + index + ".  " +  e.getMessage());
         }
     }
 
@@ -218,9 +224,7 @@ public class SerialPipes extends Pipe {
         try {
             pipes.set(index, p);
         } catch (Exception e) {
-            System.err.println(
-                    "Error replacing pipe. Index = " + index + ".  " +
-                            e.getMessage());
+            logger.error("Error replacing pipe. Index = " + index + ".  " + e.getMessage());
         }
     }
 
@@ -234,9 +238,7 @@ public class SerialPipes extends Pipe {
         try {
             retPipe = pipes.get(index);
         } catch (Exception e) {
-            System.err.println(
-                    "Error getting pipe. Index = " + index + ".  " +
-                            e.getMessage());
+            logger.error("Error getting pipe. Index = " + index + ".  " + e.getMessage());
         }
 
         return retPipe;
