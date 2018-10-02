@@ -7,8 +7,8 @@ import java.lang.annotation.Target;
 
 @Target(ElementType.TYPE)
 @Retention(RetentionPolicy.RUNTIME)
+/**
+ * This annotation is used to indicate which pipes receive a datatype and transform that in another datatype.
+ */
 public @interface TransformationPipe {
 }
-
-//String name() default "Hello";
-//    String description();

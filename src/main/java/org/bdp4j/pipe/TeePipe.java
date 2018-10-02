@@ -7,5 +7,8 @@ import java.lang.annotation.Target;
 
 @Target(ElementType.TYPE)
 @Retention(RetentionPolicy.RUNTIME)
+/**
+ * This annotation is used to indicate which pipes parse an datatype to CSV format.
+ */
 public @interface TeePipe {
 }
