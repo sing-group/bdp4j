@@ -40,20 +40,18 @@ import org.bdp4j.pipe.Pipe;
  * processed. For example, the data field may start off being a string that
  * represents a file name and then be processed by a {@link org.bdp4j.pipe.Pipe}
  * into a CharSequence representing the contents of the file, and eventually to
- * a feature vector holding indices into an
- * {@link org.ski4spam.ia.types.Alphabet} holding words found in the file. It is
+ * a feature vector holding words found in the file. It is
  * up to each pipe which fields in the Instance it modifies; the most common
  * case is that the pipe modifies the data field.
  *
  * @author Andrew McCallum
  * <a href="mailto:mccallum@cs.umass.edu">mccallum@cs.umass.edu</a>
- * @modified José Ramón Méndez Reboredo
- * @modified Yeray Lage
- * @modified Maria Novo
+ * @author José Ramón Méndez Reboredo
+ * @author Yeray Lage
+ * @author Maria Novo
  * @see Pipe
  */
 public class Instance implements Serializable {
-
     /**
      * Serial version UID
      */

@@ -33,9 +33,9 @@ import org.bdp4j.ia.types.Instance;
  * in sequence.
  *
  * @author Andrew McCallum <a href="mailto:mccallum@cs.umass.edu">mccallum@cs.umass.edu</a>
- * @modified Jose Ramon Mendez
- * @modified Maria Novo
- * @modified Yeray Lage
+ * @author Jose Ramon Mendez
+ * @author Maria Novo
+ * @author Yeray Lage
  */
 public abstract class Pipe {
 	/**

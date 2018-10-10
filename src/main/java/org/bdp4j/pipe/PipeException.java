@@ -8,8 +8,12 @@
 /**
  * @author Andrew McCallum <a href="mailto:mccallum@cs.umass.edu">mccallum@cs.umass.edu</a>
  */
+
 package org.bdp4j.pipe;
 
+/**
+  * Handles a exception on pipe processing
+  */
 public class PipeException extends Exception {
     private static final long serialVersionUID = 1;
 }

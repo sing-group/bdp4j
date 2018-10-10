@@ -24,15 +24,17 @@ import org.bdp4j.ia.types.Instance;
  * Convert an instance through a sequence of pipes.
  *
  * @author Andrew McCallum <a href="mailto:mccallum@cs.umass.edu">mccallum@cs.umass.edu</a>
- * @modified Maria Novo Loures
- * @modified José Ramón Méndez
+ * @author Yeray Lage
+ * @author Maria Novo Loures
+ * @author José Ramón Méndez
  */
-
-
 public class SerialPipes extends Pipe {
     private Class<?> inputType = null;
     private Class<?> outputType = null;
 
+    /**
+		* For logging purposes
+		*/
     private static final Logger logger = LogManager.getLogger(SerialPipes.class);
 
     @Override
@@ -50,21 +52,27 @@ public class SerialPipes extends Pipe {
      */
     private ArrayList<Pipe> pipes;
 
+    /**
+		* Build an empty SerialPipes
+		*/
     public SerialPipes() {
         this.pipes = new ArrayList<Pipe>();
     }
 
-    public SerialPipes(Object[] pipes) {
-        this((Pipe[]) pipes);
-    }
-
+    /**
+		* Build a serial pipes using an array of individual pipes
+		* @param pipes An array of pipes that will be included in the serialPipes in the same order
+		*/
     public SerialPipes(Pipe[] pipes) {
         this.pipes = new ArrayList<Pipe>(pipes.length);
 
         for (Pipe pipe : pipes) this.add(pipe);
     }
 
-
+    /**
+		* Build a serial pipes using an ArrayList of individual pipes
+		* @param pipeList An arrayList of pipes that will be included in the serialPipes in the same order
+		*/
     public SerialPipes(ArrayList<Pipe> pipeList) {
         this.pipes = new ArrayList<Pipe>(pipeList.size());
 
@@ -73,6 +81,10 @@ public class SerialPipes extends Pipe {
         }
     }
 
+    /**
+		* Return an array of pipes with the current pipe
+		* @return a Pipe array containing the pipes that compound the serial pipes
+		*/
     public Pipe[] getPipes() {
         if (pipes == null) return new Pipe[0];
         Pipe[] returnValue = new Pipe[pipes.size()];
@@ -97,11 +109,14 @@ public class SerialPipes extends Pipe {
      *
      * @return current Pipe
      */
-
     public SerialPipes getPipe() {
         return this;
     }
 
+    /**
+		* Add a new pipe at the end of the processing list
+		* @param pipe The new pipe to be added 
+		*/
     public void add(Pipe pipe) {
         if (!pipes.isEmpty()) {
             if (checkCompatibility(pipe)) {
@@ -129,22 +144,35 @@ public class SerialPipes extends Pipe {
         }
     }
 
+    /**
+		* Checks the compatibility of a pipe that will be added at the end of the pipelist
+		* @param pipe The pipe that will be added
+		* @return true if the pipe can be placed at the end of the pipelist
+		*/
     private boolean checkCompatibility(Pipe pipe) {
-        // Last pipe con ArrayList
         Pipe lastPipe = pipes.get(pipes.size() - 1);
-
-        //System.out.println("Last pipe - " + lastPipe.getInputType() + " | " + lastPipe.getOutputType());
-        //System.out.println("New pipe - " + pipe.getInputType() + " | " + pipe.getOutputType());
 
         return lastPipe.getOutputType() == pipe.getInputType();
     }
 
+    /**
+		* Pipe an instance starting in a certain position of the pipe
+		* @param carrier The instance to be processed
+		* @param startingIndex The position of the fisrt pipe 
+		* @return The instance achieved as result of processing
+		*/
     public Instance pipe(Instance carrier, int startingIndex) {
         carrier = getInstance(carrier, startingIndex);
 
         return carrier;
     }
 
+    /**
+		* Computes the instance transformation when executing the pipe processing from a certain execution point
+		* @param carrier The instance to be pipes
+		* @param startingIndex The execution point to begin the processing
+		* @return the instance after being processed
+		*/
     private Instance getInstance(Instance carrier, int startingIndex) {
         for (int i = startingIndex; i < pipes.size(); i++) {
 
@@ -171,16 +199,11 @@ public class SerialPipes extends Pipe {
         return carrier;
     }
 
-    // Call this version when you are not training and don't want conjunctions to mess up the decoding.
-	 /*
-    public Instance pipe(Instance carrier, int startingIndex,
-                         boolean growAlphabet) {
-        //System.out.print("*");
-        carrier = getInstance(carrier, startingIndex);
-        return carrier;
-    }
-    */
-		 
+	 /**
+		* Pipe a collection of instances through the whole process
+		* @param carriers The instances to be processed
+		* @return the instances after processing them 
+		*/
     @Override
     public Collection<Instance> pipeAll(Collection<Instance> carriers) {
         for (int i = 0; i < pipes.size(); i++) {
@@ -211,6 +234,10 @@ public class SerialPipes extends Pipe {
         return carriers;
     }
 
+    /**
+		* Remove a pipe from the processing pipe
+		* @param index The position of pipe that will be removed
+		*/
     public void removePipe(int index) {
         try {
             pipes.remove(index);
@@ -219,6 +246,11 @@ public class SerialPipes extends Pipe {
         }
     }
 
+    /**
+		* Replace a pipe in the pipeList
+		* @param index The position of the pipe that will be replaced
+		* @param p The new Pipe
+		*/
     //added by Fuchun Jan.30, 2004
     public void replacePipe(int index, Pipe p) {
         try {
@@ -228,10 +260,19 @@ public class SerialPipes extends Pipe {
         }
     }
 
+    /**
+		* Computes the number of pipes included in the SerialPipes
+		* @return the number of pipes includen in current SerialPipes
+		*/
     public int size() {
         return pipes.size();
     }
 
+    /**
+		* Returns the pipe included in a position
+		* @param index The position of the pipe
+		* @return the pipe included in the desired position
+		*/
     public Pipe getPipe(int index) {
         Pipe retPipe = null;
 
@@ -244,11 +285,19 @@ public class SerialPipes extends Pipe {
         return retPipe;
     }
 
+    /**
+		* Pipe a instance through the whole piping process
+		* @param carrier the instance to be piped
+		* @return The instance achieved as processing result
+		*/
     public Instance pipe(Instance carrier) {
         return pipe(carrier, 0);
     }
 
-    
+	 /**
+		* Achieves a string representation of the piping process
+		* @return the string representation of the piping process
+		*/
     public String toString() {
         StringBuilder sb = new StringBuilder();
 

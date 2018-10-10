@@ -7,8 +7,11 @@ import java.lang.annotation.Target;
 
 @Target(ElementType.TYPE)
 @Retention(RetentionPolicy.RUNTIME)
-/** This annotation is used to indicate which pipesassign a target to an instance.
- */
+
+/** 
+  *This annotation is used to indicate which pipesassign a target to an instance.
+  * @author Yeray Lage
+  */
 public @interface TargetAssigningPipe {
     
 }

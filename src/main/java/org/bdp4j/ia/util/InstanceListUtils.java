@@ -12,7 +12,7 @@ public class InstanceListUtils {
 	
 	/**
 	  * Drop invalid instances from a list of Instances
-	  * @pamam l List of Instances
+	  * @param l List of Instances
 	  * @return List of instances whitout invalid instances
 	  */
     public static List<Instance> dropInvalid(List<Instance> l){
