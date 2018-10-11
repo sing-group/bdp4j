@@ -125,14 +125,14 @@ public abstract class Pipe {
     }
 
     /**
-     * Return the output type included the data attribute of a Instance
-     * @return the output type for the data attribute of the Instances processed
+     * Return the input type included the data attribute of a Instance
+     * @return the input type for the data attribute of the Instances processed
      */
     public abstract Class<?> getInputType();
 
     /**
-     * Say datatype expected in the data attribute of a Instance
-     * @return the datatype expected in the data attribute of a Instance
+     * Indicates the datatype expected in the data attribute of a Instance after processing
+     * @return the datatype expected in the data attribute of a Instance after processing
      */
     public abstract Class<?> getOutputType();
 }

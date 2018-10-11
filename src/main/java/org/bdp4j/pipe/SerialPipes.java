@@ -36,12 +36,20 @@ public class SerialPipes extends Pipe {
 		* For logging purposes
 		*/
     private static final Logger logger = LogManager.getLogger(SerialPipes.class);
-
+	 
+    /**
+     * Return the input type included the data attribute of a Instance
+     * @return the input type for the data attribute of the Instances processed
+     */	 
     @Override
     public Class<?> getInputType() {
         return inputType;
     }
 
+    /**
+     * Indicates the datatype expected in the data attribute of a Instance after processing
+     * @return the datatype expected in the data attribute of a Instance after processing
+     */
     @Override
     public Class<?> getOutputType() {
         return outputType;
