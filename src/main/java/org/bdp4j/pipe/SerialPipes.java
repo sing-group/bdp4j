@@ -224,13 +224,14 @@ public class SerialPipes extends Pipe {
                     Iterator<Instance> it=carriers.iterator();
                     while (it.hasNext()) {
                         Instance carrier=it.next();
+								
                         if (carrier.isValid()) {
                             //System.out.println("INST " + carrier.getName());
+									 isLast=!it.hasNext();
                             carrier = p.pipe(carrier);
                         }else{
                              logger.info("Skipping invalid instance " + carrier.toString());
                         }
-                        isLast=!it.hasNext();
                     }
                  } catch (Exception e) {
                     logger.fatal("Exception caught on pipe " + i + " (" + p.getClass().getName() + "). " + e.getMessage() + " while processing instance");
