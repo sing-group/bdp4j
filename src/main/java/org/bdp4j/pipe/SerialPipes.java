@@ -18,6 +18,7 @@ import java.util.Iterator;
 
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
+
 import org.bdp4j.ia.types.Instance;
 
 /**
@@ -215,6 +216,7 @@ public class SerialPipes extends Pipe {
 
                 try {
                     if (carrier.isValid()) {
+							   p.isLast=isLast; //Indicate whether the current instance is the last or not
                         carrier = p.pipe(carrier);
                     } else {
                         logger.info("Skipping invalid instance " + carrier.toString());
@@ -237,38 +239,17 @@ public class SerialPipes extends Pipe {
      */
     @Override
     public Collection<Instance> pipeAll(Collection<Instance> carriers) {
-        int lastValidInstanceIdx=carriers.size()-1;
-        Instance[] carriersAsArray = carriers.toArray(new Instance[0]);
-
-        while (!carriersAsArray[lastValidInstanceIdx].isValid() ){
-            lastValidInstanceIdx--;
-        }
-
+		 //Call pipeAll for each pipe included in the serialPipes
         for (int i = 0; i < pipes.size(); i++) {
             Pipe p = pipes.get(i);
             if (p == null) {
                 logger.fatal("Pipe " + i + " is null");
                 System.exit(0);
             } else {
-                try {
-                    
-                    isLast=false;
-                    for (int j=0;j<lastValidInstanceIdx;j++){
-                        if (carriersAsArray[j].isValid()) {
-                            p.pipe(carriersAsArray[j]);
-                        } else {
-                            logger.info("Skipping invalid instance " + carriersAsArray[j].toString());
-                        }
-                    }
-                    isLast=true;
-                    p.pipe(carriersAsArray[lastValidInstanceIdx]);
-                } catch (Exception e) {
-                    logger.fatal("Exception caught on pipe " + i + " (" + p.getClass().getName() + "). " + e.getMessage() + " while processing instance");
-                    e.printStackTrace(System.err);
-                    System.exit(0);
-                }
+					 p.pipeAll(carriers);
             }
         }
+		  
         return carriers;
     }
 

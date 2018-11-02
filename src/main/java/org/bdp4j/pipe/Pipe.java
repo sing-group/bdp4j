@@ -15,6 +15,9 @@ package org.bdp4j.pipe;
 import java.util.Collection;
 import java.util.Iterator;
 
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
+
 import org.bdp4j.ia.types.Instance;
 
 /**
@@ -38,7 +41,11 @@ import org.bdp4j.ia.types.Instance;
  * @author Yeray Lage
  */
 public abstract class Pipe {
-
+    /**
+     * For logging purposes
+     */
+    private static final Logger logger = LogManager.getLogger(Pipe.class);
+	
     /**
      * Marks if the next instance to pipe will be the last one to pipe
      */
@@ -75,11 +82,34 @@ public abstract class Pipe {
      * @return The collection of instances after being processed
      */
     public Collection<Instance> pipeAll(Collection<Instance> carriers) {
-        Iterator<Instance> it = carriers.iterator();
-        while (it.hasNext()) {
-            pipe(it.next());
-            isLast = !it.hasNext();
-        };
+        Instance[] carriersAsArray = carriers.toArray(new Instance[0]);
+
+		  //Search the last valid instance
+		  int lastValidInstanceIdx=carriers.size()-1;
+        while (!carriersAsArray[lastValidInstanceIdx].isValid() ){
+           lastValidInstanceIdx--;
+        }
+		  
+        try {		  
+		     //Pipe all instances except the last one
+			  isLast=false;
+           for (int i=0;i<lastValidInstanceIdx;i++){
+              if (carriersAsArray[i].isValid()) {
+                  pipe(carriersAsArray[i]);
+              } else {
+                  logger.info("Skipping invalid instance " + carriersAsArray[i].toString());
+              }
+           }
+		  
+		     //Pipe the last valid instance
+           isLast=true;
+           pipe(carriersAsArray[lastValidInstanceIdx]);
+        } catch (Exception e) {
+           logger.fatal("Exception caught on pipe " + getClass().getName() + ". " + e.getMessage() + " while processing instance");
+           e.printStackTrace(System.err);
+           System.exit(0);
+        }
+		  
         return carriers;
     }
 
