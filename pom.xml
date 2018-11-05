@@ -18,6 +18,19 @@
         <maven.compiler.source>1.8</maven.compiler.source>
         <maven.compiler.target>1.8</maven.compiler.target>
     </properties>
+    <repositories>
+         <repository>
+            <id>icm</id>
+            <name>ICM Repository</name>
+            <url>http://maven.icm.edu.pl/artifactory/repo/</url>
+             <releases>
+                <enabled>true</enabled>
+            </releases>
+            <snapshots>
+                <enabled>false</enabled>
+            </snapshots>
+        </repository>
+    </repositories>
 
     <dependencies>
         <dependency>
