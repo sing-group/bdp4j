@@ -1,8 +1,8 @@
-package org.bdp4j.ia.util;
+package org.bdp4j.util;
 
 import java.util.*;
 
-import org.bdp4j.ia.types.Instance;
+import org.bdp4j.types.Instance;
 
 
 /**

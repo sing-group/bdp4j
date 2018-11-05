@@ -10,7 +10,7 @@
    This software is provided under the terms of the Common Public License,
    version 1.0, as published by http://www.opensource.org.  For further
    information, see the file `LICENSE' included with this distribution. */
-package org.bdp4j.ia.types;
+package org.bdp4j.types;
 
 import java.io.File;
 import java.io.Serializable;

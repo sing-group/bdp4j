@@ -10,7 +10,7 @@
  */
 package org.bdp4j.pipe;
 
-import org.bdp4j.ia.types.Instance;
+import org.bdp4j.types.Instance;
 
 
 public interface PipeOutputAccumulator {

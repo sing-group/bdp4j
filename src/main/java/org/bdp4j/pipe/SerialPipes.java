@@ -19,7 +19,7 @@ import java.util.Iterator;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
-import org.bdp4j.ia.types.Instance;
+import org.bdp4j.types.Instance;
 
 /**
  * Convert an instance through a sequence of pipes.
@@ -216,7 +216,7 @@ public class SerialPipes extends Pipe {
 
                 try {
                     if (carrier.isValid()) {
-							   p.isLast=isLast; //Indicate whether the current instance is the last or not
+                        p.isLast = isLast; //Indicate whether the current instance is the last or not
                         carrier = p.pipe(carrier);
                     } else {
                         logger.info("Skipping invalid instance " + carrier.toString());
@@ -239,17 +239,17 @@ public class SerialPipes extends Pipe {
      */
     @Override
     public Collection<Instance> pipeAll(Collection<Instance> carriers) {
-		 //Call pipeAll for each pipe included in the serialPipes
+        //Call pipeAll for each pipe included in the serialPipes
         for (int i = 0; i < pipes.size(); i++) {
             Pipe p = pipes.get(i);
             if (p == null) {
                 logger.fatal("Pipe " + i + " is null");
                 System.exit(0);
             } else {
-					 p.pipeAll(carriers);
+                p.pipeAll(carriers);
             }
         }
-		  
+
         return carriers;
     }
 
