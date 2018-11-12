@@ -19,11 +19,11 @@
         <maven.compiler.target>1.8</maven.compiler.target>
     </properties>
     <repositories>
-         <repository>
+        <repository>
             <id>icm</id>
             <name>ICM Repository</name>
             <url>http://maven.icm.edu.pl/artifactory/repo/</url>
-             <releases>
+            <releases>
                 <enabled>true</enabled>
             </releases>
             <snapshots>
@@ -44,6 +44,11 @@
             <artifactId>junit</artifactId>
             <version>4.11</version>
             <scope>test</scope>
+        </dependency>
+        <dependency>
+            <groupId>org.apache.commons</groupId>
+            <artifactId>commons-csv</artifactId>
+            <version>1.6</version>
         </dependency>
         <dependency>
             <groupId>net.sourceforge</groupId>

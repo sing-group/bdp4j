@@ -9,6 +9,6 @@ package org.bdp4j.types;
  *
  * @author María Novo
  */
-public class Dataset {
-    
+public abstract class Transformer<T> {
+    public abstract double transform(T input);
 }
