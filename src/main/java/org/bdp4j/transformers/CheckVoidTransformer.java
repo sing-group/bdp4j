@@ -22,6 +22,6 @@ public class CheckVoidTransformer extends Transformer<String> {
      * @param input A string to transform in Double
      */
     public double transform(String input) {
-        return (input.isEmpty() ? 0 : 1);
+        return ((input.isEmpty() || input.equals("null") || input == null) ? 0 : 1);
     }
 }

@@ -6,8 +6,12 @@
 package org.bdp4j.ml;
 
 import java.io.File;
+import java.io.FileOutputStream;
 import java.io.FileReader;
 import java.io.IOException;
+import java.io.OutputStreamWriter;
+import java.io.StringReader;
+import java.io.Writer;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.HashSet;
@@ -17,6 +21,8 @@ import java.util.Map;
 import java.util.Set;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import java.util.stream.Collectors;
+import java.util.stream.Stream;
 import net.sf.javaml.core.DenseInstance;
 import net.sf.javaml.core.Instance;
 import org.apache.commons.csv.CSVFormat;
@@ -76,56 +82,66 @@ public class DatasetFromFile {
     public void loadFile() {
         try {
 
-            try (FileReader reader = new FileReader(new File(this.filePath))) {
+            try (
+                    FileReader reader = new FileReader(new File(this.filePath));
+                    FileReader dsReader = new FileReader(new File(this.filePath))) {
                 Pair pair;
                 //List to save the pair <columnName, datatype>
                 List<Pair<String, String>> columnTypes = new ArrayList<Pair<String, String>>();
                 //Map to save index of each column
                 //Map<String, Integer> indiceColumnTypes = new HashMap<>();
-                String[] headers = null;
+//                String[] headers = null;
+                List<String> headers = new ArrayList<>();
                 Set<String> detectedTypes = new HashSet<>();
-                Iterable<CSVRecord> records = CSVFormat.EXCEL.parse(reader);
+                CSVFormat csvFormat = CSVFormat.DEFAULT.withDelimiter(';').withQuote('"');
+                Iterable<CSVRecord> records = csvFormat.parse(reader);
                 long lineNumber;
                 String[] line;
                 String field;
+
                 // Loop to detect type of each file column
                 for (CSVRecord record : records) {
-                    line = record.get(0).split(";");
-                    if (detectedTypes.size() < line.length) {
+                    // line = record.get(0).split(";");
+                    if (detectedTypes.size() < record.size()) {
                         lineNumber = record.getRecordNumber();
                         if (lineNumber == 1) {
-                            headers = line;
+                            for (int index = 0; index < record.size(); index++) {
+                                if (record.get(index) != null && !record.get(index).equals("")) {
+                                    headers.add(record.get(index));
+                                }
+                            }
                         } else {
                             String type;
-                            for (int index = 0; index < line.length; index++) {
+                            for (int index = 0; index < record.size(); index++) {
+
+                                field = record.get(index);
                                 type = "String";
-                                field = line[index];
                                 if (field != null && !field.isEmpty() && !field.equals("") && !field.equals(" ")) {
-                                    // Check if the field is Double                            
-                                    try {
-                                        Double.parseDouble(field);
-                                        type = "Double";
-                                    } catch (Exception ex) {
-                                        if (ex.getClass().getName().equals("java.lang.NumberFormatException")) {
+                                    if (!detectedTypes.contains(headers.get(index))) {
+                                        // Check if the field is Double                            
+                                        try {
+                                            Double.parseDouble(field);
+                                            type = "Double";
+                                        } catch (Exception ex) {
+                                            if (ex.getClass().getName().equals("java.lang.NumberFormatException")) {
+                                            }
                                         }
-                                    }
-                                    // Check if the field is Date                            
-                                    try {
-                                        if (DateIdentifier.getDefault().checkDate(field) != null) {
-                                            type = "Date";
+                                        // Check if the field is Date                            
+                                        try {
+                                            if (DateIdentifier.getDefault().checkDate(field) != null) {
+                                                type = "Date";
+                                            }
+                                        } catch (Exception ex) {
+                                            if (ex.getClass().getName().equals("java.text.ParseException")) {
+                                            }
                                         }
-                                    } catch (Exception ex) {
-                                        if (ex.getClass().getName().equals("java.text.ParseException")) {
+                                        // Create a Map to an easier generation of dataset
+                                        if (!type.equals("")) {
+                                            detectedTypes.add(headers.get(index));
+                                            pair = new Pair(headers.get(index), type);
+                                            columnTypes.add(pair);
+                                            //indiceColumnTypes.put(headers[index], columnTypes.indexOf(pair));
                                         }
-                                    }
-                                    // Create a Map to an easier generation of dataset
-                                    if (!type.equals("")) {
-                                        if (!detectedTypes.contains(headers[index])) {
-                                            detectedTypes.add(headers[index]);
-                                        }
-                                        pair = new Pair(headers[index], type);
-                                        columnTypes.add(pair);
-                                        //indiceColumnTypes.put(headers[index], columnTypes.indexOf(pair));
                                     }
                                 }
                             }
@@ -152,63 +168,84 @@ public class DatasetFromFile {
                 if (!columnTypes.isEmpty()) {
                     for (Iterator<Pair<String, String>> iterator = columnTypes.iterator(); iterator.hasNext();) {
                         Pair next = iterator.next();
-                        if (next.getObj2().equals("Double") || noDoubleTransformers.contains(next.getObj1().toString())) {
+                        if ((next.getObj2().equals("Double") || noDoubleTransformers.contains(next.getObj1().toString())) && !attributes.contains(next.getObj1().toString())) {
                             attributes.add(next.getObj1().toString());
+
                         }
                     }
                 }
-
                 CSVDataset dataset = new CSVDataset(attributes);
-                records = CSVFormat.EXCEL.parse(reader);
+                records = csvFormat.parse(dsReader);
                 List<String> instanceIds = new ArrayList<>();
                 for (CSVRecord record : records) {
                     lineNumber = record.getRecordNumber();
-                    line = record.get(0).split(";");
                     if (lineNumber > 1) {
-                        Instance instance = null;
-                        for (int index = 0; index < line.length; index++) {
-                            field = line[index];
-                            instance = new DenseInstance(attributes.size());
+
+                        // Instance instance = new DenseInstance(attributes.size());
+                        double[] instanceValues = new double[attributes.size()];
+                        int indInstance = 0;
+                        for (int index = 0; index < headers.size(); index++) {
+                            field = record.get(index);
                             //Save instance id
                             if (index == 0) {
                                 instanceIds.add(field);
                             }
-                            if (attributes.contains(headers[index])) {
+                            if (attributes.contains(headers.get(index))) {
                                 Transformer t;
                                 try {
-                                    if ((t = transformersList.get(headers[index])) != null) {
+                                    if ((t = transformersList.get(headers.get(index))) != null) {
                                         if (field != null && !field.isEmpty() && !field.equals("") && !field.equals(" ")) {
-                                            Double d = t.transform(field);
-                                            instance.add(d);
-                                            System.out.println(headers[index]+" | "+field +" --> "+d);
+                                            instanceValues[indInstance] = t.transform(field);
                                         } else {
-                                            instance.add(0d);
-                                            System.out.println("NO_1");
+                                            instanceValues[indInstance] = 0d;
                                         }
                                     } else {
+
                                         if (field != null && !field.isEmpty() && !field.equals("") && !field.equals(" ")) {
-                                            instance.add(Double.parseDouble(field));
+                                            instanceValues[indInstance] = Double.parseDouble(field);
+
                                         } else {
-                                            instance.add(0d);
-                                            System.out.println("NO_2");
+                                            instanceValues[indInstance] = 0d;
                                         }
                                     }
                                 } catch (Exception ex) {
-                                    System.out.println("org.bdp4j.ml.DatasetFromFile.loadFile()" + ex.getMessage());
+                                    System.out.println("ERROR org.bdp4j.ml.DatasetFromFile.loadFile() " + ex.getMessage() + ">> index:" + index + ", getIndex: " + headers.get(index) + ", field: " + field);
+                                    ex.printStackTrace();
                                 }
+                                indInstance++;
                             }
-                        }
-                        dataset.add(instance);
 
+                        }
+                        Instance instance = new DenseInstance(instanceValues);
+
+                        dataset.add(instance);
+                        //dataset.stream().forEach(System.out::println);
                     }
                 }
                 dataset.setInstanceIds(instanceIds);
+                List<String> att = dataset.getAttributes();
+                List<String>  insid= dataset.getInstanceIds();
+                // Se genera un fichero dataset.txt donde se añade el contenido del dataset
+                System.out.println("DATASET");
+                System.out.println("------------------------------------");
+                String csv = dataset.stream().map(Instance::toString).collect(Collectors.joining("\n"));
+
+                try (Writer output = new OutputStreamWriter(new FileOutputStream("dataset.txt"))) {
+                    output.write(csv);
+                    output.flush();
+                } catch (Exception ex) {
+                    ex.printStackTrace();
+                }
+
+                //dataset.stream().forEach(System.out::println);
+                System.out.println("------------------------------------");
             } catch (IOException e) {
+                System.out.println("ERROR: " + e.getMessage());
                 e.printStackTrace();
             }
 
         } catch (Exception ex) {
-            Logger.getLogger(DatasetFromFile.class.getName()).log(Level.SEVERE, null, ex);
+            Logger.getLogger("ERROR: " + DatasetFromFile.class.getName()).log(Level.SEVERE, null, ex);
         }
     }
 }

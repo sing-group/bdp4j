@@ -8,12 +8,9 @@ package org.bdp4j.types;
 import java.util.ArrayList;
 import java.util.Collection;
 import static java.util.Collections.unmodifiableList;
-import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
 import net.sf.javaml.core.DefaultDataset;
 import net.sf.javaml.core.Instance;
-import org.bdp4j.util.Pair;
 
 /**
  *
