@@ -76,5 +76,4 @@ public class Enum2IntTransformer extends Transformer<String> {
         return maxIndex + 1;
     }
     
-     public static void main(String[] args){}
 }
