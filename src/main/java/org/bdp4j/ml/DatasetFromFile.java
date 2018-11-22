@@ -133,7 +133,7 @@ public class DatasetFromFile {
      */
     public void loadFile() {
         try {
-            
+
             try (
                     FileReader reader = new FileReader(new File(this.filePath));
                     FileReader dsReader = new FileReader(new File(this.filePath))) {
@@ -264,30 +264,23 @@ public class DatasetFromFile {
                     }
                 }
                 dataset.setInstanceIds(instanceIds);
-                List<String> att = dataset.getAttributes();
-                List<String> insid = dataset.getInstanceIds();
                 //---------------------------------------------------------------------------
-                // Se genera un fichero dataset.txt donde se añade el contenido del dataset
+                // Se genera un fichero csv donde se añade el contenido del dataset
                 //---------------------------------------------------------------------------
-                String csv = dataset.stream().map(Instance::toString).collect(Collectors.joining("\n"));
-                try (Writer output = new OutputStreamWriter(new FileOutputStream("dataset.txt"))) {
-                    output.write(csv);
-                    output.flush();
-                } catch (Exception ex) {
-                    ex.printStackTrace();
-                }
+                dataset.generateCSV();
+
                 //---------------------------------------------------------------------------
                 // Se imprime el dataset
                 //---------------------------------------------------------------------------
                 System.out.println("-------------BEGIN DATASET-----------------------");
                 dataset.stream().forEach(System.out::println);
                 System.out.println("-------------END DATASET-----------------------");
-                
+
             } catch (IOException e) {
                 logger.error(e.getMessage());
                 e.printStackTrace();
             }
-            
+
         } catch (Exception ex) {
             logger.error(ex.getMessage());
         }

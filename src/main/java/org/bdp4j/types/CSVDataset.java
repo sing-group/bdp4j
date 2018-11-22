@@ -12,6 +12,9 @@
  */
 package org.bdp4j.types;
 
+import java.io.FileOutputStream;
+import java.io.OutputStreamWriter;
+import java.io.Writer;
 import java.util.ArrayList;
 import java.util.Collection;
 import static java.util.Collections.unmodifiableList;
@@ -23,40 +26,147 @@ import java.util.Set;
 import java.util.SortedSet;
 import java.util.TreeSet;
 import java.util.Vector;
+import java.util.stream.Collectors;
 import net.sf.javaml.core.Dataset;
 import net.sf.javaml.core.DefaultDataset;
 import net.sf.javaml.core.Instance;
 import net.sf.javaml.distance.DistanceMeasure;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
+import org.bdp4j.pipe.PipeParameter;
 
 /**
- *
+ *  Build a CSVDataset with an attribute list, an instance id list and the Instance list.
  * @author María Novo
  */
 public class CSVDataset extends ArrayList<Instance> implements Dataset {
 
+    /**
+     * For logging purposes
+     */
+    private static final Logger logger = LogManager.getLogger(CSVDataset.class);
+    /**
+     * The default value for the output file
+     */
+    public static final String DEFAULT_OUTPUT_FILE = "CSVDataset.csv";
     private TreeSet<Object> classes = new TreeSet<>();
     private List<String> attributes;
     private List<String> instanceIds;
+    private String outputFile;
 
+    /**
+     * Build a CSVDataset with the specified attribute list values
+     */
     public CSVDataset(List<String> attribute) {
         this.attributes = new ArrayList<>(attribute);
     }
 
+    /**
+     * Build a CSVDataset with the specified attribute list values using the
+     * specified output directory
+     */
+    public CSVDataset(List<String> attribute, String outputFile) {
+        this(attribute);
+        this.outputFile = outputFile;
+    }
+
+    /**
+     * Build a CSVDataset with the specified attribute list values and the
+     * specified instance id list
+     */
     public CSVDataset(List<String> attribute, List<String> instanceIds) {
         this.attributes = new ArrayList<>(attribute);
         this.instanceIds = instanceIds;
     }
+    
+    /**
+     * Build a CSVDataset with the specified attribute list values and the
+     * specified instance id list, using the specified output directory
+     */
+    public CSVDataset(List<String> attribute, List<String> instanceIds, String outputFile) {
+        this(attribute, instanceIds);
+        this.outputFile = outputFile;
+    }
 
+    /**
+     * Set the output filename to store the CSV contents
+     *
+     * @param output The filename/filepath to store the CSV contents
+     */
+    @PipeParameter(name = "outputFile", description = "Indicates the output filename/path for saving CSV", defaultValue = DEFAULT_OUTPUT_FILE)
+    public void setOutputFile(String outputFile) {
+        this.outputFile = outputFile;
+    }
+
+    /**
+     * Returns the filename where the CSV contents will be stored
+     *
+     * @return the filename/filepath where the CSV contents will be stored
+     */
+    public String getOutputFile() {
+        return this.outputFile;
+    }
+
+    /**
+     * Returns the attribute list of CSVDataset
+     *
+     * @return the attribute list of CSVDataset
+     */
     public List<String> getAttributes() {
         return unmodifiableList(this.attributes);
     }
 
+     /**
+     * Returns the instance id list of CSVDataset
+     *
+     * @return the instance id list of CSVDataset
+     */
     public List<String> getInstanceIds() {
         return this.instanceIds;
     }
 
+     /**
+     * Set the instance id list
+     *
+     * @param instanceIds The instance id list
+     */
+    @PipeParameter(name = "instanceIds", description = "Indicates the instance id list of CSVDataset", defaultValue = "")
+  
     public void setInstanceIds(List<String> instanceIds) {
         this.instanceIds = instanceIds;
+    }
+
+    /**
+     * Generates a CSV with dataset content.
+     */
+    public void generateCSV() {
+        try (Writer output = new OutputStreamWriter(new FileOutputStream(this.outputFile))) {
+            if (attributes.size() > 0 && instanceIds.size() > 0) {
+                String attributesList = this.attributes.stream().map(String::toString).collect(Collectors.joining(";"));
+                if (instanceIds.size() == this.size()) {
+                    Instance dsInstance;
+                    StringBuilder dsRow;
+                    StringBuilder dsAttributes = new StringBuilder("id;");
+                    dsAttributes.append(attributesList).append("\r\n");
+                    output.write(dsAttributes.toString());
+                    for (int i = 0; i < this.size(); i++) {
+                        dsRow = new StringBuilder();
+                        dsInstance = this.get(i);
+                        dsRow.append(instanceIds.get(i)).append(";");
+                        for (Map.Entry<Integer, Double> entry : dsInstance.entrySet()) {
+                            Double value = entry.getValue();
+                            dsRow.append(value).append(";");
+                        }
+                        output.write(dsRow.append("\r\n").toString());
+                    }
+                    output.flush();
+                } else {
+                    logger.fatal("Instance list size is different to dataset size. Unable to generate CSV for this dataset.");
+                }
+            }
+        } catch (Exception ex) {
+            logger.error(ex.getMessage());
+        }
     }
 
     private void check(Collection<? extends Instance> c) {
