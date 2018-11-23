@@ -56,7 +56,7 @@ public class CSVDataset extends ArrayList<Instance> implements Dataset {
     private TreeSet<Object> classes = new TreeSet<>();
     private List<String> attributes;
     private List<String> instanceIds;
-    private String outputFile;
+    private String outputFile = DEFAULT_OUTPUT_FILE;
 
     /**
      * Build a CSVDataset with the specified attribute list values
