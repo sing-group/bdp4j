@@ -23,8 +23,12 @@ public class Date2MillisTransformer extends Transformer<String> {
      */
     public double transform(String input) {
         if (input != null && !input.equals("null")) {
-            Date date = DateIdentifier.getDefault().checkDate(input);
-            return date.getTime();
+            try {
+                Date date = DateIdentifier.getDefault().checkDate(input);
+                return date.getTime();
+            } catch (Exception ex) {
+                return 0;
+            }
         } else {
             return 0;
         }

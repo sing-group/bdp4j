@@ -6,12 +6,17 @@
 package org.bdp4j.ml;
 
 import java.io.File;
+<<<<<<< refs/remotes/origin/master:src/main/java/org/bdp4j/ml/DatasetFromFile.java
 //import java.io.FileOutputStream;
 import java.io.FileReader;
 import java.io.IOException;
 //import java.io.OutputStreamWriter;
 //import java.io.StringReader;
 //import java.io.Writer;
+=======
+import java.io.FileReader;
+import java.io.IOException;
+>>>>>>> Changes in CSVDataset files:src/main/java/org/bdp4j/ml/CSVDatasetFromFile.java
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.HashSet;
@@ -19,10 +24,13 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+<<<<<<< refs/remotes/origin/master:src/main/java/org/bdp4j/ml/DatasetFromFile.java
 //import java.util.logging.Level;
 //import java.util.logging.Logger;
 //import java.util.stream.Collectors;
 //import java.util.stream.Stream;
+=======
+>>>>>>> Changes in CSVDataset files:src/main/java/org/bdp4j/ml/CSVDatasetFromFile.java
 import net.sf.javaml.core.DenseInstance;
 import net.sf.javaml.core.Instance;
 import org.apache.commons.csv.CSVFormat;
@@ -43,12 +51,12 @@ import org.bdp4j.util.SubClassParameterTypeIdentificator;
  *
  * @author María Novo
  */
-public class DatasetFromFile {
+public class CSVDatasetFromFile {
 
     /**
      * For logging purposes
      */
-    private static final org.apache.logging.log4j.Logger logger = LogManager.getLogger(DatasetFromFile.class);
+    private static final org.apache.logging.log4j.Logger logger = LogManager.getLogger(CSVDatasetFromFile.class);
 
     /**
      * The filepath/filename to load
@@ -64,7 +72,7 @@ public class DatasetFromFile {
     /**
      * Default constructor
      */
-    private DatasetFromFile() {
+    private CSVDatasetFromFile() {
     }
 
     /**
@@ -72,7 +80,7 @@ public class DatasetFromFile {
      *
      * @param filePath: The file path
      */
-    public DatasetFromFile(String filePath) {
+    public CSVDatasetFromFile(String filePath) {
         this.filePath = filePath;
         this.transformersList = new HashMap<>();
     }
@@ -84,7 +92,11 @@ public class DatasetFromFile {
      * @param filePath The filepath/filename
      * @param transformersList The list of transformers.
      */
+<<<<<<< refs/remotes/origin/master:src/main/java/org/bdp4j/ml/DatasetFromFile.java
     public DatasetFromFile(String filePath, Map<String, Transformer<? super Object>> transformersList) {
+=======
+    public CSVDatasetFromFile(String filePath, Map<String, Transformer> transformersList) {
+>>>>>>> Changes in CSVDataset files:src/main/java/org/bdp4j/ml/CSVDatasetFromFile.java
         this.filePath = filePath;
         this.transformersList = transformersList;
     }
@@ -137,10 +149,16 @@ public class DatasetFromFile {
             try (
                     FileReader reader = new FileReader(new File(this.filePath));
                     FileReader dsReader = new FileReader(new File(this.filePath))) {
+<<<<<<< refs/remotes/origin/master:src/main/java/org/bdp4j/ml/DatasetFromFile.java
                 Pair<String, String> pair;
+=======
+                Pair pair;
+                Pair newPair;
+>>>>>>> Changes in CSVDataset files:src/main/java/org/bdp4j/ml/CSVDatasetFromFile.java
                 //List to save the pair <columnName, datatype>
                 List<Pair<String, String>> columnTypes = new ArrayList<Pair<String, String>>();
                 List<String> headers = new ArrayList<>();
+                Map<String, Integer> indexColumnTypes = new HashMap<>();
                 // Used to known when all column types are identified.
                 Set<String> detectedTypes = new HashSet<>();
                 CSVFormat csvFormat = CSVFormat.DEFAULT.withDelimiter(';').withQuote('"');
@@ -151,14 +169,13 @@ public class DatasetFromFile {
                 // Loop to detect type of each file column. 
                 // Create a columnTypes list, with the name of the column and the data type
                 for (CSVRecord record : records) {
-                    if (detectedTypes.size() < record.size()) {
-                        lineNumber = record.getRecordNumber();
-                        if (lineNumber == 1) {
-                            for (int index = 0; index < record.size(); index++) {
-                                if (record.get(index) != null && !record.get(index).equals("")) {
-                                    headers.add(record.get(index));
-                                }
+                    lineNumber = record.getRecordNumber();
+                    if (lineNumber == 1) {
+                        for (int index = 0; index < record.size(); index++) {
+                            if (record.get(index) != null && !record.get(index).equals("")) {
+                                headers.add(record.get(index));
                             }
+<<<<<<< refs/remotes/origin/master:src/main/java/org/bdp4j/ml/DatasetFromFile.java
                         } else {
                             String type;
                             for (int index = 0; index < record.size(); index++) {
@@ -189,12 +206,51 @@ public class DatasetFromFile {
                                             pair = new Pair<String, String> (headers.get(index), type);
                                             columnTypes.add(pair);
                                         }
+=======
+                        }
+                    } else {
+                        String type;
+                        for (int index = 0; index < record.size(); index++) {
+                            field = record.get(index);
+                            type = "String";
+                            if (field != null && !field.isEmpty() && !field.equals("") && !field.equals(" ")) {
+                                // Check if the field is Double                            
+                                try {
+                                    Double.parseDouble(field);
+                                    type = "Double";
+                                } catch (Exception ex) {
+                                    if (ex.getClass().getName().equals("java.lang.NumberFormatException")) {
+                                    }
+                                }
+                                // Check if the field is Date                            
+                                try {
+                                    if (DateIdentifier.getDefault().checkDate(field) != null) {
+                                        type = "Date";
+                                    }
+                                } catch (Exception ex) {
+                                    if (ex.getClass().getName().equals("java.text.ParseException")) {
+                                    }
+                                }
+                                if (detectedTypes.contains(headers.get(index))) {
+                                    int columnTypeIndex = indexColumnTypes.get(headers.get(index));
+                                    pair = columnTypes.get(columnTypeIndex);
+                                    if (pair.getObj2() != type) {
+                                        columnTypes.remove(columnTypeIndex);
+                                        newPair = new Pair(headers.get(index), "String");
+                                        columnTypes.add(columnTypeIndex, newPair);
+                                    }
+                                } else {
+                                    // Create a Map to an easier generation of dataset
+                                    if (!type.equals("")) {
+                                        detectedTypes.add(headers.get(index));
+                                        pair = new Pair(headers.get(index), type);
+                                        columnTypes.add(pair);
+                                        indexColumnTypes.put(headers.get(index), columnTypes.indexOf(pair));
+>>>>>>> Changes in CSVDataset files:src/main/java/org/bdp4j/ml/CSVDatasetFromFile.java
                                     }
                                 }
                             }
                         }
-                    } else {
-                        break;
                     }
                 }
 
@@ -241,13 +297,24 @@ public class DatasetFromFile {
                                 try {
                                     if ((t = transformersList.get(headers.get(index))) != null) {
                                         if (field != null && !field.isEmpty() && !field.equals("") && !field.equals(" ")) {
-                                            instanceValues[indInstance] = t.transform(field);
+                                            try {
+                                                instanceValues[indInstance] = t.transform(field);
+                                            } catch (Exception ex) {
+                                                instanceValues[indInstance] = 0d;
+                                                logger.error(ex.getMessage());
+                                            }
                                         } else {
                                             instanceValues[indInstance] = 0d;
                                         }
                                     } else {
                                         if (field != null && !field.isEmpty() && !field.equals("") && !field.equals(" ")) {
-                                            instanceValues[indInstance] = Double.parseDouble(field);
+                                            try {
+                                                instanceValues[indInstance] = Double.parseDouble(field);
+                                            } catch (NumberFormatException ex) {
+                                                instanceValues[indInstance] = 0d;
+                                                logger.error(ex.getMessage());
+                                            }
+
                                         } else {
                                             instanceValues[indInstance] = 0d;
                                         }
@@ -264,6 +331,28 @@ public class DatasetFromFile {
                     }
                 }
                 dataset.setInstanceIds(instanceIds);
+/*                
+                CSVDataset sortedDataset =  new CSVDataset(attributes);
+                CSVDatasetUtils utils = new CSVDatasetUtils();
+                sortedDataset = utils.sort(dataset);
+
+                try {
+                    FileHandler.exportDataset(dataset, new File("data.csv"), false, ";");
+                    Dataset data = FileHandler.loadDataset(new File("data.csv"), 0, ";");
+                    // Contruct a KNN classifier that uses 5 neighbors to make a decision. 
+                    Classifier knn = new KNearestNeighbors(5);
+                   
+                    knn.buildClassifier(data);
+                    Dataset dataForClassification = FileHandler.loadDataset(new File("data.csv"), 0, ";");
+
+                    Map<Object, PerformanceMeasure> pm = EvaluateDataset.testDataset(knn, dataForClassification);
+                    for (Object o : pm.keySet()) {
+                        System.out.println(o + ": " + pm.get(o).getAccuracy());
+                    }
+                } catch (Exception ex) {
+                    ex.printStackTrace();
+                }
+*/
                 //---------------------------------------------------------------------------
                 // Se genera un fichero csv donde se añade el contenido del dataset
                 //---------------------------------------------------------------------------
@@ -275,6 +364,12 @@ public class DatasetFromFile {
                 System.out.println("-------------BEGIN DATASET-----------------------");
                 dataset.stream().forEach(System.out::println);
                 System.out.println("-------------END DATASET-----------------------");
+                //---------------------------------------------------------------------------
+                // Se imprime el dataset
+                //---------------------------------------------------------------------------
+//                System.out.println("-------------BEGIN sortedDataset-----------------------");
+//                sortedDataset.stream().forEach(System.out::println);
+//                System.out.println("-------------END sortedDataset-----------------------");
 
             } catch (IOException e) {
                 logger.error(e.getMessage());
