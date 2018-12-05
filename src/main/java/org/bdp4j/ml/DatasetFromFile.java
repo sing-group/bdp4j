@@ -6,12 +6,12 @@
 package org.bdp4j.ml;
 
 import java.io.File;
-import java.io.FileOutputStream;
+//import java.io.FileOutputStream;
 import java.io.FileReader;
 import java.io.IOException;
-import java.io.OutputStreamWriter;
-import java.io.StringReader;
-import java.io.Writer;
+//import java.io.OutputStreamWriter;
+//import java.io.StringReader;
+//import java.io.Writer;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.HashSet;
@@ -19,10 +19,10 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
-import java.util.logging.Level;
-import java.util.logging.Logger;
-import java.util.stream.Collectors;
-import java.util.stream.Stream;
+//import java.util.logging.Level;
+//import java.util.logging.Logger;
+//import java.util.stream.Collectors;
+//import java.util.stream.Stream;
 import net.sf.javaml.core.DenseInstance;
 import net.sf.javaml.core.Instance;
 import org.apache.commons.csv.CSVFormat;
@@ -59,7 +59,7 @@ public class DatasetFromFile {
      * non double value in double value.
      *
      */
-    Map<String, Transformer> transformersList;
+    Map<String, Transformer<? super Object>> transformersList;
 
     /**
      * Default constructor
@@ -84,7 +84,7 @@ public class DatasetFromFile {
      * @param filePath The filepath/filename
      * @param transformersList The list of transformers.
      */
-    public DatasetFromFile(String filePath, Map<String, Transformer> transformersList) {
+    public DatasetFromFile(String filePath, Map<String, Transformer<? super Object>> transformersList) {
         this.filePath = filePath;
         this.transformersList = transformersList;
     }
@@ -114,7 +114,7 @@ public class DatasetFromFile {
      * @param transformersList The list of transformers.
      */
     @PipeParameter(name = "transformersList", description = "The list of transformers", defaultValue = "")
-    public void setTransformersList(Map<String, Transformer> transformersList) {
+    public void setTransformersList(Map<String, Transformer<? super Object>> transformersList) {
         this.transformersList = transformersList;
     }
 
@@ -123,7 +123,7 @@ public class DatasetFromFile {
      *
      * @return the transformersList
      */
-    public Map<String, Transformer> getTransformersList() {
+    public Map<String, Transformer<? super Object>> getTransformersList() {
         return this.transformersList;
     }
 
@@ -137,7 +137,7 @@ public class DatasetFromFile {
             try (
                     FileReader reader = new FileReader(new File(this.filePath));
                     FileReader dsReader = new FileReader(new File(this.filePath))) {
-                Pair pair;
+                Pair<String, String> pair;
                 //List to save the pair <columnName, datatype>
                 List<Pair<String, String>> columnTypes = new ArrayList<Pair<String, String>>();
                 List<String> headers = new ArrayList<>();
@@ -186,7 +186,7 @@ public class DatasetFromFile {
                                         // Create a Map to an easier generation of dataset
                                         if (!type.equals("")) {
                                             detectedTypes.add(headers.get(index));
-                                            pair = new Pair(headers.get(index), type);
+                                            pair = new Pair<String, String> (headers.get(index), type);
                                             columnTypes.add(pair);
                                         }
                                     }
@@ -201,9 +201,9 @@ public class DatasetFromFile {
                 // Get transformes which parameter type is not Double
                 Set<String> noDoubleTransformers = new HashSet<>();
                 if (transformersList.size() > 0) {
-                    for (Map.Entry<String, Transformer> entry : transformersList.entrySet()) {
+                    for (Map.Entry<String, Transformer<? super Object>> entry : transformersList.entrySet()) {
                         String key = entry.getKey();
-                        Transformer value = entry.getValue();
+                        Transformer<? super Object> value = entry.getValue();
                         if (!SubClassParameterTypeIdentificator.findSubClassParameterType(value, Transformer.class, 0).getName().equals("Double")) {
                             noDoubleTransformers.add(key);
                         }
@@ -214,7 +214,7 @@ public class DatasetFromFile {
                 List<String> attributes = new ArrayList<>();
                 if (!columnTypes.isEmpty()) {
                     for (Iterator<Pair<String, String>> iterator = columnTypes.iterator(); iterator.hasNext();) {
-                        Pair next = iterator.next();
+                        Pair<String, String> next = iterator.next();
                         if ((next.getObj2().equals("Double") || noDoubleTransformers.contains(next.getObj1().toString())) && !attributes.contains(next.getObj1().toString())) {
                             attributes.add(next.getObj1().toString());
                         }
@@ -237,7 +237,7 @@ public class DatasetFromFile {
                                 instanceIds.add(field);
                             }
                             if (attributes.contains(headers.get(index))) {
-                                Transformer t;
+                                Transformer<? super Object> t;
                                 try {
                                     if ((t = transformersList.get(headers.get(index))) != null) {
                                         if (field != null && !field.isEmpty() && !field.equals("") && !field.equals(" ")) {

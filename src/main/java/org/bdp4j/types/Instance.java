@@ -113,10 +113,10 @@ public class Instance implements Serializable {
      * @param i The instance to be used as source for creating the new one
      */
     public Instance(Instance i) {
-        this.data = (Serializable) cloneObject((Object) data);
-        this.target = target;
-        this.name = name;
-        this.source = source;
+        this.data = (Serializable) cloneObject((Object) i.data);
+        this.target = i.target;
+        this.name = i.name;
+        this.source = i.source;
     }
 
     /**

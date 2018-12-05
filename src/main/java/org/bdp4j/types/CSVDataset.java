@@ -40,6 +40,10 @@ import org.bdp4j.pipe.PipeParameter;
  * @author María Novo
  */
 public class CSVDataset extends ArrayList<Instance> implements Dataset {
+    /**
+     * The serial version UID
+     */
+    private static final long serialVersionUID = 1L;
 
     /**
      * For logging purposes
