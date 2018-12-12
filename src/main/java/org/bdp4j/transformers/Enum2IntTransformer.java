@@ -30,6 +30,7 @@ public class Enum2IntTransformer extends Transformer<String> {
     /**
      * Build a Enum2IntTransformer using a transformList, to assign values to
      * each string
+     * @param transformList to assign values to each string
      */
     public Enum2IntTransformer(Map<String, Integer> transformList) {
         this.transformList = transformList;
@@ -38,6 +39,8 @@ public class Enum2IntTransformer extends Transformer<String> {
     /**
      * Build a Enum2IntTransformer using a Java enum, to assign values to each
      * string
+     * @param enumType to assign values to each string
+     * 
      */
     public Enum2IntTransformer(Class<? extends Enum<?>> enumType) {
         this();
@@ -51,8 +54,9 @@ public class Enum2IntTransformer extends Transformer<String> {
     /**
      * Transform an input to Double, using transformList values
      *
-     * * @param input A string to transform in Double
+     * @param input A string to transform in Double
      */
+    @Override
     public double transform(String input) {
         if (this.transformList.containsKey(input)) {
             return this.transformList.get(input);

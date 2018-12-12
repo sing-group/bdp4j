@@ -6,9 +6,15 @@
 package org.bdp4j.types;
 
 /**
- *
+ * @param <T> the impyt type of transformer
  * @author María Novo
  */
 public abstract class Transformer<T> {
+
+    /**
+     * Transform the data
+     * @param input Data to transform
+     * @return
+     */
     public abstract double transform(T input);
 }

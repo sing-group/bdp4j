@@ -11,6 +11,7 @@ import org.bdp4j.types.Transformer;
  * Trasform an input from String to Double, that represents the input lenght.
  *
  * @author María Novo
+
  */
 public class ComputeStringLenghtTransformer extends Transformer<String> {
 
@@ -19,7 +20,9 @@ public class ComputeStringLenghtTransformer extends Transformer<String> {
      * lenght.
      *
      * @param input A string to transform in Double
+     * @return A double value that represents the string length
      */
+    @Override
     public double transform(String input) {
         return new Double(input.length());
     }

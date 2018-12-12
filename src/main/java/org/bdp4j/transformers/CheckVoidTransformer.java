@@ -20,8 +20,14 @@ public class CheckVoidTransformer extends Transformer<String> {
      * empty or not.
      *
      * @param input A string to transform in Double
+     * @return A double value that represents a void or not void value
      */
+    @Override
     public double transform(String input) {
-        return ((input.isEmpty() || input.equals("null") || input == null) ? 0 : 1);
+        try {
+            return ((input.isEmpty() || input.equals("null")) ? 0 : 1);
+        } catch (NullPointerException ex) {
+            return 0;
+        }
     }
 }
