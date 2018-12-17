@@ -2,6 +2,7 @@ package org.bdp4j.types;
 
 import java.io.File;
 import java.io.IOException;
+import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.Enumeration;
 import java.util.List;
@@ -19,7 +20,7 @@ import weka.core.converters.CSVSaver;
  *
  * @author María Novo
  */
-public class Dataset {
+public class Dataset implements Serializable {
 
     /**
      * The serial version UID
@@ -30,34 +31,46 @@ public class Dataset {
      * For logging purposes
      */
     private static final Logger logger = LogManager.getLogger(Dataset.class);
-    
+
     /**
      * The default value for the output file
      */
     public static final String DEFAULT_OUTPUT_FILE = "CSVDataset.csv";
     private String outputFile = DEFAULT_OUTPUT_FILE;
-    
+
     /**
      * The default value for the dataset
      */
     private Instances dataset = null;
 
     /**
+     * Default constructor, creates a new Dataset from dataset
+     *
+     * @param dataset to create a new Dataset
+     */
+    public Dataset(Dataset dataset) {
+        this.dataset = new Instances(dataset.getWekaDataset());
+    }
+
+    /**
      * Default constructor, creates a new Dataset
+     *
      * @param name The name of the relation
      * @param attributes The attribute list of dataset
      * @param capacity The initial capacity of the dataset
      */
     public Dataset(String name, ArrayList<Attribute> attributes, int capacity) {
-        dataset = new Instances(name, attributes, capacity);
+        this.dataset = new Instances(name, attributes, capacity);
     }
-    
+
     /**
      * Default constructor, creates a new Dataset
+     *
      * @param name The name of the relation
      * @param attributes The attribute list of dataset
      * @param capacity The initial capacity of the dataset
-     * @param outputFile The output file  name, only in case you can export dataset to an output file.
+     * @param outputFile The output file name, only in case you can export
+     * dataset to an output file.
      */
     public Dataset(String name, ArrayList<Attribute> attributes, int capacity, String outputFile) {
         this(name, attributes, capacity);
