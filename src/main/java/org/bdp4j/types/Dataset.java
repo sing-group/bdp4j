@@ -140,7 +140,8 @@ public class Dataset implements Serializable {
             File file = new File(outputFile);
             saver.setFile(file);
             saver.setInstances(dataset);
-            saver.setFieldSeparator(";");
+            //WEKA uses this fieldSeparator. In other case, you can't load this file in WEKA application
+            saver.setFieldSeparator(",");
             saver.writeBatch();
         } catch (IOException ex) {
             ex.printStackTrace();
