@@ -37,6 +37,7 @@ import java.util.SortedSet;
 import java.util.ArrayList;
 import net.sf.javaml.core.Dataset;
 import net.sf.javaml.core.DefaultDataset;
+import net.sf.javaml.core.Instance;
 import net.sf.javaml.distance.DistanceMeasure;
 
 class Fold implements Dataset {
@@ -249,13 +250,14 @@ class Fold implements Dataset {
 
     }
 
-    @SuppressWarnings("unchecked")
-    @Override
+     @Override
     public <T> T[] toArray(T[] a) {
-        List<T> tmp = new ArrayList<>();
+        
+        List<Instance> tmp = new ArrayList<>();
         for (net.sf.javaml.core.Instance i : this) {
-            tmp.add((T) i);
+			tmp.add((Instance) i);
         }
+        
         return tmp.toArray(a);
     }
 
