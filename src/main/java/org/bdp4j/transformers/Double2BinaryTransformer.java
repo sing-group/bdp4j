@@ -5,9 +5,7 @@
  */
 package org.bdp4j.transformers;
 
-import java.util.Date;
 import org.bdp4j.types.Transformer;
-import org.bdp4j.util.DateIdentifier;
 
 /**
  * Trasform an input from String, that represents a Data to Double

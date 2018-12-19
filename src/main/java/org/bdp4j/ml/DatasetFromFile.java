@@ -9,10 +9,8 @@ import java.io.File;
 import java.io.FileReader;
 import java.io.IOException;
 import java.util.ArrayList;
-import java.util.Enumeration;
 import java.util.HashMap;
 import java.util.HashSet;
-import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -20,6 +18,7 @@ import java.util.function.Predicate;
 import org.apache.commons.csv.CSVFormat;
 import org.apache.commons.csv.CSVRecord;
 import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 import org.bdp4j.types.Dataset;
 import org.bdp4j.pipe.PipeParameter;
 import org.bdp4j.util.Pair;
@@ -28,9 +27,7 @@ import org.bdp4j.util.DateIdentifier;
 import org.bdp4j.util.SubClassParameterTypeIdentificator;
 
 import weka.core.Instance;
-import weka.core.Instances;
 import weka.core.Attribute;
-import weka.core.DenseInstance;
 
 //import weka.core.Instances;
 //import weka.core.converters.ConverterUtils;
@@ -47,7 +44,7 @@ public class DatasetFromFile {
     /**
      * For logging purposes
      */
-    private static final org.apache.logging.log4j.Logger logger = LogManager.getLogger(DatasetFromFile.class);
+    private static final Logger logger = LogManager.getLogger(DatasetFromFile.class);
 
     /**
      * The filepath/filename to load
@@ -60,12 +57,6 @@ public class DatasetFromFile {
      */
     Map<String, Transformer<? extends Object>> transformersList;
     //Map<String, Transformer> transformersList;
-
-    /**
-     * Default constructor
-     */
-    private DatasetFromFile() {
-    }
 
     /**
      * Create a CSVDatasetFromFile object from a file path
@@ -155,6 +146,7 @@ public class DatasetFromFile {
      * This method load the file and generates a Dataset, applying , if exists,
      * the transformers list. The dataset will only contain double values.
      */
+    @SuppressWarnings("unchecked")
     public Dataset loadFile() {
         Dataset dataset = null;
         try (
@@ -195,7 +187,7 @@ public class DatasetFromFile {
                                 pair = columnTypes.get(columnTypeIndex);
                                 if (!pair.getObj2().equals(type)) {
                                     columnTypes.remove(columnTypeIndex);
-                                    newPair = new Pair(headers.get(index), "String");
+                                    newPair = new Pair<>(headers.get(index), "String");
                                     columnTypes.add(columnTypeIndex, newPair);
                                 }
                             } else {
@@ -204,15 +196,15 @@ public class DatasetFromFile {
                                 if (isDetectedColumnType.test("target")) {
                                     // Target field always has to be the last one
                                     int lastColumnTypesPosition = columnTypes.size() - 1;
-                                    Pair targetPair = columnTypes.get(lastColumnTypesPosition);
+                                    Pair<String,String> targetPair = columnTypes.get(lastColumnTypesPosition);
                                     columnTypes.remove(lastColumnTypesPosition);
-                                    pair = new Pair(headers.get(index), type);
+                                    pair = new Pair<>(headers.get(index), type);
                                     columnTypes.add(pair);
                                     indexColumnTypes.put(headers.get(index), columnTypes.indexOf(pair));
                                     columnTypes.add(targetPair);
                                     indexColumnTypes.put("target", columnTypes.indexOf(pair));
                                 } else {
-                                    pair = new Pair(headers.get(index), type);
+                                    pair = new Pair<>(headers.get(index), type);
                                     columnTypes.add(pair);
                                     indexColumnTypes.put(headers.get(index), columnTypes.indexOf(pair));
                                 }
@@ -228,7 +220,7 @@ public class DatasetFromFile {
             if (transformersList.size() > 0) {
                 for (Map.Entry<String, Transformer<? extends Object>> entry : transformersList.entrySet()) {
                     String key = entry.getKey();
-                    Transformer value = entry.getValue();
+                    Transformer<? extends Object> value = entry.getValue();
                     if (!SubClassParameterTypeIdentificator.findSubClassParameterType(value, Transformer.class, 0).getName().equals("Double")) {
                         noDoubleTransformers.add(key);
                     }
@@ -275,6 +267,7 @@ public class DatasetFromFile {
                                     if ((t = transformersList.get(headers.get(index))) != null) {
                                         if (field != null && !field.isEmpty() && !field.equals("null") && !field.equals("") && !field.equals(" ")) {
                                             try {
+
                                                 instance.setValue(indInstance, ((Transformer<String>) t).transform(field));
                                             } catch (Exception ex) {
                                                 instance.setValue(indInstance, 0d);

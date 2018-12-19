@@ -6,3 +6,7 @@ target
 .classpath
 .project
 
+
+CSVDataset\.csv
+
+outputsyns\.csv

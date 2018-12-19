@@ -6,7 +6,7 @@
 package org.bdp4j.types;
 
 /**
- * @param <T> the impyt type of transformer
+ * @param <T> the input type of transformer
  * @author María Novo
  */
 public abstract class Transformer<T> {

@@ -14,7 +14,6 @@ import weka.core.DenseInstance;
 import weka.core.Instances;
 import weka.core.Instance;
 import weka.core.converters.CSVSaver;
-
 /**
  * Build a weka dataset
  *
@@ -144,7 +143,7 @@ public class Dataset implements Serializable {
             saver.setFieldSeparator(",");
             saver.writeBatch();
         } catch (IOException ex) {
-            ex.printStackTrace();
+            logger.error(ex.getMessage());
         }
 
     }
@@ -156,7 +155,7 @@ public class Dataset implements Serializable {
      */
     public List<String> getAttributes() {
         Enumeration<Attribute> attributeEnum = dataset.enumerateAttributes();
-        List<String> attributeList = new ArrayList();
+        List<String> attributeList = new ArrayList<>();
         while (attributeEnum.hasMoreElements()) {
             attributeList.add(attributeEnum.nextElement().name());
         }
@@ -171,7 +170,7 @@ public class Dataset implements Serializable {
     public List<Instance> getInstances() {
 
         Enumeration<Instance> instanceEnum = dataset.enumerateInstances();
-        List<Instance> instanceList = new ArrayList();
+        List<Instance> instanceList = new ArrayList<>();
         while (instanceEnum.hasMoreElements()) {
             instanceList.add(instanceEnum.nextElement());
         }
