@@ -332,4 +332,37 @@ public class SerialPipes extends Pipe {
         return sb.toString();
     }
 
+    /**
+     * Checks if a pipe that is being added is conform to the dependencies
+     * @param alwaysAftterDeps Pipes that shoud be executed before this
+     * @param notAftterDeps Pipes that should not be executed before
+     * @return whether the restrictions are satisfied or not
+     */
+    public boolean checkDependencies(Class<?> alwaysAftterDeps[]){
+        boolean satisfiesAllAlwaysAfterDeps=true;
+
+        for (Class<?> currentDep:alwaysAftterDeps){
+            int i=0;
+            for (;i<pipes.size()-1 && pipes.get(i).getClass()!=currentDep;i++);
+            satisfiesAllAlwaysAfterDeps=satisfiesAllAlwaysAfterDeps&&
+                    (pipes.get(i).getClass()!=currentDep ||
+                    checkDependencies(new Class<?>[]{currentDep}));
+            if (!satisfiesAllAlwaysAfterDeps) return false;
+        }
+
+
+        boolean notAfterSatified=true;
+        for (int i=0;i<pipes.size()-1;i++){
+            Class<?>[] notAfterDeps=pipes.get(i).notAftterDeps;
+            for (Class<?> dep:notAfterDeps){
+                int j=i+1;
+                for (;j<pipes.size()-1 && pipes.get(j).getClass()!=dep;j++);
+                notAfterSatified=notAfterSatified && (pipes.get(j).getClass()!=dep);
+            }
+            if (! notAfterSatified) break;
+        }
+
+        return satisfiesAllAlwaysAfterDeps && notAfterSatified;
+    }
+
 }

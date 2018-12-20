@@ -9,7 +9,7 @@ package org.bdp4j.types;
  * @param <Object> the input type of transformer
  * @author María Novo
  */
-public abstract class Transformer<Object> {
+public abstract class Transformer<T extends Object> {
 
     /**
      * Transform the data

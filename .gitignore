@@ -10,3 +10,5 @@ target
 CSVDataset\.csv
 
 outputsyns\.csv
+.factorypath
+.vscode/settings.json

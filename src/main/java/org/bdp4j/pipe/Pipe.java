@@ -58,9 +58,31 @@ public abstract class Pipe {
     Pipe parent;
 
     /**
+     * Dependencies of the type alwaysAfter
+     * These dependences indicate what pipes should be  
+     * executed before the current one. So this pipe
+     * shoudl be executed always after other dependant pipes
+     * included in this variable
+     */
+    final Class<?> alwaysAftterDeps[];
+
+    /**
+     * Dependencies of the type notAfter
+     * These dependences indicate what pipes should not be  
+     * executed before the current one. So this pipe
+     * shoudl be executed before other dependant pipes
+     * included in this variable
+     */
+    final Class<?> notAftterDeps[];
+
+
+    /**
      * Construct a pipe with no data and target dictionaries
      */
     public Pipe() {
+        //Initialize dependences to void to solve compiler errors
+        notAftterDeps=new Class<?>[0];
+        alwaysAftterDeps=new Class<?>[0];
     }
 
     /**
@@ -177,4 +199,16 @@ public abstract class Pipe {
      * @return the datatype expected in the data attribute of a Instance
      */
     public abstract Class<?> getOutputType();
+
+    /**
+     * Checks if a pipe that is being added is conform to the dependencies
+     * @param alwaysAftterDeps Pipes that shoud be executed before this
+     * @param notAftterDeps Pipes that should not be executed before
+     * @return whether the restrictions are satisfied or not
+     */
+    public boolean checkDependencies(Class<?> alwaysAftterDeps[]){
+        if (parent!=null)
+            return parent.checkDependencies(alwaysAftterDeps);
+        else return false;
+    }
 }

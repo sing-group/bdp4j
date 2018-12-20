@@ -25,8 +25,8 @@ public class ComputeStringLenghtTransformer extends Transformer<String> {
      * @return A double value that represents the string length
      */
     @Override
-    public double transform(String input) {
-        return new Double(input.length());
+    public double transform(Object input) {
+        return new Double(((String)input).length());
     }
     
     

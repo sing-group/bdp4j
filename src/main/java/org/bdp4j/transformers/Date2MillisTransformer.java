@@ -14,7 +14,7 @@ import org.bdp4j.util.DateIdentifier;
  *
  * @author María Novo
  */
-public class Date2MillisTransformer extends Transformer<Object> {
+public class Date2MillisTransformer extends Transformer<String> {
 
     private String transformerListValues;
 

@@ -53,7 +53,7 @@ public class DatasetFromFile {
      * non double value in double value.
      *
      */
-    Map<String, Transformer<Object>> transformersList;
+    Map<String, Transformer<? extends Object>> transformersList;
     //Map<String, Transformer> transformersList;
 
     /**
@@ -73,7 +73,7 @@ public class DatasetFromFile {
      * @param filePath The filepath/filename
      * @param transformersList The list of transformers.
      */
-    public DatasetFromFile(String filePath, Map<String, Transformer<Object>> transformersList) {
+    public DatasetFromFile(String filePath, Map<String, Transformer<? extends Object>> transformersList) {
         //public DatasetFromFile(String filePath, Map<String, Transformer> transformersList) {
         this.filePath = filePath;
         this.transformersList = transformersList;
@@ -104,7 +104,7 @@ public class DatasetFromFile {
      * @param transformersList The list of transformers.
      */
     @PipeParameter(name = "transformersList", description = "The list of transformers", defaultValue = "")
-    public void setTransformersList(Map<String, Transformer<Object>> transformersList) {
+    public void setTransformersList(Map<String, Transformer<? extends Object>> transformersList) {
         this.transformersList = transformersList;
     }
 
@@ -113,7 +113,7 @@ public class DatasetFromFile {
      *
      * @return the transformersList
      */
-    public Map<String, Transformer<Object>> getTransformersList() {
+    public Map<String, Transformer<? extends Object>> getTransformersList() {
         //public Map<String, Transformer> getTransformersList() {
         return this.transformersList;
     }
@@ -215,9 +215,9 @@ public class DatasetFromFile {
             // Get transformes which parameter type is not Double
             Set<String> noDoubleTransformers = new HashSet<>();
             if (transformersList.size() > 0) {
-                for (Map.Entry<String, Transformer<Object>> entry : transformersList.entrySet()) {
+                for (Map.Entry<String, Transformer<? extends Object>> entry : transformersList.entrySet()) {
                     String key = entry.getKey();
-                    Transformer<Object> value = entry.getValue();
+                    Transformer<? extends Object> value = entry.getValue();
                     if (!SubClassParameterTypeIdentificator.findSubClassParameterType(value, Transformer.class, 0).getName().equals("Double")) {
                         noDoubleTransformers.add(key);
                     }
@@ -256,7 +256,7 @@ public class DatasetFromFile {
                         
                         if (isAttribute.test(headers.get(index))) {
                             //System.out.println(headers.get(index));
-                            Transformer<Object> t;
+                            Transformer<? extends Object> t;
                             try {
                                 if (index == 0) {
                                     instance.setValue(indInstance, field);
@@ -265,7 +265,7 @@ public class DatasetFromFile {
                                         if (field != null && !field.isEmpty() && !field.equals("null") && !field.equals("") && !field.equals(" ")) {
                                             try {
 
-                                                instance.setValue(indInstance, ((Transformer<Object>) t).transform(field));
+                                                instance.setValue(indInstance, ((Transformer<? extends Object>) t).transform(field));
                                             } catch (Exception ex) {
                                                 instance.setValue(indInstance, 0d);
                                                 logger.error(ex.getMessage());
