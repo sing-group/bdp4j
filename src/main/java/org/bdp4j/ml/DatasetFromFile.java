@@ -29,8 +29,6 @@ import org.bdp4j.util.SubClassParameterTypeIdentificator;
 import weka.core.Instance;
 import weka.core.Attribute;
 
-//import weka.core.Instances;
-//import weka.core.converters.ConverterUtils;
 /**
  *
  * Generate Dataset from file. This dataset will contain only columns with a
@@ -107,7 +105,6 @@ public class DatasetFromFile {
      */
     @PipeParameter(name = "transformersList", description = "The list of transformers", defaultValue = "")
     public void setTransformersList(Map<String, Transformer<Object>> transformersList) {
-        //public void setTransformersList(Map<String, Transformer> transformersList) {
         this.transformersList = transformersList;
     }
 
@@ -120,7 +117,7 @@ public class DatasetFromFile {
         //public Map<String, Transformer> getTransformersList() {
         return this.transformersList;
     }
-
+    
     private String identifyType(String value) {
         // Check if the field is Double                            
         try {
@@ -145,8 +142,9 @@ public class DatasetFromFile {
     /**
      * This method load the file and generates a Dataset, applying , if exists,
      * the transformers list. The dataset will only contain double values.
+     * 
+     * @return A processed Dataset
      */
-    //@SuppressWarnings("unchecked")
     public Dataset loadFile() {
         Dataset dataset = null;
         try (
@@ -155,7 +153,7 @@ public class DatasetFromFile {
             Pair<String, String> pair;
             Pair<String, String> newPair;
             //List to save the pair <columnName, datatype>
-            List<Pair<String, String>> columnTypes = new ArrayList<Pair<String, String>>();
+            List<Pair<String, String>> columnTypes = new ArrayList<>();
             List<String> headers = new ArrayList<>();
             Map<String, Integer> indexColumnTypes = new HashMap<>();
             // Used to known when all column types are identified.
@@ -196,7 +194,7 @@ public class DatasetFromFile {
                                 if (isDetectedColumnType.test("target")) {
                                     // Target field always has to be the last one
                                     int lastColumnTypesPosition = columnTypes.size() - 1;
-                                    Pair<String,String> targetPair = columnTypes.get(lastColumnTypesPosition);
+                                    Pair<String, String> targetPair = columnTypes.get(lastColumnTypesPosition);
                                     columnTypes.remove(lastColumnTypesPosition);
                                     pair = new Pair<>(headers.get(index), type);
                                     columnTypes.add(pair);
@@ -209,7 +207,6 @@ public class DatasetFromFile {
                                     indexColumnTypes.put(headers.get(index), columnTypes.indexOf(pair));
                                 }
                             }
-
                         }
                     }
                 }
@@ -220,7 +217,7 @@ public class DatasetFromFile {
             if (transformersList.size() > 0) {
                 for (Map.Entry<String, Transformer<Object>> entry : transformersList.entrySet()) {
                     String key = entry.getKey();
-                    Transformer<? extends Object> value = entry.getValue();
+                    Transformer<Object> value = entry.getValue();
                     if (!SubClassParameterTypeIdentificator.findSubClassParameterType(value, Transformer.class, 0).getName().equals("Double")) {
                         noDoubleTransformers.add(key);
                     }
@@ -231,13 +228,13 @@ public class DatasetFromFile {
             ArrayList<Attribute> attributes = new ArrayList<>();
             Predicate<String> isAttribute = name -> attributes.stream()
                     .anyMatch(attribute -> attribute.name().equals(name));
-
+            
             attributes.add(new Attribute("id", true));
             if (!columnTypes.isEmpty()) {
                 for (Pair<String, String> next : columnTypes) {
                     final String type = next.getObj2();
                     final String header = next.getObj1();
-
+                    
                     if ((type.equals("Double") || noDoubleTransformers.contains(header)) && !isAttribute.test(header)) {
                         attributes.add(new Attribute(header));
                     }
@@ -246,9 +243,9 @@ public class DatasetFromFile {
 
             // Generate Dataset
             dataset = new Dataset("dataset", attributes, 0);
-
+            
             records = csvFormat.parse(dsReader);
-
+            
             for (CSVRecord record : records) {
                 lineNumber = record.getRecordNumber();
                 if (lineNumber > 1) {
@@ -256,7 +253,7 @@ public class DatasetFromFile {
                     int indInstance = 0;
                     for (int index = 0; index < headers.size(); index++) {
                         field = record.get(index);
-
+                        
                         if (isAttribute.test(headers.get(index))) {
                             //System.out.println(headers.get(index));
                             Transformer<Object> t;
@@ -268,7 +265,7 @@ public class DatasetFromFile {
                                         if (field != null && !field.isEmpty() && !field.equals("null") && !field.equals("") && !field.equals(" ")) {
                                             try {
 
-                                                instance.setValue(indInstance, ((Transformer<Object>) t).transform((Object)field));
+                                                instance.setValue(indInstance, ((Transformer<Object>) t).transform(field));
                                             } catch (Exception ex) {
                                                 instance.setValue(indInstance, 0d);
                                                 logger.error(ex.getMessage());
@@ -279,10 +276,10 @@ public class DatasetFromFile {
                                     } else {
                                         if (field != null && !field.isEmpty() && !field.equals("") && !field.equals(" ")) {
                                             try {
-
+                                                
                                                 instance.setValue(indInstance, Float.parseFloat(field));
                                             } catch (NumberFormatException ex) {
-
+                                                
                                                 instance.setValue(indInstance, 0d);
                                                 logger.error(ex.getMessage());
                                             }
@@ -305,6 +302,8 @@ public class DatasetFromFile {
             // Se genera un fichero csv donde se añade el contenido del dataset
             //---------------------------------------------------------------------------
             dataset.generateCSV();
+            
+            
             //---------------------------------------------------------------------------
             // Se imprime el dataset
             //---------------------------------------------------------------------------
