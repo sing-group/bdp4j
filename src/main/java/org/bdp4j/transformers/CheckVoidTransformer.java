@@ -13,8 +13,9 @@ import org.bdp4j.types.Transformer;
  *
  * @author María Novo
  */
-public class CheckVoidTransformer extends Transformer<String> {
+public class CheckVoidTransformer extends Transformer<Object> {
 
+    private String transformerListValues;
     /**
      * Trasform an input from String to Double, that represents if this input is
      * empty or not.
@@ -23,11 +24,21 @@ public class CheckVoidTransformer extends Transformer<String> {
      * @return A double value that represents a void or not void value
      */
     @Override
-    public double transform(String input) {
+    public double transform(Object input) {
         try {
-            return ((input.isEmpty() || input.equals("null")) ? 0 : 1);
+            return ((input == null || input.equals("null")) ? 0 : 1);
         } catch (NullPointerException ex) {
             return 0;
         }
+    }
+
+    /**
+     * Get a String who contents the meaning of the transformated values
+     * 
+     * @return String who contents the meaning of the transformated values
+     */
+    @Override
+    public String getTransformerListValues() {
+        return transformerListValues;
     }
 }

@@ -1,11 +1,16 @@
 package org.bdp4j.types;
 
+import java.io.BufferedWriter;
 import java.io.File;
+import java.io.FileOutputStream;
 import java.io.IOException;
+import java.io.OutputStream;
+import java.io.OutputStreamWriter;
 import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.Enumeration;
 import java.util.List;
+import java.util.Map;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.bdp4j.pipe.PipeParameter;
@@ -13,7 +18,9 @@ import weka.core.Attribute;
 import weka.core.DenseInstance;
 import weka.core.Instances;
 import weka.core.Instance;
+import weka.core.converters.ArffSaver;
 import weka.core.converters.CSVSaver;
+
 /**
  * Build a weka dataset
  *
@@ -49,6 +56,7 @@ public class Dataset implements Serializable {
      */
     public Dataset(Dataset dataset) {
         this.dataset = new Instances(dataset.getWekaDataset());
+
     }
 
     /**
@@ -60,6 +68,7 @@ public class Dataset implements Serializable {
      */
     public Dataset(String name, ArrayList<Attribute> attributes, int capacity) {
         this.dataset = new Instances(name, attributes, capacity);
+
     }
 
     /**
@@ -146,6 +155,51 @@ public class Dataset implements Serializable {
             logger.error(ex.getMessage());
         }
 
+    }
+
+    /**
+     * Generates a CSV with dataset content.
+     *
+     * @param transformersList
+     * @return 
+     */
+    public String generateARFFWithComments(Map<String, Transformer<Object>> transformersList) {
+        // Get information about transformers to add to arff file
+        StringBuilder comments = new StringBuilder();
+        for (Map.Entry<String, Transformer<Object>> entry : transformersList.entrySet()) {
+            String key = entry.getKey();
+            Transformer<?> value = entry.getValue();
+            Class<?> transformerClass = value.getClass();
+            String transformersListValues = value.getTransformerListValues();
+            comments.append("% ");
+            comments.append(key).append(": ").append(transformerClass.getSimpleName());
+            if (transformersListValues != null) {
+                comments.append(" --> ").append(transformersListValues);
+            }
+            comments.append("\n");
+        }
+        // Generate 
+        Instances wekaDataset = this.getWekaDataset();
+
+        String file = "WEKADatasetWithComments.arff";
+
+        try (OutputStream outputStream = new FileOutputStream(new File(file))) {
+
+            ArffSaver saver = new ArffSaver();
+            saver.setInstances(wekaDataset);
+            BufferedWriter bw = new BufferedWriter(new OutputStreamWriter(outputStream));
+
+            bw.write(comments.toString() + "\n");
+            bw.write("\n");
+            bw.flush();
+
+            saver.setDestination(outputStream);
+            saver.writeBatch();
+
+        } catch (IOException ex) {
+            ex.printStackTrace();
+        }
+        return file;
     }
 
     /**

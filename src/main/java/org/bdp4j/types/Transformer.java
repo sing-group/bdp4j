@@ -6,15 +6,22 @@
 package org.bdp4j.types;
 
 /**
- * @param <T> the input type of transformer
+ * @param <Object> the input type of transformer
  * @author María Novo
  */
-public abstract class Transformer<T> {
+public abstract class Transformer<Object> {
 
     /**
      * Transform the data
      * @param input Data to transform
      * @return
      */
-    public abstract double transform(T input);
+    public abstract double transform(Object input);
+    
+    /**
+     * Get a String who contents the meaning of the transformated values
+     * 
+     * @return String who contents the meaning of the transformated values
+     */
+    public abstract String getTransformerListValues();
 }

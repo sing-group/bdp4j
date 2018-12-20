@@ -12,7 +12,9 @@ import org.bdp4j.types.Transformer;
  *
  * @author María Novo
  */
-public class Double2BinaryTransformer extends Transformer<String> {
+public class Double2BinaryTransformer extends Transformer<Object> {
+
+    private String transformerListValues;
 
     /**
      * Transform an input, that represents a Date to Double
@@ -21,10 +23,10 @@ public class Double2BinaryTransformer extends Transformer<String> {
      * @return  A Double value that represents a binary value
      */
     @Override
-    public double transform(String input) {
+    public double transform(Object input) {
         if (input != null && !input.equals("null")) {
             try {
-                Double value = Double.parseDouble(input);
+                Double value = Double.parseDouble(input.toString());
                 if (value>0)
                     return 1;
                 else return 0;
@@ -34,5 +36,15 @@ public class Double2BinaryTransformer extends Transformer<String> {
         } else {
             return 0;
         }
+    }
+    
+    /**
+     * Get a String who contents the meaning of the transformated values
+     * 
+     * @return String who contents the meaning of the transformated values
+     */
+    @Override
+    public String getTransformerListValues() {
+        return transformerListValues;
     }
 }

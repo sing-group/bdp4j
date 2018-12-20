@@ -14,7 +14,9 @@ import org.bdp4j.util.DateIdentifier;
  *
  * @author María Novo
  */
-public class Date2MillisTransformer extends Transformer<String> {
+public class Date2MillisTransformer extends Transformer<Object> {
+
+    private String transformerListValues;
 
     /**
      * Transform an input, that represents a Date to Double
@@ -23,10 +25,11 @@ public class Date2MillisTransformer extends Transformer<String> {
      * @return A double value that represents a Date
      */
     @Override
-    public double transform(String input) {
+    public double transform(Object input) {
+       
         if (input != null && !input.equals("null")) {
             try {
-                Date date = DateIdentifier.getDefault().checkDate(input);
+                Date date = DateIdentifier.getDefault().checkDate(input.toString());
                 return date.getTime();
             } catch (Exception ex) {
                 return 0;
@@ -34,5 +37,15 @@ public class Date2MillisTransformer extends Transformer<String> {
         } else {
             return 0;
         }
+    }
+    
+    /**
+     * Get a String who contents the meaning of the transformated values
+     * 
+     * @return String who contents the meaning of the transformated values
+     */
+    @Override
+    public String getTransformerListValues() {
+        return transformerListValues;
     }
 }

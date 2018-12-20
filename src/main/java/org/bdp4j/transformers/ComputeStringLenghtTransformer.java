@@ -15,6 +15,8 @@ import org.bdp4j.types.Transformer;
  */
 public class ComputeStringLenghtTransformer extends Transformer<String> {
 
+    private String transformerListValues;
+
     /**
      * Trasform an input from String to Double, that represents the input
      * lenght.
@@ -25,5 +27,11 @@ public class ComputeStringLenghtTransformer extends Transformer<String> {
     @Override
     public double transform(String input) {
         return new Double(input.length());
+    }
+    
+    
+    @Override
+    public String getTransformerListValues() {
+        return transformerListValues;
     }
 }

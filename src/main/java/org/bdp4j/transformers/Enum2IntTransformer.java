@@ -13,12 +13,13 @@ import org.bdp4j.types.Transformer;
  * Transform an input to Double, using transformList values
  * @author María Novo
  */
-public class Enum2IntTransformer extends Transformer<String> {
+public class Enum2IntTransformer extends Transformer<Object> {
 
     /**
      * Represents the conversor from String to Integer
      */
     private Map<String, Integer> transformList;
+    
 
     /**
      * Build a Enum2IntTransformer using the default information
@@ -50,21 +51,40 @@ public class Enum2IntTransformer extends Transformer<String> {
             this.transformList.put(enumConstants[i].name(), i);
         }
     }
-
+    
     /**
      * Transform an input to Double, using transformList values
      *
      * @param input A string to transform in Double
      */
     @Override
-    public double transform(String input) {
-        if (this.transformList.containsKey(input)) {
-            return this.transformList.get(input);
+    public double transform(Object input) {
+        if (this.transformList.containsKey(input.toString())) {
+            return this.transformList.get(input.toString());
         } else {
             int index = this.getNextIndex();
-            this.transformList.put(input, index);
+            this.transformList.put(input.toString(), index);
             return index;
         }
+    }
+    
+    /**
+     * Get a String who contents the meaning of the transformated values
+     * 
+     * @return String who contents the meaning of the transformated values
+     */
+    @Override
+    public String getTransformerListValues() {
+        StringBuilder values = new StringBuilder();
+        for(Map.Entry<String, Integer> entry : transformList.entrySet()) {
+            String key = entry.getKey();
+            Integer value = entry.getValue();
+            values.append(key).append(": ").append(value).append(", ");
+        }
+        if (values.length()>0){
+            values.delete(values.length()-2, values.length()-1);
+        }
+        return values.toString();
     }
 
     /**
