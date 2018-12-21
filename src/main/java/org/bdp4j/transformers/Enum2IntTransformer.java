@@ -13,7 +13,7 @@ import org.bdp4j.types.Transformer;
  * Transform an input to Double, using transformList values
  * @author María Novo
  */
-public class Enum2IntTransformer extends Transformer<String> {
+public class Enum2IntTransformer extends Transformer<Object> {
 
     /**
      * Represents the conversor from String to Integer

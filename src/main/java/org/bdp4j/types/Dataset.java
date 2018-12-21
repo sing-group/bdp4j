@@ -156,14 +156,8 @@ public class Dataset implements Serializable {
         }
 
     }
-
-    /**
-     * Generates a CSV with dataset content.
-     *
-     * @param transformersList
-     * @return 
-     */
-    public String generateARFFWithComments(Map<String, Transformer<Object>> transformersList) {
+    
+    public String getComments(Map<String, Transformer<Object>> transformersList){
         // Get information about transformers to add to arff file
         StringBuilder comments = new StringBuilder();
         for (Map.Entry<String, Transformer<Object>> entry : transformersList.entrySet()) {
@@ -178,6 +172,17 @@ public class Dataset implements Serializable {
             }
             comments.append("\n");
         }
+        return comments.toString();
+    }
+
+    /**
+     * Generates a CSV with dataset content.
+     *
+     * @param transformersList
+     * @return 
+     */
+    public String generateARFFWithComments(Map<String, Transformer<Object>> transformersList) {
+       String comments = getComments(transformersList);
         // Generate 
         Instances wekaDataset = this.getWekaDataset();
 
@@ -189,7 +194,7 @@ public class Dataset implements Serializable {
             saver.setInstances(wekaDataset);
             BufferedWriter bw = new BufferedWriter(new OutputStreamWriter(outputStream));
 
-            bw.write(comments.toString() + "\n");
+            bw.write(comments + "\n");
             bw.write("\n");
             bw.flush();
 
@@ -231,45 +236,4 @@ public class Dataset implements Serializable {
         return instanceList;
     }
 
-    /*
-    
-    public static void main(String[] args) {
-
-        Map<String, Integer> transformList = new HashMap<>();
-        transformList.put("ham", 0);
-        transformList.put("spam", 1);
-        //Se define la lista de transformadores
-        Map<String, Transformer<? extends Object>> transformersList = new HashMap<>();
-        transformersList.put("date", new Date2MillisTransformer());
-        transformersList.put("target", new Enum2IntTransformer(transformList));
-
-        String filePath = "outputsyns.csv";//Main.class.getResource("/outputsyns.csv").getPath();
-        DatasetFromFile jml = new DatasetFromFile(filePath, transformersList);
-        Dataset dataset = jml.loadFile();
-
-        Instances data = dataset.getWekaDataset();
-        AttributeSelectedClassifier classifier = new AttributeSelectedClassifier();
-        //CfsSubsetEval eval = new CfsSubsetEval();
-        GreedyStepwise search = new GreedyStepwise();
-        search.setSearchBackwards(true);
-        J48 base = new J48();
-        BayesNet bnet = new BayesNet();
-        classifier.setClassifier(base);
-        classifier.setEvaluator(evaluator);
-        //classifier.setEvaluator(eval);
-        classifier.setSearch(search);
-        int k = 3;
-        Evaluation evaluation;
-        //data.deleteStringAttributes();
-        try {
-            data.setClassIndex(data.numAttributes() - 1);
-            evaluation = new Evaluation(data);
-            evaluation.crossValidateModel(classifier, data, k, new Random(1));
-           // System.out.println(evaluation.toSummaryString());
-        } catch (Exception ex) {
-            ex.printStackTrace();
-        }
-
-    }
-     */
 }

@@ -13,7 +13,7 @@ import org.bdp4j.types.Transformer;
  * @author María Novo
 
  */
-public class ComputeStringLenghtTransformer extends Transformer<String> {
+public class ComputeStringLenghtTransformer extends Transformer<Object> {
 
     private String transformerListValues;
 

@@ -12,7 +12,7 @@ import org.bdp4j.types.Transformer;
  *
  * @author María Novo
  */
-public class Double2BinaryTransformer extends Transformer<String> {
+public class Double2BinaryTransformer extends Transformer<Object> {
 
     private String transformerListValues;
 
