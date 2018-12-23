@@ -79,10 +79,20 @@ public abstract class Pipe {
     /**
      * Construct a pipe with no data and target dictionaries
      */
-    public Pipe() {
+    //private Pipe() {
         //Initialize dependences to void to solve compiler errors
-        notAftterDeps=new Class<?>[0];
-        alwaysAftterDeps=new Class<?>[0];
+        //notAftterDeps=new Class<?>[0];
+        //alwaysAftterDeps=new Class<?>[0];
+    //}
+
+    /**
+     * Create a pipe with its dependences
+     * @param notAfterDeps The dependences notAfter
+     * @param alwaysAftterDeps The dependences alwaysAfter
+     */
+    public Pipe(Class<?> notAfterDeps[], Class<?> alwaysAftterDeps[] ){
+        this.notAftterDeps=notAfterDeps;
+        this.alwaysAftterDeps=alwaysAftterDeps;
     }
 
     /**
@@ -206,9 +216,9 @@ public abstract class Pipe {
      * @param notAftterDeps Pipes that should not be executed before
      * @return whether the restrictions are satisfied or not
      */
-    public boolean checkDependencies(Class<?> alwaysAftterDeps[]){
+    public boolean checkDependencies(Pipe p){
         if (parent!=null)
-            return parent.checkDependencies(alwaysAftterDeps);
+            return parent.checkDependencies(p);
         else return false;
     }
 }

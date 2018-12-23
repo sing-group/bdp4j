@@ -14,6 +14,7 @@ public class ParallelPipes extends Pipe {
     private ArrayList<Pipe> pipes;
 
     public ParallelPipes() {
+        super(new Class<?>[0], new Class<?>[0]);
         this.pipes = new ArrayList<>();
     }
 

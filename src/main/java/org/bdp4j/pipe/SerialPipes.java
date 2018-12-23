@@ -30,8 +30,14 @@ import org.bdp4j.types.Instance;
  * @author José Ramón Méndez
  */
 public class SerialPipes extends Pipe {
-
+    /**
+     * The input type for the serial pipes
+     */
     private Class<?> inputType = null;
+
+    /**
+     * The output type for the serial pipes 
+     */
     private Class<?> outputType = null;
 
     /**
@@ -70,6 +76,7 @@ public class SerialPipes extends Pipe {
      * Build an empty SerialPipes
      */
     public SerialPipes() {
+        super(new Class<?>[0], new Class<?>[0]);
         this.pipes = new ArrayList<Pipe>();
     }
 
@@ -80,6 +87,7 @@ public class SerialPipes extends Pipe {
      * in the same order
      */
     public SerialPipes(Pipe[] pipes) {
+        super(new Class<?>[0],new Class<?>[0]);
         this.pipes = new ArrayList<Pipe>(pipes.length);
 
         for (Pipe pipe : pipes) {
@@ -94,6 +102,7 @@ public class SerialPipes extends Pipe {
      * serialPipes in the same order
      */
     public SerialPipes(ArrayList<Pipe> pipeList) {
+        super(new Class<?>[0] , new Class<?>[0] );
         this.pipes = new ArrayList<Pipe>(pipeList.size());
 
         for (Pipe aPipeList : pipeList) {
@@ -144,7 +153,7 @@ public class SerialPipes extends Pipe {
      */
     public void add(Pipe pipe) {
         if (!pipes.isEmpty()) {
-            if (checkCompatibility(pipe)) {
+            if (checkCompatibility(pipe) && checkDependencies(pipe)) {
                 logger.info("[PIPE ADD] Good compatibility between Pipes.");
                 pipe.setParent(this);
                 pipes.add(pipe);
@@ -338,26 +347,23 @@ public class SerialPipes extends Pipe {
      * @param notAftterDeps Pipes that should not be executed before
      * @return whether the restrictions are satisfied or not
      */
-    public boolean checkDependencies(Class<?> alwaysAftterDeps[]){
+    public boolean checkDependencies(Pipe p){
         boolean satisfiesAllAlwaysAfterDeps=true;
 
-        for (Class<?> currentDep:alwaysAftterDeps){
+        for (Class<?> currentDep:p.alwaysAftterDeps){
             int i=0;
             for (;i<pipes.size()-1 && pipes.get(i).getClass()!=currentDep;i++);
             satisfiesAllAlwaysAfterDeps=satisfiesAllAlwaysAfterDeps&&
                     (pipes.get(i).getClass()!=currentDep ||
-                    checkDependencies(new Class<?>[]{currentDep}));
+                    getParent().checkDependencies(p));
             if (!satisfiesAllAlwaysAfterDeps) return false;
         }
 
-
         boolean notAfterSatified=true;
-        for (int i=0;i<pipes.size()-1;i++){
+        for (int i=0;i<pipes.size();i++){
             Class<?>[] notAfterDeps=pipes.get(i).notAftterDeps;
             for (Class<?> dep:notAfterDeps){
-                int j=i+1;
-                for (;j<pipes.size()-1 && pipes.get(j).getClass()!=dep;j++);
-                notAfterSatified=notAfterSatified && (pipes.get(j).getClass()!=dep);
+                notAfterSatified=notAfterSatified && (p.getClass()!=dep);
             }
             if (! notAfterSatified) break;
         }
