@@ -12,7 +12,9 @@
    information, see the file `LICENSE' included with this distribution. */
 package org.bdp4j.pipe;
 
+import java.util.Arrays;
 import java.util.Collection;
+import java.util.List;
 
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
@@ -211,14 +213,47 @@ public abstract class Pipe {
     public abstract Class<?> getOutputType();
 
     /**
-     * Checks if a pipe that is being added is conform to the dependencies
-     * @param alwaysAftterDeps Pipes that shoud be executed before this
-     * @param notAftterDeps Pipes that should not be executed before
-     * @return whether the restrictions are satisfied or not
+     * Check if alwaysBeforeDeps are satisfied for pipe p (inserted). Initially deps contain
+     * all alwaysBefore dependences for p. These dependencies are deleted (marked as resolved)
+     * by recursivelly calling this method.
+     * @param p The pipe that is being checked
+     * @param deps The dependences that are not confirmed in a certain moment
+     * @return null if not sure about the fullfulling, true if the dependences are satisfied, 
+     *    false if the dependences could not been satisfied 
      */
-    public boolean checkDependencies(Pipe p){
-        if (parent!=null)
-            return parent.checkDependencies(p);
-        else return false;
+    public Boolean checkAlwaysBeforeDeps(Pipe p, List<Class<?>> deps){
+        if (this==p && deps.size()>0) return false; 
+        
+        if (deps.contains(this.getClass()) )
+            deps.remove(this.getClass());
+        
+        if (deps.size()==0) return true;
+
+        return null;
     }
+
+    /**
+     * Check if notBeforeDeps are satisfied for pipe p recursivelly. Note that p should be inserted.
+     * @param p The pipe that is being checked
+     * @return null if not sure about the fullfulling, true if the dependences are satisfied, 
+     *    false if the dependences could not been satisfied 
+     */
+    public Boolean checkNotBeforeDeps(Pipe p){
+        if (this==p) return true; 
+        
+        if (Arrays.asList(notAftterDeps).contains(p.getClass()) )
+            return false;
+
+        return null;
+    }
+
+    /**
+     * Checks if current pipe contains the pipe p
+     * @param p The pipe to search
+     * @return true if this pipe contains p false otherwise
+     */
+    public boolean containsPipe(Pipe p){
+        if (this==p) return true;
+        return false;
+    }    
 }

@@ -14,6 +14,7 @@ package org.bdp4j.pipe;
 
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.List;
 
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
@@ -147,13 +148,29 @@ public class SerialPipes extends Pipe {
     }
 
     /**
+     * This method will add elements to an array and return the resulting array
+     * @param arr The original array
+     * @param elements The elements to be added
+     * @return Array with all elements
+     */
+    @SuppressWarnings("unchecked")
+    private static <T> T[] add(T[] arr, T... elements){
+        T[] tempArr = (T[]) new Object[arr.length+elements.length];
+        System.arraycopy(arr, 0, tempArr, 0, arr.length);
+        
+        for(int i=0; i < elements.length; i++)
+            tempArr[arr.length+i] = elements[i];
+        return tempArr;
+    }
+
+    /**
      * Add a new pipe at the end of the processing list
      *
      * @param pipe The new pipe to be added
      */
     public void add(Pipe pipe) {
         if (!pipes.isEmpty()) {
-            if (checkCompatibility(pipe) && checkDependencies(pipe)) {
+            if (checkCompatibility(pipe)) {
                 logger.info("[PIPE ADD] Good compatibility between Pipes.");
                 pipe.setParent(this);
                 pipes.add(pipe);
@@ -175,6 +192,10 @@ public class SerialPipes extends Pipe {
 
             inputType = pipe.getInputType();
             outputType = pipe.getOutputType();
+
+            /* TODO: add notAfterDeps de pipe a this.notAfterDeps por si te hacen
+            un add de un SerialPipes o de un ParallelPipes. Lo mismo en la otra
+            rama del if */
         }
     }
 
@@ -342,33 +363,51 @@ public class SerialPipes extends Pipe {
     }
 
     /**
-     * Checks if a pipe that is being added is conform to the dependencies
-     * @param alwaysAftterDeps Pipes that shoud be executed before this
-     * @param notAftterDeps Pipes that should not be executed before
-     * @return whether the restrictions are satisfied or not
+     * Check if alwaysBeforeDeps are satisfied for pipe p (inserted). Initially deps contain
+     * all alwaysBefore dependences for p. These dependencies are deleted (marked as resolved)
+     * by recursivelly calling this method.
+     * @param p The pipe that is being checked
+     * @param deps The dependences that are not confirmed in a certain moment
+     * @return null if not sure about the fullfulling, true if the dependences are satisfied, 
+     *    false if the dependences could not been satisfied 
      */
-    public boolean checkDependencies(Pipe p){
-        boolean satisfiesAllAlwaysAfterDeps=true;
-
-        for (Class<?> currentDep:p.alwaysAftterDeps){
-            int i=0;
-            for (;i<pipes.size()-1 && pipes.get(i).getClass()!=currentDep;i++);
-            satisfiesAllAlwaysAfterDeps=satisfiesAllAlwaysAfterDeps&&
-                    (pipes.get(i).getClass()!=currentDep ||
-                    getParent().checkDependencies(p));
-            if (!satisfiesAllAlwaysAfterDeps) return false;
+    @Override
+    public Boolean checkAlwaysBeforeDeps(Pipe p, List<Class<?>> deps){
+        for (Pipe p1:this.pipes){
+             Boolean retVal=p1.checkAlwaysBeforeDeps(p, deps);
+             if (retVal!=null) return retVal;
         }
 
-        boolean notAfterSatified=true;
-        for (int i=0;i<pipes.size();i++){
-            Class<?>[] notAfterDeps=pipes.get(i).notAftterDeps;
-            for (Class<?> dep:notAfterDeps){
-                notAfterSatified=notAfterSatified && (p.getClass()!=dep);
-            }
-            if (! notAfterSatified) break;
-        }
-
-        return satisfiesAllAlwaysAfterDeps && notAfterSatified;
+        return null;
     }
+
+    /**
+     * Check if notBeforeDeps are satisfied for pipe p recursivelly. Note that p should be inserted.
+     * @param p The pipe that is being checked
+     * @return null if not sure about the fullfulling, true if the dependences are satisfied, 
+     *    false if the dependences could not been satisfied 
+     */
+    @Override
+    public Boolean checkNotBeforeDeps(Pipe p){
+        for (Pipe p1:this.pipes){
+            Boolean retVal=p1.checkNotBeforeDeps(p);
+            if (retVal!=null) return retVal;
+       }
+
+       return null;
+    }
+
+    /**
+     * Checks if current pipe contains the pipe p
+     * @param p The pipe to search
+     * @return true if this pipe contains p false otherwise
+     */
+    @Override    
+    public boolean containsPipe(Pipe p){
+       for (Pipe p1:this.pipes){
+            if (p1.containsPipe(p)) return true;
+       }
+       return false;
+    }    
 
 }

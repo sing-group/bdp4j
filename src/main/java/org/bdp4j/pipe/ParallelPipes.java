@@ -5,14 +5,37 @@ import org.apache.logging.log4j.Logger;
 import org.bdp4j.types.Instance;
 
 import java.util.ArrayList;
+import java.util.List;
 
+
+/**
+ * A class implementing parallel procesing of instances
+ * @author Yeray Lage
+ */
 public class ParallelPipes extends Pipe {
+    /**
+     * For logging purposes
+     */
     private static final Logger logger = LogManager.getLogger(ParallelPipes.class);
+
+    /**
+     * The input type
+     */
     private Class<?> inputType = null;
+
+    /**
+     * The output type
+     */
     private Class<?> outputType = null;
 
+    /**
+     * Pipes being executed in parallel
+     */
     private ArrayList<Pipe> pipes;
 
+    /**
+     * Default constuctor
+     */
     public ParallelPipes() {
         super(new Class<?>[0], new Class<?>[0]);
         this.pipes = new ArrayList<>();
@@ -57,6 +80,11 @@ public class ParallelPipes extends Pipe {
         return original;
     }
 
+    /**
+     * Adds another pipe that is executed in parallel
+     * @param pipe The new pipe added
+     * @param isOutput Marks if this pipe should be conducted to the next pipe.
+     */
     public void add(Pipe pipe, boolean isOutput) {
         // Set input type and check if valid.
         if (pipes.isEmpty()) {
@@ -79,13 +107,95 @@ public class ParallelPipes extends Pipe {
         }
     }
 
+    /**
+     * Determines the input type for the pipe
+     * @return the input type (Instance.data) for the pipe
+     */
     @Override
     public Class<?> getInputType() {
         return inputType;
     }
 
+    /**
+     * Determines the output type (Instance.data) for the pipe
+     * @return the output type (Instance.data) for the pipe
+     */
     @Override
     public Class<?> getOutputType() {
         return outputType;
     }
+
+    /**
+     * Check if alwaysBeforeDeps are satisfied for pipe p. Initially deps contain
+     * all alwaysBefore dependences for p. These dependencies are deleted (marked as resolved)
+     * by recursivelly calling this method.
+     * @param p The pipe that is being checked
+     * @param deps The dependences that are not confirmed in a certain moment
+     * @return null if not sure about the fullfulling, true if the dependences are satisfied, 
+     *    false if the dependences could not been satisfied 
+     */
+    @Override
+    public Boolean checkAlwaysBeforeDeps(Pipe p, List<Class<?>> deps){
+        if (!containsPipe(p)){
+            for (Pipe p1:this.pipes){
+                Boolean retVal=p1.checkAlwaysBeforeDeps(p, deps);
+                if (retVal!=null) return retVal;
+           }            
+        }else{
+            for (Pipe p1:this.pipes){
+                if (p1.containsPipe(p)){
+                    Boolean retVal=p1.checkAlwaysBeforeDeps(p, deps);
+                    if (retVal!=null) return retVal;
+                    else return deps.size()==0; //In this situation deps.size() should no be 0       
+                }
+            }    
+        }
+
+        return null;
+    }
+
+    /**
+     * Check if notBeforeDeps are satisfied for pipe p recursivelly. Note that p should be inserted.
+     * @param p The pipe that is being checked
+     * @return null if not sure about the fullfulling, true if the dependences are satisfied, 
+     *    false if the dependences could not been satisfied 
+     */
+    @Override
+    public Boolean checkNotBeforeDeps(Pipe p){
+        if (!containsPipe(p)){
+            for (Pipe p1:this.pipes){
+                Boolean retVal=p1.checkNotBeforeDeps(p);
+                if (retVal!=null) return retVal;
+           }            
+        }else{
+            Pipe pipeThatContainsP=null;
+            for (Pipe p1:this.pipes){
+                if (p1.containsPipe(p)){
+                    pipeThatContainsP=p1;
+                }else{
+                    Boolean retVal=p1.checkNotBeforeDeps(p);
+                    if (retVal!=null) return retVal;    
+                }
+            }
+            if(pipeThatContainsP!=null) { //Should be true
+                Boolean retVal=pipeThatContainsP.checkNotBeforeDeps(p);
+                return (retVal==null || retVal);  //retval shoudl not be null
+            }
+        }
+
+        return null;
+    }
+
+    /**
+     * Checks if current pipe contains the pipe p
+     * @param p The pipe to search
+     * @return true if this pipe contains p false otherwise
+     */
+    @Override
+    public boolean containsPipe(Pipe p){
+        for (Pipe p1:this.pipes){
+             if (p1.containsPipe(p)) return true;
+        }
+        return false;
+     }   
 }
