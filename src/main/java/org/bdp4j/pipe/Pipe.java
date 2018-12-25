@@ -221,7 +221,7 @@ public abstract class Pipe {
      * @return null if not sure about the fullfulling, true if the dependences are satisfied, 
      *    false if the dependences could not been satisfied 
      */
-    public Boolean checkAlwaysBeforeDeps(Pipe p, List<Class<?>> deps){
+    Boolean checkAlwaysBeforeDeps(Pipe p, List<Class<?>> deps){
         if (this==p && deps.size()>0) return false; 
         
         if (deps.contains(this.getClass()) )
@@ -238,10 +238,10 @@ public abstract class Pipe {
      * @return null if not sure about the fullfulling, true if the dependences are satisfied, 
      *    false if the dependences could not been satisfied 
      */
-    public Boolean checkNotBeforeDeps(Pipe p){
+    Boolean checkNotBeforeDeps(Pipe p){
         if (this==p) return true; 
         
-        if (Arrays.asList(notAftterDeps).contains(p.getClass()) )
+        if ( Arrays.asList(p.notAftterDeps).contains(getClass()) )
             return false;
 
         return null;
@@ -255,5 +255,13 @@ public abstract class Pipe {
     public boolean containsPipe(Pipe p){
         if (this==p) return true;
         return false;
-    }    
+    }
+    
+    /**
+     * Checks if the dependencies are satisfied
+     * @return true if the dependencies are satisfied, false otherwise
+     */
+    public boolean checkDependencies(){
+        return this.alwaysAftterDeps.length==0;
+    }
 }

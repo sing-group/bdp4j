@@ -5,6 +5,7 @@ import org.apache.logging.log4j.Logger;
 import org.bdp4j.types.Instance;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 
 
@@ -135,7 +136,7 @@ public class ParallelPipes extends Pipe {
      *    false if the dependences could not been satisfied 
      */
     @Override
-    public Boolean checkAlwaysBeforeDeps(Pipe p, List<Class<?>> deps){
+    Boolean checkAlwaysBeforeDeps(Pipe p, List<Class<?>> deps){
         if (!containsPipe(p)){
             for (Pipe p1:this.pipes){
                 Boolean retVal=p1.checkAlwaysBeforeDeps(p, deps);
@@ -161,7 +162,7 @@ public class ParallelPipes extends Pipe {
      *    false if the dependences could not been satisfied 
      */
     @Override
-    public Boolean checkNotBeforeDeps(Pipe p){
+    Boolean checkNotBeforeDeps(Pipe p){
         if (!containsPipe(p)){
             for (Pipe p1:this.pipes){
                 Boolean retVal=p1.checkNotBeforeDeps(p);
@@ -197,5 +198,25 @@ public class ParallelPipes extends Pipe {
              if (p1.containsPipe(p)) return true;
         }
         return false;
-     }   
+     } 
+     
+    /**
+     * Checks if the dependencies are satisfied
+     * @return true if the dependencies are satisfied, false otherwise
+     */
+    @Override
+    public boolean checkDependencies(){
+        boolean returnValue=true;
+
+        for (Pipe p1:pipes){
+            if (! (p1 instanceof SerialPipes) && ! (p1 instanceof ParallelPipes)){
+               returnValue=returnValue&getParentRoot().checkAlwaysBeforeDeps(p1, Arrays.asList(p1.alwaysAftterDeps));
+               returnValue=returnValue&getParentRoot().checkNotBeforeDeps(p1);
+            }else{
+                returnValue=returnValue&p1.checkDependencies();
+            }
+        }
+
+        return returnValue;
+    }
 }

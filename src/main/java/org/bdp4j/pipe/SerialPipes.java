@@ -13,6 +13,7 @@
 package org.bdp4j.pipe;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collection;
 import java.util.List;
 
@@ -148,22 +149,6 @@ public class SerialPipes extends Pipe {
     }
 
     /**
-     * This method will add elements to an array and return the resulting array
-     * @param arr The original array
-     * @param elements The elements to be added
-     * @return Array with all elements
-     */
-    @SuppressWarnings("unchecked")
-    private static <T> T[] add(T[] arr, T... elements){
-        T[] tempArr = (T[]) new Object[arr.length+elements.length];
-        System.arraycopy(arr, 0, tempArr, 0, arr.length);
-        
-        for(int i=0; i < elements.length; i++)
-            tempArr[arr.length+i] = elements[i];
-        return tempArr;
-    }
-
-    /**
      * Add a new pipe at the end of the processing list
      *
      * @param pipe The new pipe to be added
@@ -192,10 +177,6 @@ public class SerialPipes extends Pipe {
 
             inputType = pipe.getInputType();
             outputType = pipe.getOutputType();
-
-            /* TODO: add notAfterDeps de pipe a this.notAfterDeps por si te hacen
-            un add de un SerialPipes o de un ParallelPipes. Lo mismo en la otra
-            rama del if */
         }
     }
 
@@ -372,7 +353,7 @@ public class SerialPipes extends Pipe {
      *    false if the dependences could not been satisfied 
      */
     @Override
-    public Boolean checkAlwaysBeforeDeps(Pipe p, List<Class<?>> deps){
+    Boolean checkAlwaysBeforeDeps(Pipe p, List<Class<?>> deps){
         for (Pipe p1:this.pipes){
              Boolean retVal=p1.checkAlwaysBeforeDeps(p, deps);
              if (retVal!=null) return retVal;
@@ -388,7 +369,7 @@ public class SerialPipes extends Pipe {
      *    false if the dependences could not been satisfied 
      */
     @Override
-    public Boolean checkNotBeforeDeps(Pipe p){
+    Boolean checkNotBeforeDeps(Pipe p){
         for (Pipe p1:this.pipes){
             Boolean retVal=p1.checkNotBeforeDeps(p);
             if (retVal!=null) return retVal;
@@ -410,4 +391,24 @@ public class SerialPipes extends Pipe {
        return false;
     }    
 
+
+    /**
+     * Checks if the dependencies are satisfied
+     * @return true if the dependencies are satisfied, false otherwise
+     */
+    @Override
+    public boolean checkDependencies(){
+        boolean returnValue=true;
+
+        for (Pipe p1:pipes){
+            if (! (p1 instanceof SerialPipes) && ! (p1 instanceof ParallelPipes)){
+               returnValue=returnValue&getParentRoot().checkAlwaysBeforeDeps(p1, Arrays.asList(p1.alwaysAftterDeps));
+               returnValue=returnValue&getParentRoot().checkNotBeforeDeps(p1);
+            }else{
+                returnValue=returnValue&p1.checkDependencies();
+            }
+        }
+
+        return returnValue;
+    }
 }
