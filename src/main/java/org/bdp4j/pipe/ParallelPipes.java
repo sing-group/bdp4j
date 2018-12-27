@@ -8,6 +8,8 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 
+import org.bdp4j.util.BooleanBean;
+
 
 /**
  * A class implementing parallel procesing of instances
@@ -162,29 +164,64 @@ public class ParallelPipes extends Pipe {
      *    false if the dependences could not been satisfied 
      */
     @Override
-    Boolean checkNotBeforeDeps(Pipe p){
+    boolean checkNotAfterDeps(Pipe p, BooleanBean foundP){
+        boolean retVal=true;
+
         if (!containsPipe(p)){
             for (Pipe p1:this.pipes){
-                Boolean retVal=p1.checkNotBeforeDeps(p);
-                if (retVal!=null) return retVal;
-           }            
+                if (p1 instanceof SerialPipes || p1 instanceof ParallelPipes)
+                    retVal=retVal&&p1.checkNotAfterDeps(p,foundP);
+                else {
+                    if(foundP.getValue()) retVal=retVal&&!(Arrays.asList(p.notAftterDeps).contains(p1.getClass()));
+                    if (!retVal){
+                        errorMessage="Unsatisfied NotAfter dependency for pipe "+p.getClass().getName()+" ("+p1.getClass().getName()+")";
+                        return retVal;
+                    }
+                    foundP.Or(p==p1);
+                }    
+            }          
         }else{
             Pipe pipeThatContainsP=null;
-            for (Pipe p1:this.pipes){
-                if (p1.containsPipe(p)){
-                    pipeThatContainsP=p1;
-                }else{
-                    Boolean retVal=p1.checkNotBeforeDeps(p);
-                    if (retVal!=null) return retVal;    
+
+            int i=0;
+            for (;i<pipes.size()-1 && !pipes.get(i).containsPipe(p);i++);
+            pipeThatContainsP=pipes.get(i);
+
+            if(pipeThatContainsP!=null) { //Should be true
+                if (pipeThatContainsP instanceof SerialPipes || pipeThatContainsP instanceof ParallelPipes)
+                    retVal=retVal&&pipeThatContainsP.checkNotAfterDeps(p,foundP);
+                else {
+                    if(foundP.getValue()){
+                        retVal=retVal&&!(Arrays.asList(p.notAftterDeps).contains(pipeThatContainsP.getClass()));
+                        if (!retVal) {
+                            errorMessage="Unsatisfied NotAfter dependency for pipe "+p.getClass().getName()+" ("+pipeThatContainsP.getClass().getName()+")";
+                            return retVal;
+                        }
+                    } 
+                    foundP.Or(p==pipeThatContainsP);
                 }
             }
-            if(pipeThatContainsP!=null) { //Should be true
-                Boolean retVal=pipeThatContainsP.checkNotBeforeDeps(p);
-                return (retVal==null || retVal);  //retval shoudl not be null
+
+            for (Pipe p1:this.pipes){
+                if (p1!=pipeThatContainsP){
+                    if (p1 instanceof SerialPipes || p1 instanceof ParallelPipes)
+                        retVal=retVal&&p1.checkNotAfterDeps(p,foundP);
+                    else {
+                        if(foundP.getValue()){
+                            retVal=retVal&&!(Arrays.asList(p.notAftterDeps).contains(p1.getClass()));
+                            if (!retVal) {
+                                errorMessage="Unsatisfied NotAfter dependency for pipe "+p.getClass().getName()+" ("+p1.getClass().getName()+")";
+                                return retVal;
+                            }
+                        } 
+                        foundP.Or(p==p1);
+                    }  
+                }
             }
+            
         }
 
-        return null;
+        return retVal;
     }
 
     /**
@@ -210,8 +247,8 @@ public class ParallelPipes extends Pipe {
 
         for (Pipe p1:pipes){
             if (! (p1 instanceof SerialPipes) && ! (p1 instanceof ParallelPipes)){
-               returnValue=returnValue&getParentRoot().checkAlwaysBeforeDeps(p1, Arrays.asList(p1.alwaysAftterDeps));
-               returnValue=returnValue&getParentRoot().checkNotBeforeDeps(p1);
+               returnValue=returnValue&getParentRoot().checkAlwaysBeforeDeps(p1, new ArrayList<Class<?>>(Arrays.asList(p1.alwaysBeforeDeps)));
+               returnValue=returnValue&getParentRoot().checkNotAfterDeps(p1, new BooleanBean(false));
             }else{
                 returnValue=returnValue&p1.checkDependencies();
             }

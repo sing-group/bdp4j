@@ -21,6 +21,7 @@ import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
 import org.bdp4j.types.Instance;
+import org.bdp4j.util.BooleanBean;
 
 /**
  * Convert an instance through a sequence of pipes.
@@ -369,13 +370,23 @@ public class SerialPipes extends Pipe {
      *    false if the dependences could not been satisfied 
      */
     @Override
-    Boolean checkNotBeforeDeps(Pipe p){
-        for (Pipe p1:this.pipes){
-            Boolean retVal=p1.checkNotBeforeDeps(p);
-            if (retVal!=null) return retVal;
-       }
+    boolean checkNotAfterDeps(Pipe p, BooleanBean foundP){
+        boolean retVal=true;
 
-       return null;
+        for (Pipe p1:this.pipes){
+            if (p1 instanceof SerialPipes || p1 instanceof ParallelPipes)
+                retVal=retVal&&p1.checkNotAfterDeps(p,foundP);
+            else {
+                if(foundP.getValue()) retVal=retVal&&!(Arrays.asList(p.notAftterDeps).contains(p1.getClass()));
+                if (!retVal){
+                    errorMessage="Unsatisfied NotAfter dependency for pipe "+p.getClass().getName()+" ("+p1.getClass().getName()+")";
+                    return retVal;
+                }
+                foundP.Or(p==p1);
+            }    
+        }
+
+       return retVal;
     }
 
     /**
@@ -402,8 +413,8 @@ public class SerialPipes extends Pipe {
 
         for (Pipe p1:pipes){
             if (! (p1 instanceof SerialPipes) && ! (p1 instanceof ParallelPipes)){
-               returnValue=returnValue&getParentRoot().checkAlwaysBeforeDeps(p1, Arrays.asList(p1.alwaysAftterDeps));
-               returnValue=returnValue&getParentRoot().checkNotBeforeDeps(p1);
+               returnValue=returnValue&getParentRoot().checkAlwaysBeforeDeps(p1, new ArrayList<Class<?>>(Arrays.asList(p1.alwaysBeforeDeps)));
+               returnValue=returnValue&getParentRoot().checkNotAfterDeps(p1, new BooleanBean(false));
             }else{
                 returnValue=returnValue&p1.checkDependencies();
             }

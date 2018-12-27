@@ -12,7 +12,6 @@
    information, see the file `LICENSE' included with this distribution. */
 package org.bdp4j.pipe;
 
-import java.util.Arrays;
 import java.util.Collection;
 import java.util.List;
 
@@ -20,6 +19,7 @@ import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
 import org.bdp4j.types.Instance;
+import org.bdp4j.util.BooleanBean;
 
 /**
  * The abstract superclass of all Pipes, which transform one data type to
@@ -60,41 +60,39 @@ public abstract class Pipe {
     Pipe parent;
 
     /**
-     * Dependencies of the type alwaysAfter
-     * These dependences indicate what pipes should be  
-     * executed before the current one. So this pipe
-     * shoudl be executed always after other dependant pipes
-     * included in this variable
+     * Dependencies of the type alwaysBefore
+     * These dependences indicate what pipes must be  
+     * executed before the current one. 
      */
-    final Class<?> alwaysAftterDeps[];
+    final Class<?> alwaysBeforeDeps[];
 
     /**
      * Dependencies of the type notAfter
-     * These dependences indicate what pipes should not be  
-     * executed before the current one. So this pipe
-     * shoudl be executed before other dependant pipes
-     * included in this variable
+     * These dependences indicate what pipes must not be  
+     * executed after the current one.
      */
     final Class<?> notAftterDeps[];
 
+    /**
+     * Error message for dependencies
+     */
+    static String errorMessage;
 
     /**
-     * Construct a pipe with no data and target dictionaries
+     * Get the error Message dependencies
      */
-    //private Pipe() {
-        //Initialize dependences to void to solve compiler errors
-        //notAftterDeps=new Class<?>[0];
-        //alwaysAftterDeps=new Class<?>[0];
-    //}
+    public static String getErrorMesage(){
+        return errorMessage;
+    }
 
     /**
      * Create a pipe with its dependences
-     * @param notAfterDeps The dependences notAfter
-     * @param alwaysAftterDeps The dependences alwaysAfter
+     * @param alwaysBeforeDeps The dependences alwaysBefore (pipes that must be executed before this one)
+     * @param notAfterDeps The dependences notAfter (pipes that cannot be executed after this one)
      */
-    public Pipe(Class<?> notAfterDeps[], Class<?> alwaysAftterDeps[] ){
+    public Pipe(Class<?> alwaysBeforeDeps[], Class<?> notAfterDeps[] ){
         this.notAftterDeps=notAfterDeps;
-        this.alwaysAftterDeps=alwaysAftterDeps;
+        this.alwaysBeforeDeps=alwaysBeforeDeps;
     }
 
     /**
@@ -222,7 +220,14 @@ public abstract class Pipe {
      *    false if the dependences could not been satisfied 
      */
     Boolean checkAlwaysBeforeDeps(Pipe p, List<Class<?>> deps){
-        if (this==p && deps.size()>0) return false; 
+        if (this==p && deps.size()>0){ 
+            errorMessage="Unsatisfied AlwaysBefore dependencies for pipe "+p.getClass().getName()+" (";
+            boolean first=true;
+            for (Class<?> dep:deps) { errorMessage+=((!first?", ":"")+dep.getName()) ; first=false;};
+            errorMessage+=")";
+
+            return false;
+        } 
         
         if (deps.contains(this.getClass()) )
             deps.remove(this.getClass());
@@ -238,13 +243,10 @@ public abstract class Pipe {
      * @return null if not sure about the fullfulling, true if the dependences are satisfied, 
      *    false if the dependences could not been satisfied 
      */
-    Boolean checkNotBeforeDeps(Pipe p){
-        if (this==p) return true; 
-        
-        if ( Arrays.asList(p.notAftterDeps).contains(getClass()) )
-            return false;
-
-        return null;
+    boolean checkNotAfterDeps(Pipe p, BooleanBean foundP){
+        if ( this==p )
+            return true;
+        else throw new RuntimeException("Seems this situation has no sense.");
     }
 
     /**
@@ -262,6 +264,6 @@ public abstract class Pipe {
      * @return true if the dependencies are satisfied, false otherwise
      */
     public boolean checkDependencies(){
-        return this.alwaysAftterDeps.length==0;
+        return this.alwaysBeforeDeps.length==0;
     }
 }
