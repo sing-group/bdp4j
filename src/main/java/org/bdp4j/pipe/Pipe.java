@@ -119,8 +119,13 @@ public abstract class Pipe {
 
         //Search the last valid instance
         int lastValidInstanceIdx = carriers.size() - 1;
-        while (!carriersAsArray[lastValidInstanceIdx].isValid()) {
+        while (!carriersAsArray[lastValidInstanceIdx].isValid() && lastValidInstanceIdx>0) {
             lastValidInstanceIdx--;
+        }
+
+        if (lastValidInstanceIdx==0 && !carriersAsArray[lastValidInstanceIdx].isValid()){
+            logger.fatal("All instances were invalidated.");
+            return carriers;
         }
 
         try {
