@@ -265,7 +265,7 @@ public class DatasetFromFile {
                                         if (field != null && !field.isEmpty() && !field.equals("null") && !field.equals("") && !field.equals(" ")) {
                                             try {
 
-                                                instance.setValue(indInstance, ((Transformer<? extends Object>) t).transform(field));
+                                                instance.setValue(indInstance, t.transform(field));
                                             } catch (Exception ex) {
                                                 instance.setValue(indInstance, 0d);
                                                 logger.error(ex.getMessage());
