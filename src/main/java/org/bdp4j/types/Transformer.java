@@ -6,15 +6,16 @@
 package org.bdp4j.types;
 
 /**
- * @param <Object> the input type of transformer
+ * To transform columns of a dataset into double representation suitable for using 
+ * with classifiers.
  * @author María Novo
  */
-public abstract class Transformer<T extends Object> {
+public abstract class Transformer {
 
     /**
      * Transform the data
      * @param input Data to transform
-     * @return
+     * @return The double representation of the input
      */
     public abstract double transform(Object input);
     

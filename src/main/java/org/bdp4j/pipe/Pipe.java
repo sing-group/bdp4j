@@ -80,6 +80,7 @@ public abstract class Pipe {
 
     /**
      * Get the error Message dependencies
+     * @return The error message
      */
     public static String getErrorMesage(){
         return errorMessage;

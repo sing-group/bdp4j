@@ -157,12 +157,12 @@ public class Dataset implements Serializable {
 
     }
     
-    public String getComments(Map<String, Transformer<Object>> transformersList){
+    public String getComments(Map<String, Transformer> transformersList){
         // Get information about transformers to add to arff file
         StringBuilder comments = new StringBuilder();
-        for (Map.Entry<String, Transformer<Object>> entry : transformersList.entrySet()) {
+        for (Map.Entry<String, Transformer> entry : transformersList.entrySet()) {
             String key = entry.getKey();
-            Transformer<?> value = entry.getValue();
+            Transformer value = entry.getValue();
             Class<?> transformerClass = value.getClass();
             String transformersListValues = value.getTransformerListValues();
             comments.append("% ");
@@ -177,11 +177,10 @@ public class Dataset implements Serializable {
 
     /**
      * Generates a CSV with dataset content.
-     *
-     * @param transformersList
-     * @return 
+     * @param transformersList The list of transformers
+     * @return The ARFF content
      */
-    public String generateARFFWithComments(Map<String, Transformer<Object>> transformersList) {
+    public String generateARFFWithComments(Map<String, Transformer> transformersList) {
        String comments = getComments(transformersList);
         // Generate 
         Instances wekaDataset = this.getWekaDataset();

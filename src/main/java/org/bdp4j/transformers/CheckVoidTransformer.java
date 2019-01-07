@@ -13,7 +13,7 @@ import org.bdp4j.types.Transformer;
  *
  * @author María Novo
  */
-public class CheckVoidTransformer extends Transformer<Object> {
+public class CheckVoidTransformer extends Transformer {
 
     private String transformerListValues;
     /**
