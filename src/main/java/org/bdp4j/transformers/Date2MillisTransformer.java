@@ -5,7 +5,9 @@
  */
 package org.bdp4j.transformers;
 
+import java.util.ArrayList;
 import java.util.Date;
+import java.util.List;
 import org.bdp4j.types.Transformer;
 import org.bdp4j.util.DateIdentifier;
 
@@ -47,5 +49,16 @@ public class Date2MillisTransformer extends Transformer {
     @Override
     public String getTransformerListValues() {
         return transformerListValues;
+    }
+    
+       
+    /**
+     * Get a List who contains the values
+     *
+     * @return List who contains the values
+     */
+    @Override
+    public List<Integer> getListValues() {
+       return new ArrayList<Integer>();
     }
 }

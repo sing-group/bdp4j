@@ -5,6 +5,8 @@
  */
 package org.bdp4j.types;
 
+import java.util.List;
+
 /**
  * To transform columns of a dataset into double representation suitable for using 
  * with classifiers.
@@ -20,9 +22,16 @@ public abstract class Transformer {
     public abstract double transform(Object input);
     
     /**
-     * Get a String who contents the meaning of the transformated values
+     * Get a String who contains the meaning of the transformated values
      * 
-     * @return String who contents the meaning of the transformated values
+     * @return String who contains the meaning of the transformated values
      */
     public abstract String getTransformerListValues();
+    
+    /**
+     * Get a List who contains the transformated values
+     * 
+     * @return List who contains the transformated values
+     */
+    public abstract List<Integer> getListValues();
 }

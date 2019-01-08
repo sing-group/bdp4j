@@ -117,7 +117,7 @@ public class DatasetFromFile {
         //public Map<String, Transformer> getTransformersList() {
         return this.transformersList;
     }
-    
+
     private String identifyType(String value) {
         // Check if the field is Double                            
         try {
@@ -142,14 +142,14 @@ public class DatasetFromFile {
     /**
      * This method load the file and generates a Dataset, applying , if exists,
      * the transformers list. The dataset will only contain double values.
-     * 
+     *
      * @return A processed Dataset
      */
     public Dataset loadFile() {
         Dataset dataset = null;
         try (
-            FileReader reader = new FileReader(new File(this.filePath));
-            FileReader dsReader = new FileReader(new File(this.filePath))) {
+                FileReader reader = new FileReader(new File(this.filePath));
+                FileReader dsReader = new FileReader(new File(this.filePath))) {
             Pair<String, String> pair;
             Pair<String, String> newPair;
             //List to save the pair <columnName, datatype>
@@ -228,24 +228,33 @@ public class DatasetFromFile {
             ArrayList<Attribute> attributes = new ArrayList<>();
             Predicate<String> isAttribute = name -> attributes.stream()
                     .anyMatch(attribute -> attribute.name().equals(name));
-            
+
             attributes.add(new Attribute("id", true));
             if (!columnTypes.isEmpty()) {
                 for (Pair<String, String> next : columnTypes) {
                     final String type = next.getObj2();
                     final String header = next.getObj1();
-                    
-                    if ((type.equals("Double") || noDoubleTransformers.contains(header)) && !isAttribute.test(header)) {
+
+                    if (header.equalsIgnoreCase("target")) {
+                        List<String> target_values = new ArrayList<String>();
+                        Transformer transformer = transformersList.get(header);
+                        for (Object value : transformer.getListValues()){
+                          target_values.add(value.toString());
+                          
+                        }
+                        attributes.add(new Attribute(header, target_values));
+                    } else if ((type.equals("Double") || noDoubleTransformers.contains(header)) && !isAttribute.test(header)) {
                         attributes.add(new Attribute(header));
                     }
+
                 }
             }
 
             // Generate Dataset
             dataset = new Dataset("dataset", attributes, 0);
-            
+
             records = csvFormat.parse(dsReader);
-            
+
             for (CSVRecord record : records) {
                 lineNumber = record.getRecordNumber();
                 if (lineNumber > 1) {
@@ -253,7 +262,7 @@ public class DatasetFromFile {
                     int indInstance = 0;
                     for (int index = 0; index < headers.size(); index++) {
                         field = record.get(index);
-                        
+
                         if (isAttribute.test(headers.get(index))) {
                             //System.out.println(headers.get(index));
                             Transformer t;
@@ -275,10 +284,10 @@ public class DatasetFromFile {
                                     } else {
                                         if (field != null && !field.isEmpty() && !field.equals("") && !field.equals(" ")) {
                                             try {
-                                                
+
                                                 instance.setValue(indInstance, Float.parseFloat(field));
                                             } catch (NumberFormatException ex) {
-                                                
+
                                                 instance.setValue(indInstance, 0d);
                                                 logger.error(ex.getMessage());
                                             }

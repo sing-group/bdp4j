@@ -5,12 +5,15 @@
  */
 package org.bdp4j.transformers;
 
+import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 import org.bdp4j.types.Transformer;
 
 /**
  * Transform an input to Double, using transformList values
+ *
  * @author María Novo
  */
 public class Enum2IntTransformer extends Transformer {
@@ -19,7 +22,6 @@ public class Enum2IntTransformer extends Transformer {
      * Represents the conversor from String to Integer
      */
     private Map<String, Integer> transformList;
-    
 
     /**
      * Build a Enum2IntTransformer using the default information
@@ -31,6 +33,7 @@ public class Enum2IntTransformer extends Transformer {
     /**
      * Build a Enum2IntTransformer using a transformList, to assign values to
      * each string
+     *
      * @param transformList to assign values to each string
      */
     public Enum2IntTransformer(Map<String, Integer> transformList) {
@@ -40,8 +43,9 @@ public class Enum2IntTransformer extends Transformer {
     /**
      * Build a Enum2IntTransformer using a Java enum, to assign values to each
      * string
+     *
      * @param enumType to assign values to each string
-     * 
+     *
      */
     public Enum2IntTransformer(Class<? extends Enum<?>> enumType) {
         this();
@@ -51,7 +55,7 @@ public class Enum2IntTransformer extends Transformer {
             this.transformList.put(enumConstants[i].name(), i);
         }
     }
-    
+
     /**
      * Transform an input to Double, using transformList values
      *
@@ -67,29 +71,43 @@ public class Enum2IntTransformer extends Transformer {
             return index;
         }
     }
-    
+
     /**
-     * Get a String who contents the meaning of the transformated values
-     * 
-     * @return String who contents the meaning of the transformated values
+     * Get a List who contains the values
+     *
+     * @return List who contains the values
+     */
+    @Override
+    public List<Integer> getListValues() {
+        List<Integer> values = new ArrayList<Integer>();
+        for (Map.Entry<String, Integer> entry : transformList.entrySet()) {
+            values.add(entry.getValue());
+        }
+        return values;
+    }
+
+    /**
+     * Get a String who contains the meaning of the transformated values
+     *
+     * @return String who contains the meaning of the transformated values
      */
     @Override
     public String getTransformerListValues() {
         StringBuilder values = new StringBuilder();
-        for(Map.Entry<String, Integer> entry : transformList.entrySet()) {
+        for (Map.Entry<String, Integer> entry : transformList.entrySet()) {
             String key = entry.getKey();
             Integer value = entry.getValue();
             values.append(key).append(": ").append(value).append(", ");
         }
-        if (values.length()>0){
-            values.delete(values.length()-2, values.length()-1);
+        if (values.length() > 0) {
+            values.delete(values.length() - 2, values.length() - 1);
         }
         return values.toString();
     }
 
     /**
      * Get the next index from transformList values
-     * 
+     *
      * @return int Contains the next index from transformList
      */
     private int getNextIndex() {
@@ -99,5 +117,5 @@ public class Enum2IntTransformer extends Transformer {
 
         return maxIndex + 1;
     }
-    
+
 }

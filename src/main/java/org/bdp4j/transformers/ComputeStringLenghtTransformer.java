@@ -5,6 +5,8 @@
  */
 package org.bdp4j.transformers;
 
+import java.util.ArrayList;
+import java.util.List;
 import org.bdp4j.types.Transformer;
 
 /**
@@ -33,5 +35,15 @@ public class ComputeStringLenghtTransformer extends Transformer {
     @Override
     public String getTransformerListValues() {
         return transformerListValues;
+    }
+       
+    /**
+     * Get a List who contains the values
+     *
+     * @return List who contains the values
+     */
+    @Override
+    public List<Integer> getListValues() {
+       return new ArrayList<Integer>();
     }
 }
