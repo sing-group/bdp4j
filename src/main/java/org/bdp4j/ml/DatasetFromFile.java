@@ -218,9 +218,10 @@ public class DatasetFromFile {
                 for (Map.Entry<String, Transformer> entry : transformersList.entrySet()) {
                     String key = entry.getKey();
                     Transformer value = entry.getValue();
-                    if (!SubClassParameterTypeIdentificator.findSubClassParameterType(value, Transformer.class, 0).getName().equals("Double")) {
+                    //if (value.getInputType() == )
+                   // if (!SubClassParameterTypeIdentificator.findSubClassParameterType(value, Transformer.class, 0).getName().equals("Double")) {
                         noDoubleTransformers.add(key);
-                    }
+                   // }
                 }
             }
 

@@ -26,7 +26,7 @@ import weka.core.converters.CSVSaver;
  *
  * @author María Novo
  */
-public class Dataset implements Serializable {
+public class Dataset implements Serializable, Cloneable {
 
     /**
      * The serial version UID
@@ -56,7 +56,6 @@ public class Dataset implements Serializable {
      */
     public Dataset(Dataset dataset) {
         this.dataset = new Instances(dataset.getWekaDataset());
-
     }
 
     /**
@@ -233,6 +232,17 @@ public class Dataset implements Serializable {
             instanceList.add(instanceEnum.nextElement());
         }
         return instanceList;
+    }
+
+    public List<String> getSynsets(){
+        List<String> synsetsList = new ArrayList<>();
+        List<String> attributes =  this.getAttributes();
+        for (String attribute : attributes) {
+            if (attribute.contains("bn:")){
+                synsetsList.add(attribute);
+            }
+        }
+        return synsetsList;
     }
 
 }
