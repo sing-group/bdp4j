@@ -56,6 +56,7 @@ public class Dataset implements Serializable, Cloneable {
      */
     public Dataset(Dataset dataset) {
         this.dataset = new Instances(dataset.getWekaDataset());
+        this.outputFile = dataset.getOutputFile();
     }
 
     /**
@@ -155,8 +156,8 @@ public class Dataset implements Serializable, Cloneable {
         }
 
     }
-    
-    public String getComments(Map<String, Transformer> transformersList){
+
+    public String getComments(Map<String, Transformer> transformersList) {
         // Get information about transformers to add to arff file
         StringBuilder comments = new StringBuilder();
         for (Map.Entry<String, Transformer> entry : transformersList.entrySet()) {
@@ -176,11 +177,12 @@ public class Dataset implements Serializable, Cloneable {
 
     /**
      * Generates a CSV with dataset content.
+     *
      * @param transformersList The list of transformers
      * @return The ARFF content
      */
     public String generateARFFWithComments(Map<String, Transformer> transformersList) {
-       String comments = getComments(transformersList);
+        String comments = getComments(transformersList);
         // Generate 
         Instances wekaDataset = this.getWekaDataset();
 
@@ -234,15 +236,44 @@ public class Dataset implements Serializable, Cloneable {
         return instanceList;
     }
 
-    public List<String> getSynsets(){
+    /**
+     * Get a list of synsets in Dataset
+     *
+     * @return a list of synsets in Dataset
+     */
+    public List<String> getSynsets() {
         List<String> synsetsList = new ArrayList<>();
-        List<String> attributes =  this.getAttributes();
+        List<String> attributes = this.getAttributes();
         for (String attribute : attributes) {
-            if (attribute.contains("bn:")){
+            if (attribute.contains("bn:")) {
                 synsetsList.add(attribute);
             }
         }
         return synsetsList;
     }
 
+    /**
+     * Creates a copy of original dataset, replacing the synsets with its
+     * hyperonym
+     *
+     * @param hyperonymList Hiperonyms list to replace the original synsets
+     * @return A copy of dataset with hyperonyms instead of original synsets
+     */
+    public Dataset replaceSynsetWithHyperonym(Map<String, String> hyperonymList) {
+        Dataset returnDataset = this.clone();
+
+        for (Map.Entry<String, String> entry : hyperonymList.entrySet()) {
+            String oldValue = entry.getKey();
+            String newValue = entry.getValue();
+            Attribute att = returnDataset.dataset.attribute(oldValue);
+            returnDataset.dataset.renameAttribute(att, newValue);
+        }
+       
+        return returnDataset;
+    }
+
+    @Override
+    public Dataset clone() {
+        return new Dataset(this);
+    }
 }
