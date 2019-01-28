@@ -181,13 +181,13 @@ public class Dataset implements Serializable, Cloneable {
      * @param transformersList The list of transformers
      * @return The ARFF content
      */
-    public String generateARFFWithComments(Map<String, Transformer> transformersList) {
+    public String generateARFFWithComments(Map<String, Transformer> transformersList, String file) {
         String comments = getComments(transformersList);
         // Generate 
         Instances wekaDataset = this.getWekaDataset();
-
-        String file = "WEKADatasetWithComments.arff";
-
+        if (file.length() == 0) {
+            file = "WEKADatasetWithComments.arff";
+        }
         try (OutputStream outputStream = new FileOutputStream(new File(file))) {
 
             ArffSaver saver = new ArffSaver();
@@ -253,23 +253,33 @@ public class Dataset implements Serializable, Cloneable {
     }
 
     /**
-     * Creates a copy of original dataset, replacing the synsets with its
-     * hyperonym
+     * Replace synsets list with its hyperonym
      *
      * @param hyperonymList Hiperonyms list to replace the original synsets
-     * @return A copy of dataset with hyperonyms instead of original synsets
+     * @return Dataset with hyperonyms instead of original synsets
      */
     public Dataset replaceSynsetWithHyperonym(Map<String, String> hyperonymList) {
-        Dataset returnDataset = this.clone();
+        Instances instances = this.dataset;
 
         for (Map.Entry<String, String> entry : hyperonymList.entrySet()) {
             String oldValue = entry.getKey();
             String newValue = entry.getValue();
-            Attribute att = returnDataset.dataset.attribute(oldValue);
-            returnDataset.dataset.renameAttribute(att, newValue);
+            Attribute att = instances.attribute(oldValue);
+            instances.renameAttribute(att, newValue);
         }
-       
-        return returnDataset;
+
+        return this;
+    }
+    
+    public Dataset deleteAttributeColumn(String attributeName) {
+        if (!attributeName.isEmpty()) {
+            Instances instances = this.dataset;
+            int attPosition = instances.attribute(attributeName).index();
+            if (attPosition >= 0) {
+                instances.deleteAttributeAt(attPosition);
+            }
+        }
+        return this;
     }
 
     @Override
