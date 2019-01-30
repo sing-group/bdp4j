@@ -12,14 +12,13 @@
    information, see the file `LICENSE' included with this distribution. */
 package org.bdp4j.pipe;
 
-import java.util.Collection;
-import java.util.List;
-
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
-
 import org.bdp4j.types.Instance;
 import org.bdp4j.util.BooleanBean;
+
+import java.util.Collection;
+import java.util.List;
 
 /**
  * The abstract superclass of all Pipes, which transform one data type to
@@ -61,17 +60,17 @@ public abstract class Pipe {
 
     /**
      * Dependencies of the type alwaysBefore
-     * These dependences indicate what pipes must be  
-     * executed before the current one. 
+     * These dependences indicate what pipes must be
+     * executed before the current one.
      */
-    final Class<?> alwaysBeforeDeps[];
+    final Class<?>[] alwaysBeforeDeps;
 
     /**
      * Dependencies of the type notAfter
-     * These dependences indicate what pipes must not be  
+     * These dependences indicate what pipes must not be
      * executed after the current one.
      */
-    final Class<?> notAftterDeps[];
+    final Class<?>[] notAftterDeps;
 
     /**
      * Error message for dependencies
@@ -79,21 +78,23 @@ public abstract class Pipe {
     static String errorMessage;
 
     /**
-     * Get the error Message dependencies
-     * @return The error message
+     * Create a pipe with its dependences
+     *
+     * @param alwaysBeforeDeps The dependences alwaysBefore (pipes that must be executed before this one)
+     * @param notAfterDeps     The dependences notAfter (pipes that cannot be executed after this one)
      */
-    public static String getErrorMesage(){
-        return errorMessage;
+    public Pipe(Class<?>[] alwaysBeforeDeps, Class<?>[] notAfterDeps) {
+        this.notAftterDeps = notAfterDeps;
+        this.alwaysBeforeDeps = alwaysBeforeDeps;
     }
 
     /**
-     * Create a pipe with its dependences
-     * @param alwaysBeforeDeps The dependences alwaysBefore (pipes that must be executed before this one)
-     * @param notAfterDeps The dependences notAfter (pipes that cannot be executed after this one)
+     * Get the error Message dependencies
+     *
+     * @return The error message
      */
-    public Pipe(Class<?> alwaysBeforeDeps[], Class<?> notAfterDeps[] ){
-        this.notAftterDeps=notAfterDeps;
-        this.alwaysBeforeDeps=alwaysBeforeDeps;
+    public static String getErrorMesage() {
+        return errorMessage;
     }
 
     /**
@@ -120,11 +121,11 @@ public abstract class Pipe {
 
         //Search the last valid instance
         int lastValidInstanceIdx = carriers.size() - 1;
-        while (!carriersAsArray[lastValidInstanceIdx].isValid() && lastValidInstanceIdx>0) {
+        while (!carriersAsArray[lastValidInstanceIdx].isValid() && lastValidInstanceIdx > 0) {
             lastValidInstanceIdx--;
         }
 
-        if (lastValidInstanceIdx==0 && !carriersAsArray[lastValidInstanceIdx].isValid()){
+        if (lastValidInstanceIdx == 0 && !carriersAsArray[lastValidInstanceIdx].isValid()) {
             logger.fatal("All instances were invalidated.");
             return carriers;
         }
@@ -132,6 +133,21 @@ public abstract class Pipe {
         try {
             //Pipe all instances except the last one
             isLast = false;
+
+            /*
+            // This is the thread-way
+            Arrays.stream(carriersAsArray).parallel().forEach(
+                    (c) -> {
+                        if (c.isValid()) {
+                            pipe(c);
+                        } else {
+                            logger.info("Skipping invalid instance " + c.toString());
+                        }
+                    }
+            );
+            */
+
+            // This is the serial-way
             for (int i = 0; i < lastValidInstanceIdx; i++) {
                 if (carriersAsArray[i].isValid()) {
                     pipe(carriersAsArray[i]);
@@ -220,56 +236,61 @@ public abstract class Pipe {
      * Check if alwaysBeforeDeps are satisfied for pipe p (inserted). Initially deps contain
      * all alwaysBefore dependences for p. These dependencies are deleted (marked as resolved)
      * by recursivelly calling this method.
-     * @param p The pipe that is being checked
+     *
+     * @param p    The pipe that is being checked
      * @param deps The dependences that are not confirmed in a certain moment
-     * @return null if not sure about the fullfulling, true if the dependences are satisfied, 
-     *    false if the dependences could not been satisfied 
+     * @return null if not sure about the fullfulling, true if the dependences are satisfied,
+     * false if the dependences could not been satisfied
      */
-    Boolean checkAlwaysBeforeDeps(Pipe p, List<Class<?>> deps){
-        if (this==p && deps.size()>0){ 
-            errorMessage="Unsatisfied AlwaysBefore dependencies for pipe "+p.getClass().getName()+" (";
-            boolean first=true;
-            for (Class<?> dep:deps) { errorMessage+=((!first?", ":"")+dep.getName()) ; first=false;};
-            errorMessage+=")";
+    Boolean checkAlwaysBeforeDeps(Pipe p, List<Class<?>> deps) {
+        if (this == p && deps.size() > 0) {
+            errorMessage = "Unsatisfied AlwaysBefore dependencies for pipe " + p.getClass().getName() + " (";
+            boolean first = true;
+            for (Class<?> dep : deps) {
+                errorMessage += ((!first ? ", " : "") + dep.getName());
+                first = false;
+            }
+            errorMessage += ")";
 
             return false;
-        } 
-        
-        if (deps.contains(this.getClass()) )
-            deps.remove(this.getClass());
-        
-        if (deps.size()==0) return true;
+        }
+
+        deps.remove(this.getClass());
+
+        if (deps.size() == 0) return true;
 
         return null;
     }
 
     /**
      * Check if notBeforeDeps are satisfied for pipe p recursivelly. Note that p should be inserted.
+     *
      * @param p The pipe that is being checked
-     * @return null if not sure about the fullfulling, true if the dependences are satisfied, 
-     *    false if the dependences could not been satisfied 
+     * @return null if not sure about the fullfulling, true if the dependences are satisfied,
+     * false if the dependences could not been satisfied
      */
-    boolean checkNotAfterDeps(Pipe p, BooleanBean foundP){
-        if ( this==p )
+    boolean checkNotAfterDeps(Pipe p, BooleanBean foundP) {
+        if (this == p)
             return true;
         else throw new RuntimeException("Seems this situation has no sense.");
     }
 
     /**
      * Checks if current pipe contains the pipe p
+     *
      * @param p The pipe to search
      * @return true if this pipe contains p false otherwise
      */
-    public boolean containsPipe(Pipe p){
-        if (this==p) return true;
-        return false;
+    public boolean containsPipe(Pipe p) {
+        return this == p;
     }
-    
+
     /**
      * Checks if the dependencies are satisfied
+     *
      * @return true if the dependencies are satisfied, false otherwise
      */
-    public boolean checkDependencies(){
-        return this.alwaysBeforeDeps.length==0;
+    public boolean checkDependencies() {
+        return this.alwaysBeforeDeps.length == 0;
     }
 }
