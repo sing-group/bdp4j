@@ -52,7 +52,9 @@ public class ParallelPipes extends Pipe {
      */
     public ParallelPipes(Pipe[] pipeList) {
         super(new Class<?>[0], new Class<?>[0]);
-        this.pipes = new ArrayList<Pipe>(Arrays.asList(pipeList));
+        this.pipes = new ArrayList<Pipe>(pipeList.length);
+
+        for (Pipe p : pipeList) this.add(p);
     }
 
     /**
@@ -62,7 +64,9 @@ public class ParallelPipes extends Pipe {
      */
     public ParallelPipes(ArrayList<Pipe> pipeList) {
         super(new Class<?>[0], new Class<?>[0]);
-        this.pipes = pipeList;
+        this.pipes = new ArrayList<Pipe>(pipeList.size());
+
+        for (Pipe p : pipeList) this.add(p);
     }
 
     /**
