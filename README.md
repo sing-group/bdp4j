@@ -1,8 +1,8 @@
 # Big Data Preprocessing For Java (bdp4j)
 
 This project is a simple pipeline implementation derived from the pipeline of Mallet 
-(some source has brought from there as you can find in comments) with some interesting features 
-(some of them to appear). Interesting features are:
+(http://mallet.cs.umass.edu, some source has brought from there as you can find in comments) with 
+some interesting features (some of them to appear). Interesting features are:
 
 * Input-Output Type checking: support is developed and enabled but I am afraid that checking should 
   be invoked manually (not while building pipes as implemented now).
@@ -29,3 +29,6 @@ This project is a simple pipeline implementation derived from the pipeline of Ma
 Inside the source an example can be found to process SMS messages from 
 http://www.esp.uem.es/jmgomez/smsspamcorpus/ a make a simple Weka 10-fold crosvalidation experiment. 
 It is very simple but you can find in the example several pipes of different pipes working together. 
+
+## References
+McCallum, Andrew Kachites.  "MALLET: A Machine Learning for Language Toolkit." http://mallet.cs.umass.edu. 2002.
