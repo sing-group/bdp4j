@@ -5,11 +5,12 @@
  */
 package org.bdp4j.transformers;
 
+import org.bdp4j.types.Transformer;
+
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import org.bdp4j.types.Transformer;
 
 /**
  * Transform an input to Double, using transformList values
@@ -45,7 +46,6 @@ public class Enum2IntTransformer extends Transformer {
      * string
      *
      * @param enumType to assign values to each string
-     *
      */
     public Enum2IntTransformer(Class<? extends Enum<?>> enumType) {
         this();

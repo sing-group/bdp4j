@@ -12,16 +12,15 @@
    information, see the file `LICENSE' included with this distribution. */
 package org.bdp4j.pipe;
 
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
+import org.bdp4j.types.Instance;
+import org.bdp4j.util.BooleanBean;
+
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.List;
-
-import org.apache.logging.log4j.LogManager;
-import org.apache.logging.log4j.Logger;
-
-import org.bdp4j.types.Instance;
-import org.bdp4j.util.BooleanBean;
 
 /**
  * Convert an instance through a sequence of pipes.
@@ -34,19 +33,59 @@ import org.bdp4j.util.BooleanBean;
  */
 public class SerialPipes extends Pipe {
     /**
-     * The input type for the serial pipes
-     */
-    private Class<?> inputType = null;
-
-    /**
-     * The output type for the serial pipes 
-     */
-    private Class<?> outputType = null;
-
-    /**
      * For logging purposes
      */
     private static final Logger logger = LogManager.getLogger(SerialPipes.class);
+    /**
+     * The input type for the serial pipes
+     */
+    private Class<?> inputType = null;
+    /**
+     * The output type for the serial pipes
+     */
+    private Class<?> outputType = null;
+    /**
+     * Pipe list
+     */
+    private ArrayList<Pipe> pipes;
+
+    /**
+     * Build an empty SerialPipes
+     */
+    public SerialPipes() {
+        super(new Class<?>[0], new Class<?>[0]);
+        this.pipes = new ArrayList<Pipe>();
+    }
+
+    /**
+     * Build a serial pipes using an array of individual pipes
+     *
+     * @param pipes An array of pipes that will be included in the serialPipes
+     *              in the same order
+     */
+    public SerialPipes(Pipe[] pipes) {
+        super(new Class<?>[0], new Class<?>[0]);
+        this.pipes = new ArrayList<Pipe>(pipes.length);
+
+        for (Pipe pipe : pipes) {
+            this.add(pipe);
+        }
+    }
+
+    /**
+     * Build a serial pipes using an ArrayList of individual pipes
+     *
+     * @param pipeList An arrayList of pipes that will be included in the
+     *                 serialPipes in the same order
+     */
+    public SerialPipes(ArrayList<Pipe> pipeList) {
+        super(new Class<?>[0], new Class<?>[0]);
+        this.pipes = new ArrayList<Pipe>(pipeList.size());
+
+        for (Pipe aPipeList : pipeList) {
+            this.add(aPipeList);
+        }
+    }
 
     /**
      * Return the input type included the data attribute of a Instance
@@ -68,49 +107,6 @@ public class SerialPipes extends Pipe {
     @Override
     public Class<?> getOutputType() {
         return outputType;
-    }
-
-    /**
-     * Pipe list
-     */
-    private ArrayList<Pipe> pipes;
-
-    /**
-     * Build an empty SerialPipes
-     */
-    public SerialPipes() {
-        super(new Class<?>[0], new Class<?>[0]);
-        this.pipes = new ArrayList<Pipe>();
-    }
-
-    /**
-     * Build a serial pipes using an array of individual pipes
-     *
-     * @param pipes An array of pipes that will be included in the serialPipes
-     * in the same order
-     */
-    public SerialPipes(Pipe[] pipes) {
-        super(new Class<?>[0],new Class<?>[0]);
-        this.pipes = new ArrayList<Pipe>(pipes.length);
-
-        for (Pipe pipe : pipes) {
-            this.add(pipe);
-        }
-    }
-
-    /**
-     * Build a serial pipes using an ArrayList of individual pipes
-     *
-     * @param pipeList An arrayList of pipes that will be included in the
-     * serialPipes in the same order
-     */
-    public SerialPipes(ArrayList<Pipe> pipeList) {
-        super(new Class<?>[0] , new Class<?>[0] );
-        this.pipes = new ArrayList<Pipe>(pipeList.size());
-
-        for (Pipe aPipeList : pipeList) {
-            this.add(aPipeList);
-        }
     }
 
     /**
@@ -197,7 +193,7 @@ public class SerialPipes extends Pipe {
     /**
      * Pipe an instance starting in a certain position of the pipe
      *
-     * @param carrier The instance to be processed
+     * @param carrier       The instance to be processed
      * @param startingIndex The position of the fisrt pipe
      * @return The instance achieved as result of processing
      */
@@ -211,7 +207,7 @@ public class SerialPipes extends Pipe {
      * Computes the instance transformation when executing the pipe processing
      * from a certain execution point
      *
-     * @param carrier The instance to be pipes
+     * @param carrier       The instance to be pipes
      * @param startingIndex The execution point to begin the processing
      * @return the instance after being processed
      */
@@ -281,7 +277,7 @@ public class SerialPipes extends Pipe {
      * Replace a pipe in the pipeList
      *
      * @param index The position of the pipe that will be replaced
-     * @param p The new Pipe
+     * @param p     The new Pipe
      */
     //added by Fuchun Jan.30, 2004
     public void replacePipe(int index, Pipe p) {
@@ -348,16 +344,17 @@ public class SerialPipes extends Pipe {
      * Check if alwaysBeforeDeps are satisfied for pipe p (inserted). Initially deps contain
      * all alwaysBefore dependences for p. These dependencies are deleted (marked as resolved)
      * by recursivelly calling this method.
-     * @param p The pipe that is being checked
+     *
+     * @param p    The pipe that is being checked
      * @param deps The dependences that are not confirmed in a certain moment
-     * @return null if not sure about the fullfulling, true if the dependences are satisfied, 
-     *    false if the dependences could not been satisfied 
+     * @return null if not sure about the fullfulling, true if the dependences are satisfied,
+     * false if the dependences could not been satisfied
      */
     @Override
-    Boolean checkAlwaysBeforeDeps(Pipe p, List<Class<?>> deps){
-        for (Pipe p1:this.pipes){
-             Boolean retVal=p1.checkAlwaysBeforeDeps(p, deps);
-             if (retVal!=null) return retVal;
+    Boolean checkAlwaysBeforeDeps(Pipe p, List<Class<?>> deps) {
+        for (Pipe p1 : this.pipes) {
+            Boolean retVal = p1.checkAlwaysBeforeDeps(p, deps);
+            if (retVal != null) return retVal;
         }
 
         return null;
@@ -365,58 +362,61 @@ public class SerialPipes extends Pipe {
 
     /**
      * Check if notBeforeDeps are satisfied for pipe p recursivelly. Note that p should be inserted.
+     *
      * @param p The pipe that is being checked
-     * @return null if not sure about the fullfulling, true if the dependences are satisfied, 
-     *    false if the dependences could not been satisfied 
+     * @return null if not sure about the fullfulling, true if the dependences are satisfied,
+     * false if the dependences could not been satisfied
      */
     @Override
-    boolean checkNotAfterDeps(Pipe p, BooleanBean foundP){
-        boolean retVal=true;
+    boolean checkNotAfterDeps(Pipe p, BooleanBean foundP) {
+        boolean retVal = true;
 
-        for (Pipe p1:this.pipes){
+        for (Pipe p1 : this.pipes) {
             if (p1 instanceof SerialPipes || p1 instanceof ParallelPipes)
-                retVal=retVal&&p1.checkNotAfterDeps(p,foundP);
+                retVal = retVal && p1.checkNotAfterDeps(p, foundP);
             else {
-                if(foundP.getValue()) retVal=retVal&&!(Arrays.asList(p.notAftterDeps).contains(p1.getClass()));
-                if (!retVal){
-                    errorMessage="Unsatisfied NotAfter dependency for pipe "+p.getClass().getName()+" ("+p1.getClass().getName()+")";
+                if (foundP.getValue()) retVal = retVal && !(Arrays.asList(p.notAftterDeps).contains(p1.getClass()));
+                if (!retVal) {
+                    errorMessage = "Unsatisfied NotAfter dependency for pipe " + p.getClass().getName() + " (" + p1.getClass().getName() + ")";
                     return retVal;
                 }
-                foundP.Or(p==p1);
-            }    
+                foundP.Or(p == p1);
+            }
         }
 
-       return retVal;
+        return retVal;
     }
 
     /**
      * Checks if current pipe contains the pipe p
+     *
      * @param p The pipe to search
      * @return true if this pipe contains p false otherwise
      */
-    @Override    
-    public boolean containsPipe(Pipe p){
-       for (Pipe p1:this.pipes){
+    @Override
+    public boolean containsPipe(Pipe p) {
+        for (Pipe p1 : this.pipes) {
             if (p1.containsPipe(p)) return true;
-       }
-       return false;
-    }    
+        }
+        return false;
+    }
 
 
     /**
      * Checks if the dependencies are satisfied
+     *
      * @return true if the dependencies are satisfied, false otherwise
      */
     @Override
-    public boolean checkDependencies(){
-        boolean returnValue=true;
+    public boolean checkDependencies() {
+        boolean returnValue = true;
 
-        for (Pipe p1:pipes){
-            if (! (p1 instanceof SerialPipes) && ! (p1 instanceof ParallelPipes)){
-               returnValue=returnValue&getParentRoot().checkAlwaysBeforeDeps(p1, new ArrayList<Class<?>>(Arrays.asList(p1.alwaysBeforeDeps)));
-               returnValue=returnValue&getParentRoot().checkNotAfterDeps(p1, new BooleanBean(false));
-            }else{
-                returnValue=returnValue&p1.checkDependencies();
+        for (Pipe p1 : pipes) {
+            if (!(p1 instanceof SerialPipes) && !(p1 instanceof ParallelPipes)) {
+                returnValue = returnValue & getParentRoot().checkAlwaysBeforeDeps(p1, new ArrayList<Class<?>>(Arrays.asList(p1.alwaysBeforeDeps)));
+                returnValue = returnValue & getParentRoot().checkNotAfterDeps(p1, new BooleanBean(false));
+            } else {
+                returnValue = returnValue & p1.checkDependencies();
             }
         }
 

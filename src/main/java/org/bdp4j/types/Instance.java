@@ -12,17 +12,16 @@
    information, see the file `LICENSE' included with this distribution. */
 package org.bdp4j.types;
 
+import org.bdp4j.pipe.Pipe;
+
 import java.io.File;
 import java.io.Serializable;
-import java.util.Map;
-import java.util.LinkedHashMap;
-import java.util.Set;
-import java.util.Collection;
-
-import java.lang.reflect.Modifier;
 import java.lang.reflect.Field;
-
-import org.bdp4j.pipe.Pipe;
+import java.lang.reflect.Modifier;
+import java.util.Collection;
+import java.util.LinkedHashMap;
+import java.util.Map;
+import java.util.Set;
 
 /**
  * A machine learning "example" to be used in training, testing or performance
@@ -93,11 +92,11 @@ public class Instance implements Serializable {
      * Build an Instance from the original attributes keeping properties of the
      * instance void
      *
-     * @param data The data to be included in the instance
+     * @param data   The data to be included in the instance
      * @param target The target (label) of the instance
-     * @param name The name (id) of the instance
+     * @param name   The name (id) of the instance
      * @param source The original form of the instance (often this is the same
-     * as data)
+     *               as data)
      */
     public Instance(Serializable data, Object target, Object name, Object source) {
         this.data = data;
@@ -117,15 +116,6 @@ public class Instance implements Serializable {
         this.target = i.target;
         this.name = i.name;
         this.source = i.source;
-    }
-
-    /**
-     * Clone the instance into a new type
-     *
-     * @return a new instance cloning the original one
-     */
-    public Instance clone() {
-        return new Instance((Serializable) cloneObject((Object) data), target, name, source);
     }
 
     /**
@@ -163,6 +153,15 @@ public class Instance implements Serializable {
             return null;
         }
         //return clone;
+    }
+
+    /**
+     * Clone the instance into a new type
+     *
+     * @return a new instance cloning the original one
+     */
+    public Instance clone() {
+        return new Instance((Serializable) cloneObject((Object) data), target, name, source);
     }
 
     /**
@@ -260,7 +259,7 @@ public class Instance implements Serializable {
     /**
      * Changes (or add) a specific property for the instance
      *
-     * @param key The key to be stored
+     * @param key   The key to be stored
      * @param value The value for the key
      */
     public synchronized void setProperty(String key, Object value) {

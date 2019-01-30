@@ -1,10 +1,11 @@
 package org.bdp4j.util;
+
 import java.text.DateFormat;
 import java.text.ParsePosition;
 import java.text.SimpleDateFormat;
+import java.util.ArrayList;
 import java.util.Date;
 import java.util.Locale;
-import java.util.ArrayList;
 
 /**
  * Procesador de fechas en String
@@ -14,29 +15,15 @@ import java.util.ArrayList;
  */
 public class DateIdentifier {
 
-    boolean debug = true;
-
-    /**
-     * Vector de formatos de fecha
-     */
-    private ArrayList<SimpleDateFormat> sdfs = new ArrayList<SimpleDateFormat>();
-
     /**
      * Patron singleton (Referencia local)
      */
     private static DateIdentifier defaultDateProcessor = null;
-
+    boolean debug = true;
     /**
-     * Patron Singleton
-     *
-     * @return devuelve un procesador de fechas por defecto
+     * Vector de formatos de fecha
      */
-    public static DateIdentifier getDefault() {
-        if (defaultDateProcessor == null) {
-            defaultDateProcessor = new DateIdentifier();
-        }
-        return defaultDateProcessor;
-    }
+    private ArrayList<SimpleDateFormat> sdfs = new ArrayList<SimpleDateFormat>();
 
     /**
      * Constructor privado de dateprocessor
@@ -75,6 +62,18 @@ public class DateIdentifier {
         sdfs.add(new SimpleDateFormat("MMM, d yyyy HH:mm:ss ZZZZZ"));
         sdfs.add(new SimpleDateFormat("MMM, dd yyyy HH:mm:ss aa"));
         sdfs.add(new SimpleDateFormat("MMM, d yyyy HH:mm:ss aa"));
+    }
+
+    /**
+     * Patron Singleton
+     *
+     * @return devuelve un procesador de fechas por defecto
+     */
+    public static DateIdentifier getDefault() {
+        if (defaultDateProcessor == null) {
+            defaultDateProcessor = new DateIdentifier();
+        }
+        return defaultDateProcessor;
     }
 
     public Date checkDate(String dateStr) {

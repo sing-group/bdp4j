@@ -5,9 +5,10 @@
  */
 package org.bdp4j.transformers;
 
+import org.bdp4j.types.Transformer;
+
 import java.util.ArrayList;
 import java.util.List;
-import org.bdp4j.types.Transformer;
 
 /**
  * Trasform an input from String to Double, that represents if this input is
@@ -18,6 +19,7 @@ import org.bdp4j.types.Transformer;
 public class CheckVoidTransformer extends Transformer {
 
     private String transformerListValues;
+
     /**
      * Trasform an input from String to Double, that represents if this input is
      * empty or not.
@@ -36,14 +38,14 @@ public class CheckVoidTransformer extends Transformer {
 
     /**
      * Get a String who contents the meaning of the transformated values
-     * 
+     *
      * @return String who contents the meaning of the transformated values
      */
     @Override
     public String getTransformerListValues() {
         return transformerListValues;
     }
-    
+
     /**
      * Get a List who contains the values
      *
@@ -51,6 +53,6 @@ public class CheckVoidTransformer extends Transformer {
      */
     @Override
     public List<Integer> getListValues() {
-       return new ArrayList<Integer>();
+        return new ArrayList<Integer>();
     }
 }

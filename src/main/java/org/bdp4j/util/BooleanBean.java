@@ -1,11 +1,11 @@
 package org.bdp4j.util;
 
 public class BooleanBean {
-   private boolean value;
+    private boolean value;
 
-   public BooleanBean(boolean value){
-       this.value=value;
-   }
+    public BooleanBean(boolean value) {
+        this.value = value;
+    }
 
     /**
      * @return the value
@@ -21,11 +21,11 @@ public class BooleanBean {
         this.value = value;
     }
 
-    public void Or(boolean value){
-        this.value=this.value||value;
+    public void Or(boolean value) {
+        this.value = this.value || value;
     }
 
-    public void And(boolean value){
-        this.value=this.value&&value;
+    public void And(boolean value) {
+        this.value = this.value && value;
     }
 }

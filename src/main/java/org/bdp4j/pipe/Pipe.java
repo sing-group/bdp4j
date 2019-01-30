@@ -47,35 +47,30 @@ public abstract class Pipe {
      * For logging purposes
      */
     private static final Logger logger = LogManager.getLogger(Pipe.class);
-
     /**
-     * Marks if the next instance to pipe will be the last one to pipe
+     * Error message for dependencies
      */
-    boolean isLast = false;
-
-    /**
-     * The parent pipe for this one
-     */
-    Pipe parent;
-
+    static String errorMessage;
     /**
      * Dependencies of the type alwaysBefore
      * These dependences indicate what pipes must be
      * executed before the current one.
      */
     final Class<?>[] alwaysBeforeDeps;
-
     /**
      * Dependencies of the type notAfter
      * These dependences indicate what pipes must not be
      * executed after the current one.
      */
     final Class<?>[] notAftterDeps;
-
     /**
-     * Error message for dependencies
+     * Marks if the next instance to pipe will be the last one to pipe
      */
-    static String errorMessage;
+    boolean isLast = false;
+    /**
+     * The parent pipe for this one
+     */
+    Pipe parent;
 
     /**
      * Create a pipe with its dependences

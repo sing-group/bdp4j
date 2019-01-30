@@ -5,11 +5,12 @@
  */
 package org.bdp4j.transformers;
 
+import org.bdp4j.types.Transformer;
+import org.bdp4j.util.DateIdentifier;
+
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
-import org.bdp4j.types.Transformer;
-import org.bdp4j.util.DateIdentifier;
 
 /**
  * Trasform an input from String, that represents a Data to Double
@@ -28,7 +29,7 @@ public class Date2MillisTransformer extends Transformer {
      */
     @Override
     public double transform(Object input) {
-       
+
         if (input != null && !input.equals("null")) {
             try {
                 Date date = DateIdentifier.getDefault().checkDate(input.toString());
@@ -40,18 +41,18 @@ public class Date2MillisTransformer extends Transformer {
             return 0;
         }
     }
-    
+
     /**
      * Get a String who contents the meaning of the transformated values
-     * 
+     *
      * @return String who contents the meaning of the transformated values
      */
     @Override
     public String getTransformerListValues() {
         return transformerListValues;
     }
-    
-       
+
+
     /**
      * Get a List who contains the values
      *
@@ -59,6 +60,6 @@ public class Date2MillisTransformer extends Transformer {
      */
     @Override
     public List<Integer> getListValues() {
-       return new ArrayList<Integer>();
+        return new ArrayList<Integer>();
     }
 }

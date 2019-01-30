@@ -5,18 +5,15 @@
  */
 package org.bdp4j.util;
 
-import java.lang.reflect.GenericDeclaration;
-import java.lang.reflect.Type;
-import java.lang.reflect.TypeVariable;
-import java.lang.reflect.ParameterizedType;
-import java.lang.reflect.Field;
-import java.util.Map;
+import java.lang.reflect.*;
 import java.util.HashMap;
 import java.util.LinkedList;
 import java.util.List;
+import java.util.Map;
+
 /**
  * Get the parameter type of transformers.
- * 
+ *
  * @author María Novo
  */
 public class SubClassParameterTypeIdentificator {
@@ -54,8 +51,8 @@ public class SubClassParameterTypeIdentificator {
         Class<?> instanceClass = instance.getClass();
         List<Class<?>> nestedOuterTypes = new LinkedList<Class<?>>();
         for (Class<?> enclosingClass = instanceClass.getEnclosingClass();
-                enclosingClass != null;
-                enclosingClass = enclosingClass.getEnclosingClass()) {
+             enclosingClass != null;
+             enclosingClass = enclosingClass.getEnclosingClass()) {
             try {
                 Field this$0 = instanceClass.getDeclaredField("this$0");
                 Object outerInstance = this$0.get(instance);
@@ -77,7 +74,8 @@ public class SubClassParameterTypeIdentificator {
                     }
                 }
             } catch (NoSuchFieldException e) {
-                /* this should never happen */ } catch (IllegalAccessException e) {
+                /* this should never happen */
+            } catch (IllegalAccessException e) {
                 /* this might happen */
             }
 

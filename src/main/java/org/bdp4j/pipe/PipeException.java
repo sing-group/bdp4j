@@ -12,8 +12,8 @@
 package org.bdp4j.pipe;
 
 /**
-  * Handles a exception on pipe processing
-  */
+ * Handles a exception on pipe processing
+ */
 public class PipeException extends Exception {
     private static final long serialVersionUID = 1;
 }

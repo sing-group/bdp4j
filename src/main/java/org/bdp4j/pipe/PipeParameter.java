@@ -14,21 +14,25 @@ import java.lang.annotation.Target;
  * @author Yeray Lage
  */
 public @interface PipeParameter {
-	/**
-	  * The name for the parameter
-	  * @return the name of the parameter
-	  */
+
+    /**
+     * The name for the parameter
+     *
+     * @return the name of the parameter
+     */
     String name();
-	
-	/**
-	  * The description for the parameter
-	  * @return a description of the parameter
-	  */
+
+    /**
+     * The description for the parameter
+     *
+     * @return a description of the parameter
+     */
     String description();
-	
-	/**
-	  * The default value for the parameter
-	  * @return the default value for the parameter
-	  */
-	 String defaultValue();
+
+    /**
+     * The default value for the parameter
+     *
+     * @return the default value for the parameter
+     */
+    String defaultValue();
 }

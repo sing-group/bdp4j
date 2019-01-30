@@ -5,9 +5,10 @@
  */
 package org.bdp4j.transformers;
 
+import org.bdp4j.types.Transformer;
+
 import java.util.ArrayList;
 import java.util.List;
-import org.bdp4j.types.Transformer;
 
 /**
  * Trasform an input from String, that represents a Data to Double
@@ -22,14 +23,14 @@ public class Double2BinaryTransformer extends Transformer {
      * Transform an input, that represents a Date to Double
      *
      * @param input A Double to transform in binary
-     * @return  A Double value that represents a binary value
+     * @return A Double value that represents a binary value
      */
     @Override
     public double transform(Object input) {
         if (input != null && !input.equals("null")) {
             try {
                 Double value = Double.parseDouble(input.toString());
-                if (value>0)
+                if (value > 0)
                     return 1;
                 else return 0;
             } catch (NullPointerException ex) {
@@ -39,17 +40,17 @@ public class Double2BinaryTransformer extends Transformer {
             return 0;
         }
     }
-    
+
     /**
      * Get a String who contents the meaning of the transformated values
-     * 
+     *
      * @return String who contents the meaning of the transformated values
      */
     @Override
     public String getTransformerListValues() {
         return transformerListValues;
     }
-      
+
     /**
      * Get a List who contains the values
      *
@@ -57,6 +58,6 @@ public class Double2BinaryTransformer extends Transformer {
      */
     @Override
     public List<Integer> getListValues() {
-       return new ArrayList<Integer>();
+        return new ArrayList<Integer>();
     }
 }

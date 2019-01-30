@@ -5,32 +5,25 @@
  */
 package org.bdp4j.ml;
 
-import java.io.File;
-import java.io.FileReader;
-import java.io.IOException;
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
-import java.util.function.Predicate;
 import org.apache.commons.csv.CSVFormat;
 import org.apache.commons.csv.CSVRecord;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
-import org.bdp4j.types.Dataset;
 import org.bdp4j.pipe.PipeParameter;
-import org.bdp4j.util.Pair;
+import org.bdp4j.types.Dataset;
 import org.bdp4j.types.Transformer;
 import org.bdp4j.util.DateIdentifier;
-import org.bdp4j.util.SubClassParameterTypeIdentificator;
-
-import weka.core.Instance;
+import org.bdp4j.util.Pair;
 import weka.core.Attribute;
+import weka.core.Instance;
+
+import java.io.File;
+import java.io.FileReader;
+import java.io.IOException;
+import java.util.*;
+import java.util.function.Predicate;
 
 /**
- *
  * Generate Dataset from file. This dataset will contain only columns with a
  * float value. This class allows to use transformers to convert a non float
  * value in float value.
@@ -51,7 +44,6 @@ public class DatasetFromFile {
     /**
      * The list of transformers. A transformer is a class used to transform a
      * non double value in double value.
-     *
      */
     Map<String, Transformer> transformersList;
     //Map<String, Transformer> transformersList;
@@ -70,13 +62,22 @@ public class DatasetFromFile {
      * Create a CSVDatasetFromFile object from a filepath/filename and a
      * transformers list
      *
-     * @param filePath The filepath/filename
+     * @param filePath         The filepath/filename
      * @param transformersList The list of transformers.
      */
     public DatasetFromFile(String filePath, Map<String, Transformer> transformersList) {
         //public DatasetFromFile(String filePath, Map<String, Transformer> transformersList) {
         this.filePath = filePath;
         this.transformersList = transformersList;
+    }
+
+    /**
+     * Get the filepath/filename to load
+     *
+     * @return the filepath/filename to load
+     */
+    public String getFilePath() {
+        return this.filePath;
     }
 
     /**
@@ -90,12 +91,13 @@ public class DatasetFromFile {
     }
 
     /**
-     * Get the filepath/filename to load
+     * Get the transformersList
      *
-     * @return the filepath/filename to load
+     * @return the transformersList
      */
-    public String getFilePath() {
-        return this.filePath;
+    public Map<String, Transformer> getTransformersList() {
+        //public Map<String, Transformer> getTransformersList() {
+        return this.transformersList;
     }
 
     /**
@@ -106,16 +108,6 @@ public class DatasetFromFile {
     @PipeParameter(name = "transformersList", description = "The list of transformers", defaultValue = "")
     public void setTransformersList(Map<String, Transformer> transformersList) {
         this.transformersList = transformersList;
-    }
-
-    /**
-     * Get the transformersList
-     *
-     * @return the transformersList
-     */
-    public Map<String, Transformer> getTransformersList() {
-        //public Map<String, Transformer> getTransformersList() {
-        return this.transformersList;
     }
 
     private String identifyType(String value) {
@@ -219,9 +211,9 @@ public class DatasetFromFile {
                     String key = entry.getKey();
                     Transformer value = entry.getValue();
                     //if (value.getInputType() == )
-                   // if (!SubClassParameterTypeIdentificator.findSubClassParameterType(value, Transformer.class, 0).getName().equals("Double")) {
-                        noDoubleTransformers.add(key);
-                   // }
+                    // if (!SubClassParameterTypeIdentificator.findSubClassParameterType(value, Transformer.class, 0).getName().equals("Double")) {
+                    noDoubleTransformers.add(key);
+                    // }
                 }
             }
 
@@ -239,9 +231,9 @@ public class DatasetFromFile {
                     if (header.equalsIgnoreCase("target")) {
                         List<String> target_values = new ArrayList<String>();
                         Transformer transformer = transformersList.get(header);
-                        for (Object value : transformer.getListValues()){
-                          target_values.add(value.toString());
-                          
+                        for (Object value : transformer.getListValues()) {
+                            target_values.add(value.toString());
+
                         }
                         attributes.add(new Attribute(header, target_values));
                     } else if ((type.equals("Double") || noDoubleTransformers.contains(header)) && !isAttribute.test(header)) {

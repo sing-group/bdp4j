@@ -5,15 +5,15 @@
  */
 package org.bdp4j.transformers;
 
+import org.bdp4j.types.Transformer;
+
 import java.util.ArrayList;
 import java.util.List;
-import org.bdp4j.types.Transformer;
 
 /**
  * Trasform an input from String to Double, that represents the input lenght.
  *
  * @author María Novo
-
  */
 public class ComputeStringLenghtTransformer extends Transformer {
 
@@ -28,15 +28,15 @@ public class ComputeStringLenghtTransformer extends Transformer {
      */
     @Override
     public double transform(Object input) {
-        return new Double(((String)input).length());
+        return new Double(((String) input).length());
     }
-    
-    
+
+
     @Override
     public String getTransformerListValues() {
         return transformerListValues;
     }
-       
+
     /**
      * Get a List who contains the values
      *
@@ -44,6 +44,6 @@ public class ComputeStringLenghtTransformer extends Transformer {
      */
     @Override
     public List<Integer> getListValues() {
-       return new ArrayList<Integer>();
+        return new ArrayList<Integer>();
     }
 }
