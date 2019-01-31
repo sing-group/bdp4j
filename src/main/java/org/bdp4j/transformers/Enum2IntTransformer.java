@@ -104,6 +104,11 @@ public class Enum2IntTransformer extends Transformer {
         }
         return values.toString();
     }
+    
+    
+    public Class<?> getInputType() {
+        return String.class;
+    }
 
     /**
      * Get the next index from transformList values

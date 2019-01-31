@@ -52,6 +52,9 @@ public class Date2MillisTransformer extends Transformer {
         return transformerListValues;
     }
 
+    public Class<?> getInputType() {
+        return Date.class;
+    }
 
     /**
      * Get a List who contains the values
