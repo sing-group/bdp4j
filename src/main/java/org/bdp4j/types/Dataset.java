@@ -1,20 +1,25 @@
 package org.bdp4j.types;
 
+import java.io.BufferedWriter;
+import java.io.File;
+import java.io.FileOutputStream;
+import java.io.IOException;
+import java.io.OutputStream;
+import java.io.OutputStreamWriter;
+import java.io.Serializable;
+import java.util.ArrayList;
+import java.util.Enumeration;
+import java.util.List;
+import java.util.Map;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.bdp4j.pipe.PipeParameter;
 import weka.core.Attribute;
 import weka.core.DenseInstance;
-import weka.core.Instance;
 import weka.core.Instances;
+import weka.core.Instance;
 import weka.core.converters.ArffSaver;
 import weka.core.converters.CSVSaver;
-
-import java.io.*;
-import java.util.ArrayList;
-import java.util.Enumeration;
-import java.util.List;
-import java.util.Map;
 
 /**
  * Build a weka dataset
@@ -24,17 +29,19 @@ import java.util.Map;
 public class Dataset implements Serializable, Cloneable {
 
     /**
-     * The default value for the output file
-     */
-    public static final String DEFAULT_OUTPUT_FILE = "CSVDataset.csv";
-    /**
      * The serial version UID
      */
     private static final long serialVersionUID = 1L;
+
     /**
      * For logging purposes
      */
     private static final Logger logger = LogManager.getLogger(Dataset.class);
+
+    /**
+     * The default value for the output file
+     */
+    public static final String DEFAULT_OUTPUT_FILE = "CSVDataset.csv";
     private String outputFile = DEFAULT_OUTPUT_FILE;
 
     /**
@@ -55,9 +62,9 @@ public class Dataset implements Serializable, Cloneable {
     /**
      * Default constructor, creates a new Dataset
      *
-     * @param name       The name of the relation
+     * @param name The name of the relation
      * @param attributes The attribute list of dataset
-     * @param capacity   The initial capacity of the dataset
+     * @param capacity The initial capacity of the dataset
      */
     public Dataset(String name, ArrayList<Attribute> attributes, int capacity) {
         this.dataset = new Instances(name, attributes, capacity);
@@ -67,24 +74,15 @@ public class Dataset implements Serializable, Cloneable {
     /**
      * Default constructor, creates a new Dataset
      *
-     * @param name       The name of the relation
+     * @param name The name of the relation
      * @param attributes The attribute list of dataset
-     * @param capacity   The initial capacity of the dataset
+     * @param capacity The initial capacity of the dataset
      * @param outputFile The output file name, only in case you can export
-     *                   dataset to an output file.
+     * dataset to an output file.
      */
     public Dataset(String name, ArrayList<Attribute> attributes, int capacity, String outputFile) {
         this(name, attributes, capacity);
         this.outputFile = outputFile;
-    }
-
-    /**
-     * Returns the filename where the CSV contents will be stored
-     *
-     * @return the filename/filepath where the CSV contents will be stored
-     */
-    public String getOutputFile() {
-        return this.outputFile;
     }
 
     /**
@@ -95,6 +93,15 @@ public class Dataset implements Serializable, Cloneable {
     @PipeParameter(name = "outputFile", description = "Indicates the output filename/path for saving CSV", defaultValue = DEFAULT_OUTPUT_FILE)
     public void setOutputFile(String outputFile) {
         this.outputFile = outputFile;
+    }
+
+    /**
+     * Returns the filename where the CSV contents will be stored
+     *
+     * @return the filename/filepath where the CSV contents will be stored
+     */
+    public String getOutputFile() {
+        return this.outputFile;
     }
 
     /**
@@ -264,14 +271,89 @@ public class Dataset implements Serializable, Cloneable {
         return this;
     }
 
-    public Dataset deleteAttributeColumn(String attributeName) {
-        if (!attributeName.isEmpty()) {
-            Instances instances = this.dataset;
+    /**
+     * Delete attributes from Dataset
+     *
+     * @param listAttributeName  List of attributes to delete
+     * @return Dataset without this list of attributes
+     */
+    public Dataset deleteAttributeColumns(List<String> listAttributeName) {
+        Instances instances = this.dataset;
+        for (String attributeName : listAttributeName) {
             int attPosition = instances.attribute(attributeName).index();
             if (attPosition >= 0) {
                 instances.deleteAttributeAt(attPosition);
             }
         }
+        return this;
+    }
+
+    /**
+     * Delete all attributes from Dataset but synstetIds and target attributes
+     * 
+     * @return  Dataset only with synsetIds and target attributes
+     */
+    public Dataset getOnlySynsetIdColumns() {
+
+        Instances instances = this.dataset;
+        List<String> attributesToDelete = new ArrayList<>();
+        List<String> attributes = this.getAttributes();
+        for (String attribute : attributes) {
+            if (!attribute.contains("bn:") && !attribute.equals("target")) {
+                attributesToDelete.add(attribute);
+            }
+        }
+        return this.deleteAttributeColumns(attributesToDelete);
+    }
+
+    public Dataset joinAttributeColumns(List<String> listAttributeNameToJoin, String newAttribute) {
+        // TODO
+        //this.deleteAttributeColumns(listAttributeNameToJoin);
+
+        Instances dataset = this.dataset;
+
+        // Create a new attributesList
+        Enumeration<Attribute> attributesList = dataset.enumerateAttributes();
+        ArrayList<Attribute> attributes = new ArrayList<>();
+        Attribute attribute = new Attribute(newAttribute);
+        while (attributesList.hasMoreElements()) {
+            attributes.add(attributesList.nextElement());
+        }
+        attributes.add(attribute);
+
+        Dataset newDataset = new Dataset("dataset", attributes, 0);
+
+        int numOfInstances = this.getInstances().size();
+        Double value = 0d;
+        Instance instance = null;
+        int positionNewAttribute = 0;
+        for (int i = 0; i < numOfInstances; i++) {
+
+            //Instance instance = dataset.instance(i);
+            boolean exists = false;
+            instance = newDataset.createDenseInstance();
+
+//            for (String attributeName : listAttributeNameToJoin) {
+//                value += instance.value(attribute);
+//              //  exists = true;
+//            }
+            for (int index = 0; index < instance.numAttributes() - 1; index++) {
+                Attribute currentAtt = instance.attribute(index);
+                if (listAttributeNameToJoin.contains(currentAtt.name())) {
+                    if (value == 0) {
+                        positionNewAttribute = index;
+                        instance = dataset.instance(i);
+                    }
+                    value += instance.value(currentAtt);
+                } else {
+                    instance = dataset.instance(i);
+                }
+            }
+
+        }
+
+        instance.setValue(positionNewAttribute, value);
+
         return this;
     }
 
