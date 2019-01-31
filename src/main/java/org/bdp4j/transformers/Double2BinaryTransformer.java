@@ -51,6 +51,10 @@ public class Double2BinaryTransformer extends Transformer {
         return transformerListValues;
     }
 
+    public Class<?> getInputType() {
+        return Double.class;
+    }
+
     /**
      * Get a List who contains the values
      *

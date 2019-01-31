@@ -36,6 +36,10 @@ public class ComputeStringLenghtTransformer extends Transformer {
     public String getTransformerListValues() {
         return transformerListValues;
     }
+    
+    public Class<?> getInputType() {
+        return String.class;
+    }
 
     /**
      * Get a List who contains the values

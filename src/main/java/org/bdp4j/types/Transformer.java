@@ -23,6 +23,8 @@ public abstract class Transformer {
      */
     public abstract double transform(Object input);
 
+    public abstract Class<?>  getInputType();
+     
     /**
      * Get a String who contains the meaning of the transformated values
      *
