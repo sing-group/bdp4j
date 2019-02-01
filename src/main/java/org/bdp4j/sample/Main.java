@@ -1,9 +1,16 @@
 package org.bdp4j.sample;
 
+import org.bdp4j.ml.DatasetFromFile;
 import org.bdp4j.pipe.Pipe;
 import org.bdp4j.pipe.SerialPipes;
 import org.bdp4j.sample.pipe.impl.*;
+import org.bdp4j.transformers.Enum2IntTransformer;
 import org.bdp4j.types.Instance;
+import org.bdp4j.types.Transformer;
+
+import weka.classifiers.Evaluation;
+import weka.classifiers.bayes.NaiveBayes;
+import weka.core.Instances;
 
 import java.io.File;
 import java.io.IOException;
@@ -11,7 +18,10 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
+import java.util.Random;
 
 /**
  * Main class for demo.
@@ -47,6 +57,41 @@ public class Main {
 
         /* Process instances */
         p.pipeAll(carriers);
+
+        //Then load the dataset to use it with Weka TM
+        Map<String, Integer> targetValues = new HashMap<>();
+        targetValues.put("ham", 0);
+        targetValues.put("spam", 1);
+
+        //Lets define transformers for the dataset
+        Map<String, Transformer> transformersList = new HashMap<>();
+        transformersList.put("target", new Enum2IntTransformer(targetValues));
+
+        Instances data = (new DatasetFromFile(GenerateOutputPipe.DEFAULT_FILE,transformersList)).loadFile().getWekaDataset();
+        
+        data.deleteStringAttributes();
+        data.setClassIndex(data.numAttributes() - 1);
+        System.out.println("Instance no: " + data.numInstances());
+        System.out.println("Attritubes no: " + data.numAttributes());
+        System.out.println("Target Attribute index: " + data.classIndex());
+
+        try {
+            System.out.println("------------------------------------------");
+            System.out.println("--------- Naive Bayes Classifier ---------");
+            System.out.println("------------------------------------------");
+            Evaluation nvEvaluation = new Evaluation(data);
+            nvEvaluation.crossValidateModel(new NaiveBayes(), data, 10, new Random(1));
+
+            System.out.println("Summary: ");
+            System.out.println("------------------------------------------");
+            System.out.println(">> TN: " + nvEvaluation.confusionMatrix()[0][0]);
+            System.out.println(">> FP: " + nvEvaluation.confusionMatrix()[0][1]);
+            System.out.println(">> FN: " + nvEvaluation.confusionMatrix()[1][0]);
+            System.out.println(">> TP: " + nvEvaluation.confusionMatrix()[1][1]);
+        } catch (Exception ex) {
+            System.out.println("Error executing Naïve Bayes: "+ex.getMessage());
+            ex.printStackTrace();
+        }        
     }
 
     /**
