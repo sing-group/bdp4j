@@ -42,6 +42,10 @@ public class Dataset implements Serializable, Cloneable {
      * The default value for the output file
      */
     public static final String DEFAULT_OUTPUT_FILE = "CSVDataset.csv";
+
+    /**
+     * The Deafult output file for CSVs
+     */
     private String outputFile = DEFAULT_OUTPUT_FILE;
 
     /**
@@ -133,14 +137,16 @@ public class Dataset implements Serializable, Cloneable {
     }
 
     /**
-     * Print the dataset content
+     * Print the dataset content using Standard output
      */
     public void printLine() {
         dataset.stream().forEach(System.out::println);
     }
 
     /**
-     * Generates a CSV with dataset content.
+     * Generates a CSV with the dataset contents.
+     * The CSV will be saved in the file that store the outputFile.
+     * See Dataset.setOutputFile()
      */
     public void generateCSV() {
         CSVSaver saver = new CSVSaver();
@@ -157,7 +163,12 @@ public class Dataset implements Serializable, Cloneable {
 
     }
 
-    public String getComments(Map<String, Transformer> transformersList) {
+    /**
+     * Generate comments to apply a transformer list
+     * @param transformersList The transformer list to generate the comments
+     * @return A String to create the comments for the generation of arff files
+     */
+    private String getComments(Map<String, Transformer> transformersList) {
         // Get information about transformers to add to arff file
         StringBuilder comments = new StringBuilder();
         for (Map.Entry<String, Transformer> entry : transformersList.entrySet()) {
@@ -179,6 +190,7 @@ public class Dataset implements Serializable, Cloneable {
      * Generates a CSV with dataset content.
      *
      * @param transformersList The list of transformers
+     * @param file  The destination file
      * @return The ARFF content
      */
     public String generateARFFWithComments(Map<String, Transformer> transformersList, String file) {
