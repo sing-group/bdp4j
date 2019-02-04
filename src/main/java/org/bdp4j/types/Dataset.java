@@ -11,6 +11,8 @@ import java.util.ArrayList;
 import java.util.Enumeration;
 import java.util.List;
 import java.util.Map;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.bdp4j.pipe.PipeParameter;
@@ -249,31 +251,35 @@ public class Dataset implements Serializable, Cloneable {
     }
 
     /**
-     * Get a list of synsets in Dataset
+     * Get a a list of columns names that matches with pattern
      *
-     * @return a list of synsets in Dataset
+     * @param pattern Pattern to filter column names
+     * @return a list of columns names that matches with pattern
      */
-    public List<String> getSynsets() {
-        List<String> synsetsList = new ArrayList<>();
+    public List<String> filterColumnNames(String pattern) {
+        Pattern p = Pattern.compile(pattern);
+
+        List<String> columnNamesList = new ArrayList<>();
         List<String> attributes = this.getAttributes();
         for (String attribute : attributes) {
-            if (attribute.contains("bn:")) {
-                synsetsList.add(attribute);
+            Matcher m = p.matcher(attribute);
+            if (m.find()) {
+                columnNamesList.add(attribute);
             }
         }
-        return synsetsList;
+        return columnNamesList;
     }
 
     /**
-     * Replace synsets list with its hyperonym
+     *  Replace the column names with the indicated name. 
      *
-     * @param hyperonymList Hiperonyms list to replace the original synsets
-     * @return Dataset with hyperonyms instead of original synsets
+     * @param newColumnNames List to replace the original name with other one
+     * @return Dataset with new columns names
      */
-    public Dataset replaceSynsetWithHyperonym(Map<String, String> hyperonymList) {
+    public Dataset replaceColumnNames(Map<String, String> newColumnNames) {
         Instances instances = this.dataset;
 
-        for (Map.Entry<String, String> entry : hyperonymList.entrySet()) {
+        for (Map.Entry<String, String> entry : newColumnNames.entrySet()) {
             String oldValue = entry.getKey();
             String newValue = entry.getValue();
             Attribute att = instances.attribute(oldValue);
@@ -284,9 +290,29 @@ public class Dataset implements Serializable, Cloneable {
     }
 
     /**
+     * Delete all attributes from Dataset except all that match with pattern
+     *
+     * @return Dataset only with attributes that match with pattern
+     */
+    public Dataset filterColumns(String pattern) {
+        Pattern p = Pattern.compile(pattern);
+        Instances instances = this.dataset;
+        List<String> attributesToDelete = new ArrayList<>();
+        List<String> attributes = this.getAttributes();
+
+        for (String attribute : attributes) {
+            Matcher m = p.matcher(attribute);
+            if (!m.find()) {
+                attributesToDelete.add(attribute);
+            }
+        }
+        return this.deleteAttributeColumns(attributesToDelete);
+    }
+
+    /**
      * Delete attributes from Dataset
      *
-     * @param listAttributeName  List of attributes to delete
+     * @param listAttributeName List of attributes to delete
      * @return Dataset without this list of attributes
      */
     public Dataset deleteAttributeColumns(List<String> listAttributeName) {
@@ -298,24 +324,6 @@ public class Dataset implements Serializable, Cloneable {
             }
         }
         return this;
-    }
-
-    /**
-     * Delete all attributes from Dataset but synstetIds and target attributes
-     * 
-     * @return  Dataset only with synsetIds and target attributes
-     */
-    public Dataset getOnlySynsetIdColumns() {
-
-        Instances instances = this.dataset;
-        List<String> attributesToDelete = new ArrayList<>();
-        List<String> attributes = this.getAttributes();
-        for (String attribute : attributes) {
-            if (!attribute.contains("bn:") && !attribute.equals("target")) {
-                attributesToDelete.add(attribute);
-            }
-        }
-        return this.deleteAttributeColumns(attributesToDelete);
     }
 
     public Dataset joinAttributeColumns(List<String> listAttributeNameToJoin, String newAttribute) {
