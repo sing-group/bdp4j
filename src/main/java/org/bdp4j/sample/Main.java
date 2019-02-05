@@ -1,5 +1,7 @@
 package org.bdp4j.sample;
 
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 import org.bdp4j.ml.DatasetFromFile;
 import org.bdp4j.pipe.Pipe;
 import org.bdp4j.pipe.SerialPipes;
@@ -30,13 +32,13 @@ public class Main {
      */
     static List<Instance> carriers = new ArrayList<>();
 
-    public static void main(String[] args) {
-        /* Load jars */
-        ArrayList<Pipe> pipeFromJarList = PipeProvider.getInstance().serviceImpl();
+    private static final Logger logger = LogManager.getLogger(Main.class);
 
-        System.out.println("Pipe jar loading...");
-        for (Pipe pipeFromJar : pipeFromJarList)
-            System.out.println("\tPipe loaded: " + pipeFromJar.getClass().getSimpleName());
+    public static void main(String[] args) {
+        /* Load pipes */
+        ArrayList<Pipe> pipeFromList = PipeProvider.getInstance().serviceImpl();
+        for (Pipe pipeFromJar : pipeFromList)
+            logger.info("[PIPE LOAD] " + pipeFromJar.getClass().getSimpleName() + " loaded.");
 
         /* Load instances */
         generateInstances("./samples/");
