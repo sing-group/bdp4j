@@ -7,7 +7,7 @@ import org.bdp4j.sample.pipe.impl.*;
 import org.bdp4j.transformers.Enum2IntTransformer;
 import org.bdp4j.types.Instance;
 import org.bdp4j.types.Transformer;
-
+import org.bdp4j.util.PipeProvider;
 import weka.classifiers.Evaluation;
 import weka.classifiers.bayes.NaiveBayes;
 import weka.core.Instances;
@@ -17,11 +17,7 @@ import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.Random;
+import java.util.*;
 
 /**
  * Main class for demo.
@@ -35,6 +31,13 @@ public class Main {
     static List<Instance> carriers = new ArrayList<>();
 
     public static void main(String[] args) {
+        /* Load jars */
+        ArrayList<Pipe> pipeFromJarList = PipeProvider.getInstance().serviceImpl();
+
+        System.out.println("Pipe jar loading...");
+        for (Pipe pipeFromJar : pipeFromJarList)
+            System.out.println("\tPipe loaded: " + pipeFromJar.getClass().getSimpleName());
+
         /* Load instances */
         generateInstances("./samples/");
 
@@ -67,8 +70,8 @@ public class Main {
         Map<String, Transformer> transformersList = new HashMap<>();
         transformersList.put("target", new Enum2IntTransformer(targetValues));
 
-        Instances data = (new DatasetFromFile(GenerateOutputPipe.DEFAULT_FILE,transformersList)).loadFile().getWekaDataset();
-        
+        Instances data = (new DatasetFromFile(GenerateOutputPipe.DEFAULT_FILE, transformersList)).loadFile().getWekaDataset();
+
         data.deleteStringAttributes();
         data.setClassIndex(data.numAttributes() - 1);
         System.out.println("Instance no: " + data.numInstances());
@@ -89,9 +92,9 @@ public class Main {
             System.out.println(">> FN: " + nvEvaluation.confusionMatrix()[1][0]);
             System.out.println(">> TP: " + nvEvaluation.confusionMatrix()[1][1]);
         } catch (Exception ex) {
-            System.out.println("Error executing Naïve Bayes: "+ex.getMessage());
+            System.out.println("Error executing Naïve Bayes: " + ex.getMessage());
             ex.printStackTrace();
-        }        
+        }
     }
 
     /**

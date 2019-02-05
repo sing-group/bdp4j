@@ -1,0 +1,5 @@
+org.bdp4j.sample.pipe.impl.File2StringPipe
+org.bdp4j.sample.pipe.impl.File2TargetAssignPipe
+org.bdp4j.sample.pipe.impl.FilesizePipe
+org.bdp4j.sample.pipe.impl.GenerateOutputPipe
+org.bdp4j.sample.pipe.impl.MeasureLengthPipe
