@@ -292,6 +292,7 @@ public class Dataset implements Serializable, Cloneable {
     /**
      * Delete all attributes from Dataset except all that match with pattern
      *
+     * @param pattern Param for filtering.
      * @return Dataset only with attributes that match with pattern
      */
     public Dataset filterColumns(String pattern) {
