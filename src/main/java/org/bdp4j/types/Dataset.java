@@ -29,7 +29,27 @@ import weka.core.converters.CSVSaver;
  * @author María Novo
  */
 public class Dataset implements Serializable, Cloneable {
+    /**
+     * Function to combine columns by summing (used for frequency/count values)
+     */
+    public static final CombineOperator COMBINE_SUM = new CombineOperator(){
+        @Override
+        public Double combine(Double a, Double b) {
+            return a+b;
+        }
+    };
 
+    /**
+     * Function to combine columns by OR (used for binary representation)
+     */
+    public static final CombineOperator COMBINE_OR = new CombineOperator(){
+        @Override
+        public Double combine(Double a, Double b) {
+            return (a>0||b>0)?1d:0d;
+        }
+    };
+    
+    
     /**
      * The serial version UID
      */
@@ -269,15 +289,16 @@ public class Dataset implements Serializable, Cloneable {
         }
         return columnNamesList;
     }
-
+    
     /**
      * Replace the column names with the indicated name. In case of replace several columns with the same name, 
      * they are combined by adding values
      *
      * @param newColumnNames List to replace the original name with other one
+     * @param op The column combining operator
      * @return Dataset with new columns names
      */
-    public Dataset replaceColumnNames(Map<String, String> newColumnNames) {
+    public Dataset replaceColumnNames(Map<String, String> newColumnNames, CombineOperator op) {
         Instances instances = this.dataset;
         List<String> listAttributeName = new ArrayList<>();
         for (Map.Entry<String, String> entry : newColumnNames.entrySet()) {
@@ -292,7 +313,7 @@ public class Dataset implements Serializable, Cloneable {
                     for (Instance instance : instances) {
                         Double lastAttValue = instance.value(lastAttribute.index());
                         Double oldAttValue = instance.value(att.index());
-                        Double combineValues = lastAttValue + oldAttValue;
+                        Double combineValues = op.combine(lastAttValue, oldAttValue);
                         instance.setValue(lastAttribute, combineValues);
 
                     }
@@ -379,7 +400,7 @@ public class Dataset implements Serializable, Cloneable {
       * @return A Dataset where some columns have been combined
       */
       //TODO: change the name to joinAttributes or joinColumns (is more clear)
-    public Dataset joinAttributeColumns(List<String> listAttributeNameToJoin, String newAttribute) {
+    /*public Dataset joinAttributeColumns(List<String> listAttributeNameToJoin, String newAttribute) {
         // TODO
         //this.deleteAttributeColumns(listAttributeNameToJoin);
 
@@ -429,9 +450,22 @@ public class Dataset implements Serializable, Cloneable {
 
         return this;
     }
-
+*/
     @Override
     public Dataset clone() {
         return new Dataset(this);
+    }
+    
+    /**
+     * Interface that defines the operation to combine 2 columns
+     */
+    public interface CombineOperator {
+        /**
+         * Combine values of an atrribute for two columns
+         * @param a the value on the first column
+         * @param b the value on the second column
+         * @return The result
+         */
+        public Double combine(Double a, Double b);
     }
 }
