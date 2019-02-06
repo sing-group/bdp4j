@@ -14,3 +14,5 @@ outputsyns\.csv
 .vscode/settings.json
 
 output\.csv
+
+\.idea/
