@@ -183,7 +183,7 @@ public class DatasetFromFile {
                             } else {
                                 // Create a Map to an easier generation of dataset
                                 detectedTypes.add(headers.get(index));
-                                if (isDetectedColumnType.test("target")) {
+                                if ( isDetectedColumnType.test("target")) {
                                     // Target field always has to be the last one
                                     int lastColumnTypesPosition = columnTypes.size() - 1;
                                     Pair<String, String> targetPair = columnTypes.get(lastColumnTypesPosition);
@@ -223,12 +223,13 @@ public class DatasetFromFile {
                     .anyMatch(attribute -> attribute.name().equals(name));
 
             attributes.add(new Attribute("id", true));
+            boolean hasTargetAdd =  false;
             if (!columnTypes.isEmpty()) {
                 for (Pair<String, String> next : columnTypes) {
                     final String type = next.getObj2();
                     final String header = next.getObj1();
 
-                    if (header.equalsIgnoreCase("target")) {
+                    if (header.equalsIgnoreCase("target") && !hasTargetAdd) {
                         List<String> target_values = new ArrayList<String>();
                         Transformer transformer = transformersList.get(header);
                         for (Object value : transformer.getListValues()) {
@@ -236,10 +237,10 @@ public class DatasetFromFile {
 
                         }
                         attributes.add(new Attribute(header, target_values));
+                        hasTargetAdd = true;
                     } else if ((type.equals("Double") || noDoubleTransformers.contains(header)) && !isAttribute.test(header)) {
                         attributes.add(new Attribute(header));
                     }
-
                 }
             }
 
@@ -257,7 +258,6 @@ public class DatasetFromFile {
                         field = record.get(index);
 
                         if (isAttribute.test(headers.get(index))) {
-                            //System.out.println(headers.get(index));
                             Transformer t;
                             try {
                                 if (index == 0) {
