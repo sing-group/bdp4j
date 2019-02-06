@@ -395,11 +395,11 @@ public class Dataset implements Serializable, Cloneable {
       * @return A Dataset where some columns have been combined
       */
       //TODO: change the name to joinAttributes or joinColumns (is more clear)
-    /*public Dataset joinAttributeColumns(List<String> listAttributeNameToJoin, String newAttribute) {
+    public Dataset joinAttributeColumns(List<String> listAttributeNameToJoin, String newAttribute) {
         // TODO
         //this.deleteAttributeColumns(listAttributeNameToJoin);
 
-        Instances dataset = this.dataset;
+     /*   Instances dataset = this.dataset;
 
         // Create a new attributesList
         Enumeration<Attribute> attributesList = dataset.enumerateAttributes();
@@ -442,10 +442,10 @@ public class Dataset implements Serializable, Cloneable {
         }
 
         instance.setValue(positionNewAttribute, value);
-
+*/
         return this;
     }
-*/
+
     @Override
     public Dataset clone() {
         return new Dataset(this);
