@@ -350,7 +350,7 @@ public class Dataset implements Serializable, Cloneable {
         return this;
     }
 
-    /**
+    /*
      * Delete attributes from Dataset
      *
      * @param listAttributeName List of attributes to delete
@@ -371,6 +371,14 @@ public class Dataset implements Serializable, Cloneable {
         return this;
     }
      */
+
+     /**
+      * Join columns
+      * @param listAttributeNameToJoin The name of colums that should be joined
+      * @param newAttribute The name for the new attribute
+      * @return A Dataset where some columns have been combined
+      */
+      //TODO: change the name to joinAttributes or joinColumns (is more clear)
     public Dataset joinAttributeColumns(List<String> listAttributeNameToJoin, String newAttribute) {
         // TODO
         //this.deleteAttributeColumns(listAttributeNameToJoin);
