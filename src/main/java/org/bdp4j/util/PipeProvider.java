@@ -1,7 +1,13 @@
 package org.bdp4j.util;
 
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 import org.bdp4j.pipe.Pipe;
 
+import java.io.File;
+import java.net.MalformedURLException;
+import java.net.URL;
+import java.net.URLClassLoader;
 import java.util.ArrayList;
 import java.util.ServiceLoader;
 
@@ -13,9 +19,26 @@ import java.util.ServiceLoader;
 public class PipeProvider {
     private static PipeProvider provider;
     private ServiceLoader<Pipe> loader;
+    private static final Logger logger = LogManager.getLogger(PipeProvider.class);
 
     private PipeProvider() {
-        loader = ServiceLoader.load(Pipe.class);
+        File location = new File("plugins");
+
+        File[] fileList = location.listFiles(file -> file.getPath().toLowerCase().endsWith(".jar"));
+
+        assert fileList != null;
+        URL[] urls = new URL[fileList.length];
+        for (int i = 0; i < fileList.length; i++) {
+            try {
+                urls[i] = fileList[i].toURI().toURL();
+            } catch (MalformedURLException e) {
+                logger.error("Malformed URL Exception.");
+            }
+        }
+
+        URLClassLoader urlClassLoader = new URLClassLoader(urls);
+
+        loader = ServiceLoader.load(Pipe.class, urlClassLoader);
     }
 
     public static PipeProvider getInstance() {

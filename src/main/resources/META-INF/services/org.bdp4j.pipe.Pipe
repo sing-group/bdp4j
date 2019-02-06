@@ -1,8 +1,0 @@
-# The name of this file must be the path to the interface implemented (Pipe in this case).
-# Inside the file, one line for each of the paths to the class implementations of the each Pipe.
-
-org.bdp4j.sample.pipe.impl.File2StringPipe
-org.bdp4j.sample.pipe.impl.File2TargetAssignPipe
-org.bdp4j.sample.pipe.impl.FilesizePipe
-org.bdp4j.sample.pipe.impl.GenerateOutputPipe
-org.bdp4j.sample.pipe.impl.MeasureLengthPipe
