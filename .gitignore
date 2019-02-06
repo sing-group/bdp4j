@@ -16,3 +16,5 @@ outputsyns\.csv
 output\.csv
 
 \.idea/
+
+*.jar
