@@ -26,9 +26,9 @@ some interesting features (some of them to appear). Interesting features are:
 * A javax/swing GUI to build a pipe-based task (future)
 * Although basic pipe functionalities are currently working, but we are still developing some interesting ones. 
 
-Inside the source an example can be found to process SMS messages from 
-http://www.esp.uem.es/jmgomez/smsspamcorpus/ a make a simple Weka 10-fold crosvalidation experiment. 
-It is very simple but you can find in the example several pipes of different pipes working together. 
+In the repository https://github.com/sing-group/bdp4j_sample an example of use can be found to process SMS messages from 
+http://www.esp.uem.es/jmgomez/smsspamcorpus/ a make a simple Weka 10-fold crosvalidation experiment. It is very simple 
+but you can find in the example several pipes of different pipes working together. 
 
 ## References
 McCallum, Andrew Kachites.  "MALLET: A Machine Learning for Language Toolkit." http://mallet.cs.umass.edu. 2002.
