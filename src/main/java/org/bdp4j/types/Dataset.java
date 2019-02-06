@@ -29,7 +29,27 @@ import weka.core.converters.CSVSaver;
  * @author María Novo
  */
 public class Dataset implements Serializable, Cloneable {
+    /**
+     * Function to combine columns by summing (used for frequency/count values)
+     */
+    public static final CombineOperator COMBINE_SUM = new CombineOperator(){
+        @Override
+        public Double combine(Double a, Double b) {
+            return a+b;
+        }
+    };
 
+    /**
+     * Function to combine columns by OR (used for binary representation)
+     */
+    public static final CombineOperator COMBINE_OR = new CombineOperator(){
+        @Override
+        public Double combine(Double a, Double b) {
+            return (a>0||b>0)?1d:0d;
+        }
+    };
+    
+    
     /**
      * The serial version UID
      */
@@ -146,9 +166,8 @@ public class Dataset implements Serializable, Cloneable {
     }
 
     /**
-     * Generates a CSV with the dataset contents.
-     * The CSV will be saved in the file that store the outputFile.
-     * See Dataset.setOutputFile()
+     * Generates a CSV with the dataset contents. The CSV will be saved in the
+     * file that store the outputFile. See Dataset.setOutputFile()
      */
     public void generateCSV() {
         CSVSaver saver = new CSVSaver();
@@ -167,6 +186,7 @@ public class Dataset implements Serializable, Cloneable {
 
     /**
      * Generate comments to apply a transformer list
+     *
      * @param transformersList The transformer list to generate the comments
      * @return A String to create the comments for the generation of arff files
      */
@@ -192,7 +212,7 @@ public class Dataset implements Serializable, Cloneable {
      * Generates a CSV with dataset content.
      *
      * @param transformersList The list of transformers
-     * @param file  The destination file
+     * @param file The destination file
      * @return The ARFF content
      */
     public String generateARFFWithComments(Map<String, Transformer> transformersList, String file) {
@@ -269,21 +289,41 @@ public class Dataset implements Serializable, Cloneable {
         }
         return columnNamesList;
     }
-
+    
     /**
-     *  Replace the column names with the indicated name. 
+     * Replace the column names with the indicated name. In case of replace several columns with the same name, 
+     * they are combined by adding values
      *
      * @param newColumnNames List to replace the original name with other one
+     * @param op The column combining operator
      * @return Dataset with new columns names
      */
-    public Dataset replaceColumnNames(Map<String, String> newColumnNames) {
+    public Dataset replaceColumnNames(Map<String, String> newColumnNames, CombineOperator op) {
         Instances instances = this.dataset;
-
+        List<String> listAttributeName = new ArrayList<>();
         for (Map.Entry<String, String> entry : newColumnNames.entrySet()) {
             String oldValue = entry.getKey();
             String newValue = entry.getValue();
-            Attribute att = instances.attribute(oldValue);
-            instances.renameAttribute(att, newValue);
+            try {
+                Attribute lastAttribute = instances.attribute(newValue);
+                Attribute att = instances.attribute(oldValue);
+                if (lastAttribute == null) {
+                    instances.renameAttribute(att, newValue);
+                } else {
+                    for (Instance instance : instances) {
+                        Double lastAttValue = instance.value(lastAttribute.index());
+                        Double oldAttValue = instance.value(att.index());
+                        Double combineValues = op.combine(lastAttValue, oldAttValue);
+                        instance.setValue(lastAttribute, combineValues);
+
+                    }
+                    listAttributeName.add(oldValue);
+                    deleteAttributeColumns(listAttributeName);
+                }
+
+            } catch (NullPointerException ex) {
+                logger.warn(" Attribute name doesn't exist. " + ex.getMessage());
+            }
         }
 
         return this;
@@ -319,15 +359,48 @@ public class Dataset implements Serializable, Cloneable {
     public Dataset deleteAttributeColumns(List<String> listAttributeName) {
         Instances instances = this.dataset;
         for (String attributeName : listAttributeName) {
-            int attPosition = instances.attribute(attributeName).index();
-            if (attPosition >= 0) {
-                instances.deleteAttributeAt(attPosition);
+            try {
+                int attPosition = instances.attribute(attributeName).index();
+                if (attPosition >= 0) {
+                    instances.deleteAttributeAt(attPosition);
+                }
+            } catch (NullPointerException ex) {
+                logger.warn(" Attribute name doesn't exist. " + ex.getMessage());
             }
         }
         return this;
     }
 
-    public Dataset joinAttributeColumns(List<String> listAttributeNameToJoin, String newAttribute) {
+    /*
+     * Delete attributes from Dataset
+     *
+     * @param listAttributeName List of attributes to delete
+     * @return Dataset without this list of attributes
+     */
+    /* public Dataset deleteAttributeColumns(List<String> listAttributeName) {
+        Instances instances = this.dataset;
+        for (String attributeName : listAttributeName) {
+            try {
+                int attPosition = instances.attribute(attributeName).index();
+                if (attPosition >= 0) {
+                    instances.deleteAttributeAt(attPosition);
+                }
+            } catch (NullPointerException ex) {
+                logger.warn(" Attribute name doesn't exist. " + ex.getMessage());
+            }
+        }
+        return this;
+    }
+     */
+
+     /**
+      * Join columns
+      * @param listAttributeNameToJoin The name of colums that should be joined
+      * @param newAttribute The name for the new attribute
+      * @return A Dataset where some columns have been combined
+      */
+      //TODO: change the name to joinAttributes or joinColumns (is more clear)
+    /*public Dataset joinAttributeColumns(List<String> listAttributeNameToJoin, String newAttribute) {
         // TODO
         //this.deleteAttributeColumns(listAttributeNameToJoin);
 
@@ -377,9 +450,22 @@ public class Dataset implements Serializable, Cloneable {
 
         return this;
     }
-
+*/
     @Override
     public Dataset clone() {
         return new Dataset(this);
+    }
+    
+    /**
+     * Interface that defines the operation to combine 2 columns
+     */
+    public interface CombineOperator {
+        /**
+         * Combine values of an atrribute for two columns
+         * @param a the value on the first column
+         * @param b the value on the second column
+         * @return The result
+         */
+        public Double combine(Double a, Double b);
     }
 }
