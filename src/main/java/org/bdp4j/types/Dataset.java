@@ -1,27 +1,22 @@
 package org.bdp4j.types;
 
-import java.io.BufferedWriter;
-import java.io.File;
-import java.io.FileOutputStream;
-import java.io.IOException;
-import java.io.OutputStream;
-import java.io.OutputStreamWriter;
-import java.io.Serializable;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
+import org.bdp4j.pipe.PipeParameter;
+import weka.core.Attribute;
+import weka.core.DenseInstance;
+import weka.core.Instance;
+import weka.core.Instances;
+import weka.core.converters.ArffSaver;
+import weka.core.converters.CSVSaver;
+
+import java.io.*;
 import java.util.ArrayList;
 import java.util.Enumeration;
 import java.util.List;
 import java.util.Map;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
-import org.apache.logging.log4j.LogManager;
-import org.apache.logging.log4j.Logger;
-import org.bdp4j.pipe.PipeParameter;
-import weka.core.Attribute;
-import weka.core.DenseInstance;
-import weka.core.Instances;
-import weka.core.Instance;
-import weka.core.converters.ArffSaver;
-import weka.core.converters.CSVSaver;
 
 /**
  * Build a weka dataset
@@ -393,7 +388,7 @@ public class Dataset implements Serializable, Cloneable {
     }
      */
 
-     /**
+    /*
       * Join columns
       * @param listAttributeNameToJoin The name of colums that should be joined
       * @param newAttribute The name for the new attribute
@@ -466,6 +461,6 @@ public class Dataset implements Serializable, Cloneable {
          * @param b the value on the second column
          * @return The result
          */
-        public Double combine(Double a, Double b);
+        Double combine(Double a, Double b);
     }
 }
