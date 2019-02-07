@@ -24,27 +24,27 @@ import java.util.regex.Pattern;
  * @author María Novo
  */
 public class Dataset implements Serializable, Cloneable {
+
     /**
      * Function to combine columns by summing (used for frequency/count values)
      */
-    public static final CombineOperator COMBINE_SUM = new CombineOperator(){
+    public static final CombineOperator COMBINE_SUM = new CombineOperator() {
         @Override
         public Double combine(Double a, Double b) {
-            return a+b;
+            return a + b;
         }
     };
 
     /**
      * Function to combine columns by OR (used for binary representation)
      */
-    public static final CombineOperator COMBINE_OR = new CombineOperator(){
+    public static final CombineOperator COMBINE_OR = new CombineOperator() {
         @Override
         public Double combine(Double a, Double b) {
-            return (a>0||b>0)?1d:0d;
+            return (a > 0 || b > 0) ? 1d : 0d;
         }
     };
-    
-    
+
     /**
      * The serial version UID
      */
@@ -284,10 +284,10 @@ public class Dataset implements Serializable, Cloneable {
         }
         return columnNamesList;
     }
-    
+
     /**
-     * Replace the column names with the indicated name. In case of replace several columns with the same name, 
-     * they are combined by adding values
+     * Replace the column names with the indicated name. In case of replace
+     * several columns with the same name, they are combined by adding values
      *
      * @param newColumnNames List to replace the original name with other one
      * @param op The column combining operator
@@ -360,89 +360,55 @@ public class Dataset implements Serializable, Cloneable {
                     instances.deleteAttributeAt(attPosition);
                 }
             } catch (NullPointerException ex) {
-                logger.warn(" Attribute name doesn't exist. " + ex.getMessage());
+                logger.warn(Dataset.class.getClass().getName() + ". Attribute >>" + attributeName + "<< doesn't exist. " + ex.getMessage());
             }
         }
         return this;
     }
 
-    /*
-     * Delete attributes from Dataset
+    /**
+     * Join attribute columns
      *
-     * @param listAttributeName List of attributes to delete
-     * @return Dataset without this list of attributes
+     * @param listAttributeNameToJoin The name of colums that should be joined
+     * @param newAttributeName The name of the new column  
+     * @param op Operator that indicates the type of operation to do to combine columns
+     * @return A Dataset where some columns have been combined
      */
-    /* public Dataset deleteAttributeColumns(List<String> listAttributeName) {
+    //TODO: change the name to joinAttributes or joinColumns (is more clear)
+    public Dataset joinAttributeColumns(List<String> listAttributeNameToJoin, String newAttributeName, CombineOperator op) {
         Instances instances = this.dataset;
-        for (String attributeName : listAttributeName) {
-            try {
-                int attPosition = instances.attribute(attributeName).index();
-                if (attPosition >= 0) {
-                    instances.deleteAttributeAt(attPosition);
-                }
-            } catch (NullPointerException ex) {
-                logger.warn(" Attribute name doesn't exist. " + ex.getMessage());
-            }
-        }
-        return this;
-    }
-     */
 
-    /*
-      * Join columns
-      * @param listAttributeNameToJoin The name of colums that should be joined
-      * @param newAttribute The name for the new attribute
-      * @return A Dataset where some columns have been combined
-      */
-      //TODO: change the name to joinAttributes or joinColumns (is more clear)
-    public Dataset joinAttributeColumns(List<String> listAttributeNameToJoin, String newAttribute) {
-        // TODO
-        //this.deleteAttributeColumns(listAttributeNameToJoin);
+        try {
+            for (Instance instance : instances) {
+                Double newAttributeValue = 0d;
+                boolean isFirstInstance = instances.firstInstance().equals(instance);
 
-     /*   Instances dataset = this.dataset;
+                for (String attributeToJoin : listAttributeNameToJoin) {
+                    try {
+                        boolean isFirstAtt = listAttributeNameToJoin.get(0).equals(attributeToJoin);
+                        Double attributeValue;
 
-        // Create a new attributesList
-        Enumeration<Attribute> attributesList = dataset.enumerateAttributes();
-        ArrayList<Attribute> attributes = new ArrayList<>();
-        Attribute attribute = new Attribute(newAttribute);
-        while (attributesList.hasMoreElements()) {
-            attributes.add(attributesList.nextElement());
-        }
-        attributes.add(attribute);
+                        if (isFirstAtt && !isFirstInstance) {
+                            attributeValue = instance.value(instances.attribute(newAttributeName).index());
+                        } else {
+                            attributeValue = instance.value(instances.attribute(attributeToJoin).index());
+                            if (isFirstAtt && isFirstInstance) {
+                                Attribute attribute = instances.attribute(attributeToJoin);
+                                instances.renameAttribute(attribute, newAttributeName);
+                            }
+                        }
+                        newAttributeValue = op.combine(newAttributeValue, attributeValue);
+                        instance.setValue(instances.attribute(newAttributeName), newAttributeValue);
 
-        Dataset newDataset = new Dataset("dataset", attributes, 0);
-
-        int numOfInstances = this.getInstances().size();
-        Double value = 0d;
-        Instance instance = null;
-        int positionNewAttribute = 0;
-        for (int i = 0; i < numOfInstances; i++) {
-
-            //Instance instance = dataset.instance(i);
-            boolean exists = false;
-            instance = newDataset.createDenseInstance();
-
-//            for (String attributeName : listAttributeNameToJoin) {
-//                value += instance.value(attribute);
-//              //  exists = true;
-//            }
-            for (int index = 0; index < instance.numAttributes() - 1; index++) {
-                Attribute currentAtt = instance.attribute(index);
-                if (listAttributeNameToJoin.contains(currentAtt.name())) {
-                    if (value == 0) {
-                        positionNewAttribute = index;
-                        instance = dataset.instance(i);
+                    } catch (NullPointerException ex) {
+                        logger.warn(Dataset.class.getClass().getName() + ". Attribute >>" + attributeToJoin + "<< doesn't exist. " + ex.getMessage());
                     }
-                    value += instance.value(currentAtt);
-                } else {
-                    instance = dataset.instance(i);
                 }
             }
-
+            deleteAttributeColumns(listAttributeNameToJoin);
+        } catch (Exception ex) {
+            logger.warn(ex.getMessage());
         }
-
-        instance.setValue(positionNewAttribute, value);
-*/
         return this;
     }
 
@@ -450,13 +416,15 @@ public class Dataset implements Serializable, Cloneable {
     public Dataset clone() {
         return new Dataset(this);
     }
-    
+
     /**
      * Interface that defines the operation to combine 2 columns
      */
     public interface CombineOperator {
+
         /**
          * Combine values of an atrribute for two columns
+         *
          * @param a the value on the first column
          * @param b the value on the second column
          * @return The result
