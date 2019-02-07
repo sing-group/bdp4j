@@ -20,7 +20,7 @@ import java.util.List;
  * Test pipe functionality
  */
 public class Main {
-    private static final Logger logger = LogManager.getLogger(PipeProvider.class);
+    private static final Logger logger = LogManager.getLogger(Main.class);
     /**
      * List of instances to process
      */
