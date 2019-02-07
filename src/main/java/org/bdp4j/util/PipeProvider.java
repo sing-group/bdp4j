@@ -8,7 +8,7 @@ import java.io.File;
 import java.net.MalformedURLException;
 import java.net.URL;
 import java.net.URLClassLoader;
-import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.ServiceLoader;
 
 /**
@@ -17,11 +17,10 @@ import java.util.ServiceLoader;
  * @author Yeray Lage
  */
 public class PipeProvider {
-    private static PipeProvider provider;
     private ServiceLoader<Pipe> loader;
     private static final Logger logger = LogManager.getLogger(PipeProvider.class);
 
-    private PipeProvider() {
+    public PipeProvider() {
         File location = new File("plugins");
 
         File[] fileList = location.listFiles(file -> file.getPath().toLowerCase().endsWith(".jar"));
@@ -31,8 +30,9 @@ public class PipeProvider {
         for (int i = 0; i < fileList.length; i++) {
             try {
                 urls[i] = fileList[i].toURI().toURL();
+                logger.info("[FILE READING] " + fileList[i].getName() + " successfully read.");
             } catch (MalformedURLException e) {
-                logger.error("Malformed URL Exception.");
+                logger.error("[FILE READING] Malformed URL Exception.");
             }
         }
 
@@ -41,18 +41,12 @@ public class PipeProvider {
         loader = ServiceLoader.load(Pipe.class, urlClassLoader);
     }
 
-    public static PipeProvider getInstance() {
-        if (provider == null) {
-            provider = new PipeProvider();
-        }
-        return provider;
-    }
-
-    public ArrayList<Pipe> serviceImpl() {
-        ArrayList<Pipe> pipeList = new ArrayList<>();
+    public HashMap<String, Pipe> serviceImpl() {
+        HashMap<String, Pipe> pipeList = new HashMap<>();
 
         for (Pipe pipe : loader) {
-            pipeList.add(pipe);
+            pipeList.put(pipe.getClass().getSimpleName(), pipe);
+            logger.info("[PIPE LOAD] " + pipe.getClass().getSimpleName() + " OK.");
         }
 
         return pipeList;
