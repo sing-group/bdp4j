@@ -1,0 +1,30 @@
+<?xml version="1.0"?>
+<configuration>
+    <!-- General properties for the app. -->
+    <general>
+        <samplesFolder>./samples</samplesFolder>
+        <pluginsFolder>./plugins</pluginsFolder>
+        <outputFileName>output.csv</outputFileName>
+    </general>
+
+    <!-- Pipe structure that is going to be used -->
+    <pipeStructure>
+        <serialPipes>
+            <pipe>
+                <name>File2TargetAssignPipe</name>
+            </pipe>
+            <pipe>
+                <name>FilesizePipe</name>
+            </pipe>
+            <pipe>
+                <name>File2StringPipe</name>
+            </pipe>
+            <pipe>
+                <name>MeasureLengthPipe</name>
+            </pipe>
+            <pipe>
+                <name>GenerateOutputPipe</name>
+            </pipe>
+        </serialPipes>
+    </pipeStructure>
+</configuration>

@@ -20,8 +20,13 @@ public class PipeProvider {
     private ServiceLoader<Pipe> loader;
     private static final Logger logger = LogManager.getLogger(PipeProvider.class);
 
-    public PipeProvider() {
-        File location = new File("plugins");
+    /**
+     * Takes all the jar from location and adds the pipes to the ServiceLoader
+     *
+     * @param folder The folder location
+     */
+    public PipeProvider(String folder) {
+        File location = new File(folder);
 
         File[] fileList = location.listFiles(file -> file.getPath().toLowerCase().endsWith(".jar"));
 
@@ -30,9 +35,9 @@ public class PipeProvider {
         for (int i = 0; i < fileList.length; i++) {
             try {
                 urls[i] = fileList[i].toURI().toURL();
-                logger.info("[FILE READING] " + fileList[i].getName() + " successfully read.");
+                logger.info("[JAR READING] " + fileList[i].getName() + " successfully read.");
             } catch (MalformedURLException e) {
-                logger.error("[FILE READING] Malformed URL Exception.");
+                logger.error("[JAR READING] Malformed URL Exception.");
             }
         }
 
@@ -41,6 +46,11 @@ public class PipeProvider {
         loader = ServiceLoader.load(Pipe.class, urlClassLoader);
     }
 
+    /**
+     * Returns the Pipes with their names as key.
+     *
+     * @return HashMap were key is the name of pipe and value is the Pipe.
+     */
     public HashMap<String, Pipe> serviceImpl() {
         HashMap<String, Pipe> pipeList = new HashMap<>();
 

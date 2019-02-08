@@ -3,8 +3,8 @@ package org.bdp4j;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.bdp4j.pipe.Pipe;
-import org.bdp4j.pipe.SerialPipes;
 import org.bdp4j.types.Instance;
+import org.bdp4j.util.Configurator;
 import org.bdp4j.util.PipeProvider;
 
 import java.io.File;
@@ -17,44 +17,38 @@ import java.util.HashMap;
 import java.util.List;
 
 /**
- * Test pipe functionality
+ * Test pipe functionality.
+ *
+ * @author Yeray Lage
  */
 public class Main {
+    /* Logger instance for Main class */
     private static final Logger logger = LogManager.getLogger(Main.class);
-    /**
-     * List of instances to process
-     */
+    /* List of instances to process */
     private static List<Instance> carriers = new ArrayList<>();
 
+    /* Singleton configuration instance */
+    private static Configurator configurator = Configurator.getInstance();
+
     public static void main(String[] args) {
+        /* Configure app from xml file */
+        configurator.configureApp();
+
         /* Load pipes from jar */
-        PipeProvider pipeProvider = new PipeProvider();
+        PipeProvider pipeProvider = new PipeProvider(configurator.getProp("pluginsFolder"));
         HashMap<String, Pipe> pipes = pipeProvider.serviceImpl();
 
-        /* Load instances */
-        generateInstances("./samples/");
-
-        /* Create the processing pipe */
-        Pipe p = null;
-        try {
-            p = new SerialPipes(new Pipe[]{
-                    pipes.get("File2TargetAssignPipe"),
-                    pipes.get("FilesizePipe"),
-                    pipes.get("File2StringPipe"),
-                    pipes.get("MeasureLengthPipe"),
-                    pipes.get("GenerateOutputPipe")
-            }
-            );
-        } catch (NullPointerException e) {
-            logger.error("[PIPE GENERATION] Some Pipes does not exist.");
-            System.exit(-1);
-        }
+        /* Configure pipe */
+        Pipe p = configurator.configurePipe(pipes);
 
         /* Check dependencies */
         if (!p.checkDependencies()) {
             logger.error("[CHECK DEPENDENCIES] " + Pipe.getErrorMesage());
             System.exit(-1);
         }
+
+        /* Load instances */
+        generateInstances(configurator.getProp("samplesFolder"));
 
         /* Process instances */
         p.pipeAll(carriers);
