@@ -14,12 +14,20 @@ import javax.xml.parsers.DocumentBuilderFactory;
 import java.io.File;
 import java.util.HashMap;
 
+/**
+ * Singleton configurator class for configure the app and pipe from de configuration file.
+ *
+ * @author Yeray Lage
+ */
 public class Configurator {
     private static final Logger logger = LogManager.getLogger(Configurator.class);
     private static Configurator ourInstance = new Configurator();
     private HashMap<String, String> props;
     private Document document;
 
+    /**
+     * Empty constructor that initializes the props HashMap and instantiates the document from the config file.
+     */
     private Configurator() {
         props = new HashMap<>();
 
@@ -31,7 +39,7 @@ public class Configurator {
 
             document.getDocumentElement().normalize();
         } catch (Exception e) {
-            logger.error("[CONFIGURATION] Error loading.");
+            logger.error("[CONFIGURATOR] Error loading file.");
         }
     }
 
@@ -39,19 +47,30 @@ public class Configurator {
         return ourInstance;
     }
 
+    /**
+     * This method gets all the properties defined on the configuration file
+     */
     public void configureApp() {
+        // Node children from the general element (all the properties).
         NodeList generalChildren = document.getElementsByTagName("general").item(0).getChildNodes();
 
         for (int i = 0; i < generalChildren.getLength(); i++) {
-            Node child = generalChildren.item(i);
+            // For each property defined on the general configuration.
+            Node property = generalChildren.item(i);
 
             if (!generalChildren.item(i).getNodeName().contains("#")) {
-                logger.info("[PROPERTIES LOAD] " + child.getNodeName() + " -> " + child.getTextContent().trim() + ".");
-                props.put(child.getNodeName(), child.getTextContent().trim());
+                logger.info("[PROPERTIES LOAD] " + property.getNodeName() + " -> " + property.getTextContent().trim() + ".");
+                props.put(property.getNodeName(), property.getTextContent().trim());
             }
         }
     }
 
+    /**
+     * This method sets the pipe with the defined structure
+     *
+     * @param pipes All the available pipes
+     * @return Configured pipe with the available ones and the defined structure.
+     */
     public Pipe configurePipe(HashMap<String, Pipe> pipes) {
         Pipe configuredPipe = null;
 
@@ -96,6 +115,12 @@ public class Configurator {
         return configuredPipe;
     }
 
+    /**
+     * Gets the property from the one defined on the configuration file.
+     *
+     * @param k Key (name of the property).
+     * @return The value of the property.
+     */
     public String getProp(String k) {
         // Check if the property exists.
         if (props.get(k) == null) {
