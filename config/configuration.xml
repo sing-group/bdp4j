@@ -10,21 +10,27 @@
     <!-- Pipe structure that is going to be used -->
     <pipeStructure>
         <serialPipes>
-            <pipe>
-                <name>File2TargetAssignPipe</name>
-            </pipe>
-            <pipe>
-                <name>FilesizePipe</name>
-            </pipe>
+            <serialPipes>
+                <pipe>
+                    <name>File2TargetAssignPipe</name>
+                </pipe>
+                <serialPipes>
+                    <pipe>
+                        <name>FilesizePipe</name>
+                    </pipe>
+                </serialPipes>
+            </serialPipes>
             <pipe>
                 <name>File2StringPipe</name>
             </pipe>
-            <pipe>
-                <name>MeasureLengthPipe</name>
-            </pipe>
-            <pipe>
-                <name>GenerateOutputPipe</name>
-            </pipe>
+            <parallelPipes>
+                <pipe>
+                    <name>MeasureLengthPipe</name>
+                </pipe>
+                <pipe>
+                    <name>GenerateOutputPipe</name>
+                </pipe>
+            </parallelPipes>
         </serialPipes>
     </pipeStructure>
 </configuration>

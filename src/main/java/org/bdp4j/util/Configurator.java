@@ -24,6 +24,7 @@ public class Configurator {
     private static Configurator ourInstance = new Configurator();
     private HashMap<String, String> props;
     private Document document;
+    private HashMap<String, Pipe> pipes;
 
     /**
      * Empty constructor that initializes the props HashMap and instantiates the document from the config file.
@@ -59,7 +60,8 @@ public class Configurator {
             Node property = generalChildren.item(i);
 
             if (!generalChildren.item(i).getNodeName().contains("#")) {
-                logger.info("[PROPERTIES LOAD] " + property.getNodeName() + " -> " + property.getTextContent().trim() + ".");
+                logger.info("[PROPERTIES LOAD] " + property.getNodeName() + " -> " + property.getTextContent().trim()
+                        + ".");
                 props.put(property.getNodeName(), property.getTextContent().trim());
             }
         }
@@ -68,10 +70,11 @@ public class Configurator {
     /**
      * This method sets the pipe with the defined structure
      *
-     * @param pipes All the available pipes
+     * @param availablePipes All the available pipes
      * @return Configured pipe with the available ones and the defined structure.
      */
-    public Pipe configurePipe(HashMap<String, Pipe> pipes) {
+    public Pipe configurePipe(HashMap<String, Pipe> availablePipes) {
+        pipes = availablePipes;
         Pipe configuredPipe = null;
 
         // Full pipeStructure
@@ -102,20 +105,94 @@ public class Configurator {
             if (!globalPipeChildren.item(i).getNodeName().contains("#")) {
                 Node child = globalPipeChildren.item(i);
 
-                try {
+                if (child.getNodeName().equals("serialPipes")) {
+                    // Pipe is serialPipes
                     if (configuredPipe instanceof SerialPipes) {
-                        ((SerialPipes) configuredPipe).add(pipes.get(child.getTextContent().trim()));
+                        ((SerialPipes) configuredPipe).add(addPipesFromSerial(child));
                     } else {
-                        ((ParallelPipes) configuredPipe).add(pipes.get(child.getTextContent().trim()));
+                        ((ParallelPipes) configuredPipe).add(addPipesFromSerial(child));
                     }
-                } catch (NullPointerException e) {
-                    logger.error("[PIPE CONFIGURATION] " + child.getTextContent().trim() + " does not exist or is not loaded.");
-                    System.exit(-1);
+                } else if (child.getNodeName().equals("parallelPipes")) {
+                    // Pipe is parallelPipes
+                    if (configuredPipe instanceof SerialPipes) {
+                        ((SerialPipes) configuredPipe).add(addPipesFromParallel(child));
+                    } else {
+                        ((ParallelPipes) configuredPipe).add(addPipesFromParallel(child));
+                    }
+                } else {
+                    // Pipe is a type of processing pipe
+                    try {
+                        if (configuredPipe instanceof SerialPipes) {
+                            ((SerialPipes) configuredPipe).add(pipes.get(child.getTextContent().trim()));
+                        } else {
+                            ((ParallelPipes) configuredPipe).add(pipes.get(child.getTextContent().trim()));
+                        }
+                    } catch (NullPointerException e) {
+                        logger.error("[PIPE CONFIGURATION] " + child.getTextContent().trim() +
+                                " does not exist or is not loaded.");
+                        System.exit(-1);
+                    }
                 }
             }
         }
 
         return configuredPipe;
+    }
+
+    private SerialPipes addPipesFromSerial(Node serialPipesNode) {
+        SerialPipes serialPipes = new SerialPipes();
+        NodeList children = serialPipesNode.getChildNodes();
+
+        for (int i = 0; i < children.getLength(); i++) {
+            Node child = children.item(i);
+            if (!child.getNodeName().contains("#")) {
+                if (child.getNodeName().equals("serialPipes")) {
+                    serialPipes.add(addPipesFromSerial(child));
+                } else if (child.getNodeName().equals("parallelPipes")) {
+                    serialPipes.add(addPipesFromParallel(child));
+                } else {
+                    serialPipes.add(pipes.get(getNameFromPipe(child)));
+                }
+            }
+        }
+
+        return serialPipes;
+    }
+
+    private ParallelPipes addPipesFromParallel(Node parallelPipesNode) {
+        ParallelPipes parallelPipes = new ParallelPipes();
+        NodeList children = parallelPipesNode.getChildNodes();
+
+        for (int i = 0; i < children.getLength(); i++) {
+            Node child = children.item(i);
+            if (!child.getNodeName().contains("#")) {
+                if (child.getNodeName().equals("serialPipes")) {
+                    parallelPipes.add(addPipesFromSerial(child));
+                } else if (child.getNodeName().equals("parallelPipes")) {
+                    parallelPipes.add(addPipesFromParallel(child));
+                } else {
+                    parallelPipes.add(pipes.get(getNameFromPipe(child)));
+                }
+            }
+        }
+
+        return parallelPipes;
+    }
+
+    private String getNameFromPipe(Node pipe) {
+        String name = null;
+        NodeList children = pipe.getChildNodes();
+        for (int i = 0; i < children.getLength(); i++) {
+            Node child = children.item(i);
+            if (child.getNodeName().equals("name")) {
+                name = child.getTextContent();
+                return name;
+            }
+        }
+
+        logger.error("[GET NAME FROM PIPE] Could not get name from pipe.");
+        System.exit(-1);
+        return name;
     }
 
     /**

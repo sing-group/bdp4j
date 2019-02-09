@@ -40,6 +40,7 @@ public class Main {
 
         /* Configure pipe */
         Pipe p = configurator.configurePipe(pipes);
+        System.out.println("\n\t" + p.toString() + "\n");
 
         /* Check dependencies */
         if (!p.checkDependencies()) {
