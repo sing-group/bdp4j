@@ -89,6 +89,9 @@ public class Configurator {
             configuredPipe = new SerialPipes();
         } else if (globalPipe.getNodeName().equals("parallelPipes")) {
             configuredPipe = new ParallelPipes();
+        } else {
+            logger.error("[PIPE CONFIGURATION] No serialPipe or parallelPipe is correctly defined.");
+            System.exit(-1);
         }
 
         // Global pipe children
@@ -100,9 +103,9 @@ public class Configurator {
                 Node child = globalPipeChildren.item(i);
 
                 try {
-                    if (globalPipe.getNodeName().equals("serialPipes")) {
+                    if (configuredPipe instanceof SerialPipes) {
                         ((SerialPipes) configuredPipe).add(pipes.get(child.getTextContent().trim()));
-                    } else if (globalPipe.getNodeName().equals("parallelPipes")) {
+                    } else {
                         ((ParallelPipes) configuredPipe).add(pipes.get(child.getTextContent().trim()));
                     }
                 } catch (NullPointerException e) {
