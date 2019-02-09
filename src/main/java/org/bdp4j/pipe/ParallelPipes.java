@@ -311,4 +311,24 @@ public class ParallelPipes extends Pipe {
 
         return returnValue;
     }
+
+    @Override
+    public String toString() {
+        StringBuilder sb = new StringBuilder();
+        sb.append("[PP](");
+
+        for (Pipe p : pipes) {
+            if (!(p instanceof SerialPipes) && !(p instanceof ParallelPipes)) {
+                sb.append(p.getClass().getSimpleName());
+            } else {
+                sb.append(p);
+            }
+
+            sb.append(" | ");
+        }
+
+        sb.delete(sb.length() - 3, sb.length());
+        sb.append(")");
+        return sb.toString();
+    }
 }
