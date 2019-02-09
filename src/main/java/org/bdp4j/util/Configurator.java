@@ -44,6 +44,11 @@ public class Configurator {
         }
     }
 
+    /**
+     * Singleton instance getter.
+     *
+     * @return The singleton instance.
+     */
     public static Configurator getInstance() {
         return ourInstance;
     }
@@ -108,16 +113,16 @@ public class Configurator {
                 if (child.getNodeName().equals("serialPipes")) {
                     // Pipe is serialPipes
                     if (configuredPipe instanceof SerialPipes) {
-                        ((SerialPipes) configuredPipe).add(addPipesFromSerial(child));
+                        ((SerialPipes) configuredPipe).add(pipesFromSerial(child));
                     } else {
-                        ((ParallelPipes) configuredPipe).add(addPipesFromSerial(child));
+                        ((ParallelPipes) configuredPipe).add(pipesFromSerial(child));
                     }
                 } else if (child.getNodeName().equals("parallelPipes")) {
                     // Pipe is parallelPipes
                     if (configuredPipe instanceof SerialPipes) {
-                        ((SerialPipes) configuredPipe).add(addPipesFromParallel(child));
+                        ((SerialPipes) configuredPipe).add(pipesFromParallel(child));
                     } else {
-                        ((ParallelPipes) configuredPipe).add(addPipesFromParallel(child));
+                        ((ParallelPipes) configuredPipe).add(pipesFromParallel(child));
                     }
                 } else {
                     // Pipe is a type of processing pipe
@@ -139,7 +144,13 @@ public class Configurator {
         return configuredPipe;
     }
 
-    private SerialPipes addPipesFromSerial(Node serialPipesNode) {
+    /**
+     * Get the serialPipes completely formed from the node.
+     *
+     * @param serialPipesNode SerialPipes node.
+     * @return SerialPipes formed.
+     */
+    private SerialPipes pipesFromSerial(Node serialPipesNode) {
         SerialPipes serialPipes = new SerialPipes();
         NodeList children = serialPipesNode.getChildNodes();
 
@@ -147,9 +158,9 @@ public class Configurator {
             Node child = children.item(i);
             if (!child.getNodeName().contains("#")) {
                 if (child.getNodeName().equals("serialPipes")) {
-                    serialPipes.add(addPipesFromSerial(child));
+                    serialPipes.add(pipesFromSerial(child));
                 } else if (child.getNodeName().equals("parallelPipes")) {
-                    serialPipes.add(addPipesFromParallel(child));
+                    serialPipes.add(pipesFromParallel(child));
                 } else {
                     serialPipes.add(pipes.get(getNameFromPipe(child)));
                 }
@@ -159,7 +170,13 @@ public class Configurator {
         return serialPipes;
     }
 
-    private ParallelPipes addPipesFromParallel(Node parallelPipesNode) {
+    /**
+     * Get the parallelPipes completely formed from the node.
+     *
+     * @param parallelPipesNode ParallelPipes node.
+     * @return ParallelPipes formed.
+     */
+    private ParallelPipes pipesFromParallel(Node parallelPipesNode) {
         ParallelPipes parallelPipes = new ParallelPipes();
         NodeList children = parallelPipesNode.getChildNodes();
 
@@ -167,9 +184,9 @@ public class Configurator {
             Node child = children.item(i);
             if (!child.getNodeName().contains("#")) {
                 if (child.getNodeName().equals("serialPipes")) {
-                    parallelPipes.add(addPipesFromSerial(child));
+                    parallelPipes.add(pipesFromSerial(child));
                 } else if (child.getNodeName().equals("parallelPipes")) {
-                    parallelPipes.add(addPipesFromParallel(child));
+                    parallelPipes.add(pipesFromParallel(child));
                 } else {
                     parallelPipes.add(pipes.get(getNameFromPipe(child)));
                 }
@@ -179,6 +196,12 @@ public class Configurator {
         return parallelPipes;
     }
 
+    /**
+     * Get the name of a pipe node.
+     *
+     * @param pipe Node pipe.
+     * @return The name of the pipe.
+     */
     private String getNameFromPipe(Node pipe) {
         String name = null;
         NodeList children = pipe.getChildNodes();
