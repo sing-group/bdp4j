@@ -51,7 +51,9 @@ public class Main {
         generateInstances(configurator.getProp("samplesFolder"));
 
         /* Process instances */
+        logger.info("Processing instances...");
         p.pipeAll(carriers);
+        logger.info("Instances processed.");
     }
 
     /**
