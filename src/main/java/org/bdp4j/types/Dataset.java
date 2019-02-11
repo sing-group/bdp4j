@@ -211,7 +211,10 @@ public class Dataset implements Serializable, Cloneable {
      * @return The ARFF content
      */
     public String generateARFFWithComments(Map<String, Transformer> transformersList, String file) {
-        String comments = getComments(transformersList);
+        String comments = "";
+        if (transformersList != null) {
+            comments = getComments(transformersList);
+        }
         // Generate 
         Instances wekaDataset = this.getWekaDataset();
         if (file.length() == 0) {
@@ -222,8 +225,9 @@ public class Dataset implements Serializable, Cloneable {
             ArffSaver saver = new ArffSaver();
             saver.setInstances(wekaDataset);
             BufferedWriter bw = new BufferedWriter(new OutputStreamWriter(outputStream));
-
-            bw.write(comments + "\n");
+            if (!comments.isEmpty()) {
+                bw.write(comments + "\n");
+            }
             bw.write("\n");
             bw.flush();
 
@@ -313,13 +317,14 @@ public class Dataset implements Serializable, Cloneable {
 
                     }
                     listAttributeName.add(oldValue);
-                    deleteAttributeColumns(listAttributeName);
+
                 }
 
             } catch (NullPointerException ex) {
                 logger.warn(" Attribute name doesn't exist. " + ex.getMessage());
             }
         }
+        deleteAttributeColumns(listAttributeName);
 
         return this;
     }
@@ -370,8 +375,9 @@ public class Dataset implements Serializable, Cloneable {
      * Join attribute columns
      *
      * @param listAttributeNameToJoin The name of colums that should be joined
-     * @param newAttributeName The name of the new column  
-     * @param op Operator that indicates the type of operation to do to combine columns
+     * @param newAttributeName The name of the new column
+     * @param op Operator that indicates the type of operation to do to combine
+     * columns
      * @return A Dataset where some columns have been combined
      */
     //TODO: change the name to joinAttributes or joinColumns (is more clear)
