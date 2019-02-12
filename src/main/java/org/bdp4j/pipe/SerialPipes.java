@@ -330,18 +330,13 @@ public class SerialPipes extends Pipe {
      *
      * @return the string representation of the piping process
      */
+    @Override
     public String toString() {
         StringBuilder sb = new StringBuilder();
         sb.append("[SP](");
 
-        for (Pipe p : pipes) {
-            if (!(p instanceof SerialPipes) && !(p instanceof ParallelPipes)) {
-                sb.append(p.getClass().getSimpleName());
-            } else {
-                sb.append(p);
-            }
-            sb.append(" | ");
-        }
+        for (Pipe p : pipes)
+                sb.append(p).append(" | ");
 
         sb.delete(sb.length() - 3, sb.length());
         sb.append(")");
