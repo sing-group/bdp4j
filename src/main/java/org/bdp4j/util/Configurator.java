@@ -150,9 +150,9 @@ public class Configurator {
                     // Pipe is a type of processing pipe
                     try {
                         if (configuredPipe instanceof SerialPipes) {
-                            ((SerialPipes) configuredPipe).add(getPipeInstance(child.getTextContent().trim()));
+                            ((SerialPipes) configuredPipe).add(getPipeInstance(child.getTextContent().trim(), child));
                         } else {
-                            ((ParallelPipes) configuredPipe).add(getPipeInstance(child.getTextContent().trim()));
+                            ((ParallelPipes) configuredPipe).add(getPipeInstance(child.getTextContent().trim(), child));
                         }
                     } catch (NullPointerException e) {
                         logger.error("[PIPE CONFIGURATION] " + child.getTextContent().trim() +
@@ -172,12 +172,49 @@ public class Configurator {
      * @param pipeName Name of the pipe.
      * @return Instance of the pipe.
      */
-    private Pipe getPipeInstance(String pipeName) {
+    private Pipe getPipeInstance(String pipeName, Node pipeNode) {
         Pipe pipe = null;
+
         if (pipes.get(pipeName) == null) {
             logger.error("[PIPE GET] " + pipeName + " is not loaded.");
             System.exit(-1);
         } else {
+            PipeInfo pipeInfo = pipes.get(pipeName);
+
+            // We check the pipeParameters from configuration file
+            NodeList pipeNodeChildren = pipeNode.getChildNodes();
+
+            for (int i = 0; i < pipeNodeChildren.getLength(); i++) {
+                if (!pipeNodeChildren.item(i).getNodeName().contains("#")) {
+                    if (pipeNodeChildren.item(i).getNodeName().equals("params")) {
+                        NodeList params = pipeNodeChildren.item(i).getChildNodes();
+                        for (int j = 0; j < params.getLength(); j++) {
+                            if (!params.item(j).getNodeName().contains("#")) {
+                                if (params.item(j).getNodeName().equals("pipeParameter")) {
+                                    NodeList pipeParameterValues = params.item(j).getChildNodes();
+                                    String pipeParameterName = null;
+                                    for (int k = 0; k < pipeParameterValues.getLength(); k++) {
+                                        if (!pipeParameterValues.item(k).getNodeName().contains("#")) {
+                                            if (pipeParameterValues.item(k).getNodeName().equals("name")) {
+                                                pipeParameterName = pipeParameterValues.item(k).getTextContent();
+                                            }
+
+                                            if (pipeParameterValues.item(k).getNodeName().equals("description")) {
+                                                String description = pipeParameterValues.item(k).getTextContent();
+                                                pipeInfo.setPipeParam(pipeParameterName, "description", description);
+                                            } else if (pipeParameterValues.item(k).getNodeName().equals("defaultValue")) {
+                                                String defaultValue = pipeParameterValues.item(k).getTextContent();
+                                                pipeInfo.setPipeParam(pipeParameterName, "defaultValue", defaultValue);
+                                            }
+                                        }
+                                    }
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+
             try {
                 pipe = (Pipe) pipes.get(pipeName).getPipeClass().newInstance();
             } catch (Exception e) {
@@ -185,6 +222,7 @@ public class Configurator {
                 System.exit(-1);
             }
         }
+
         return pipe;
     }
 
@@ -206,7 +244,7 @@ public class Configurator {
                 } else if (child.getNodeName().equals("parallelPipes")) {
                     serialPipes.add(pipesFromParallel(child));
                 } else {
-                    serialPipes.add(getPipeInstance(getNameFromPipe(child)));
+                    serialPipes.add(getPipeInstance(getNameFromPipe(child), child));
                 }
             }
         }
@@ -232,7 +270,7 @@ public class Configurator {
                 } else if (child.getNodeName().equals("parallelPipes")) {
                     parallelPipes.add(pipesFromParallel(child));
                 } else {
-                    parallelPipes.add(getPipeInstance(getNameFromPipe(child)));
+                    parallelPipes.add(getPipeInstance(getNameFromPipe(child), child));
                 }
             }
         }
