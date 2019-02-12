@@ -21,19 +21,42 @@ import java.util.HashMap;
  */
 public class Configurator {
     private static final Logger logger = LogManager.getLogger(Configurator.class);
-    private static Configurator ourInstance = new Configurator();
+
+    /**
+     * The properties of the ...
+     */
     private HashMap<String, String> props;
+
+    /**
+     * The XML document
+     */
     private Document document;
+
+    /**
+     * The available pipes
+     */
     private HashMap<String, Pipe> pipes;
+
+    /**
+     * The default configuration filie
+     */
+    private static final String DEFAULT_CONFIG_PATH="./config/configuration.xml";
+
+    /**
+     * Default constructor
+     */
+    private Configurator(){
+        this(DEFAULT_CONFIG_PATH);
+    }
 
     /**
      * Empty constructor that initializes the props HashMap and instantiates the document from the config file.
      */
-    private Configurator() {
+    private Configurator(String configPath) {
         props = new HashMap<>();
 
         try {
-            File file = new File("./config/configuration.xml");
+            File file = new File(configPath);
             DocumentBuilderFactory documentBuilderFactory = DocumentBuilderFactory.newInstance();
             DocumentBuilder documentBuilder = documentBuilderFactory.newDocumentBuilder();
             document = documentBuilder.parse(file);
@@ -49,8 +72,8 @@ public class Configurator {
      *
      * @return The singleton instance.
      */
-    public static Configurator getInstance() {
-        return ourInstance;
+    public static Configurator getInstance(String configPath) {
+        return new Configurator(configPath);
     }
 
     /**
@@ -83,7 +106,7 @@ public class Configurator {
         Pipe configuredPipe = null;
 
         // Full pipeStructure
-        Node pipeStructure = document.getElementsByTagName("pipeStructure").item(0);
+        Node pipeStructure = document.getElementsByTagName("pipeline").item(0);
 
         // Global pipe (serialPipe or parallelPipe)
         Node globalPipe = null;
