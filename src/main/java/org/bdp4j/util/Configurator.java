@@ -40,12 +40,12 @@ public class Configurator {
     /**
      * The default configuration file
      */
-    private static final String DEFAULT_CONFIG_PATH="./config/configuration.xml";
+    private static final String DEFAULT_CONFIG_PATH = "./config/configuration.xml";
 
     /**
      * Default constructor
      */
-    private Configurator(){
+    private Configurator() {
         this(DEFAULT_CONFIG_PATH);
     }
 
