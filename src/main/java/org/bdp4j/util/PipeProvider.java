@@ -47,16 +47,20 @@ public class PipeProvider {
     }
 
     /**
-     * Returns the Pipes with their names as key.
+     * Returns the pipeInfo of each Pipe with their names as key.
      *
      * @return HashMap were key is the name of pipe and value is the Pipe.
      */
-    public HashMap<String, Pipe> serviceImpl() {
-        HashMap<String, Pipe> pipeList = new HashMap<>();
+    public HashMap<String, PipeInfo> getPipes() {
+        HashMap<String, PipeInfo> pipeList = new HashMap<>();
 
         for (Pipe pipe : loader) {
-            pipeList.put(pipe.getClass().getSimpleName(), pipe);
-            logger.info("[PIPE LOAD] " + pipe.getClass().getSimpleName() + " OK.");
+
+            PipeInfo pipeInfo = new PipeInfo(pipe.getClass().getSimpleName(), pipe.getClass());
+
+            pipeList.put(pipeInfo.getPipeName(), pipeInfo);
+
+            logger.info("[PIPE LOAD] " + pipeInfo.getPipeName() + " OK.");
         }
 
         return pipeList;

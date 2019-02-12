@@ -4,7 +4,7 @@
     <general>
         <samplesFolder>./samples</samplesFolder>
         <pluginsFolder>./plugins</pluginsFolder>
-        <outputFileName>output.csv</outputFileName>
+        <outputDir>./output</outputDir>
     </general>
 
     <!-- Pipe structure that is going to be used -->
@@ -29,6 +29,13 @@
                 </pipe>
                 <pipe>
                     <name>GenerateOutputPipe</name>
+                    <params>
+                        <pipeParameter>
+                            <name>outFile</name>
+                            <description>The file to store the CSV representation of instances</description>
+                            <defaultValue>output.csv</defaultValue>
+                        </pipeParameter>
+                    </params>
                 </pipe>
             </parallelPipes>
         </serialPipes>

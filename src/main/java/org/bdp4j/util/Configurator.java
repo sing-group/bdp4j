@@ -24,7 +24,7 @@ public class Configurator {
     private static Configurator ourInstance = new Configurator();
     private HashMap<String, String> props;
     private Document document;
-    private HashMap<String, Pipe> pipes;
+    private HashMap<String, PipeInfo> pipes;
 
     /**
      * Empty constructor that initializes the props HashMap and instantiates the document from the config file.
@@ -65,8 +65,7 @@ public class Configurator {
             Node property = generalChildren.item(i);
 
             if (!generalChildren.item(i).getNodeName().contains("#")) {
-                logger.info("[PROPERTIES LOAD] " + property.getNodeName() + " -> " + property.getTextContent().trim()
-                        + ".");
+                logger.info("[PROPERTIES LOAD] " + property.getNodeName() + " -> " + property.getTextContent().trim());
                 props.put(property.getNodeName(), property.getTextContent().trim());
             }
         }
@@ -78,7 +77,7 @@ public class Configurator {
      * @param availablePipes All the available pipes
      * @return Configured pipe with the available ones and the defined structure.
      */
-    public Pipe configurePipe(HashMap<String, Pipe> availablePipes) {
+    public Pipe configurePipe(HashMap<String, PipeInfo> availablePipes) {
         pipes = availablePipes;
         Pipe configuredPipe = null;
 
@@ -128,9 +127,9 @@ public class Configurator {
                     // Pipe is a type of processing pipe
                     try {
                         if (configuredPipe instanceof SerialPipes) {
-                            ((SerialPipes) configuredPipe).add(pipes.get(child.getTextContent().trim()));
+                            ((SerialPipes) configuredPipe).add(getPipeInstance(child.getTextContent().trim()));
                         } else {
-                            ((ParallelPipes) configuredPipe).add(pipes.get(child.getTextContent().trim()));
+                            ((ParallelPipes) configuredPipe).add(getPipeInstance(child.getTextContent().trim()));
                         }
                     } catch (NullPointerException e) {
                         logger.error("[PIPE CONFIGURATION] " + child.getTextContent().trim() +
@@ -142,6 +141,28 @@ public class Configurator {
         }
 
         return configuredPipe;
+    }
+
+    /**
+     * Returns the pipe if exists.
+     *
+     * @param pipeName Name of the pipe.
+     * @return Instance of the pipe.
+     */
+    private Pipe getPipeInstance(String pipeName) {
+        Pipe pipe = null;
+        if (pipes.get(pipeName) == null) {
+            logger.error("[PIPE GET] " + pipeName + " is not loaded.");
+            System.exit(-1);
+        } else {
+            try {
+                pipe = (Pipe) pipes.get(pipeName).getPipeClass().newInstance();
+            } catch (Exception e) {
+                logger.error("[GET PIPE INSTANCE] Error getting pipe instance of " + pipeName);
+                System.exit(-1);
+            }
+        }
+        return pipe;
     }
 
     /**
@@ -162,7 +183,7 @@ public class Configurator {
                 } else if (child.getNodeName().equals("parallelPipes")) {
                     serialPipes.add(pipesFromParallel(child));
                 } else {
-                    serialPipes.add(pipes.get(getNameFromPipe(child)));
+                    serialPipes.add(getPipeInstance(getNameFromPipe(child)));
                 }
             }
         }
@@ -188,7 +209,7 @@ public class Configurator {
                 } else if (child.getNodeName().equals("parallelPipes")) {
                     parallelPipes.add(pipesFromParallel(child));
                 } else {
-                    parallelPipes.add(pipes.get(getNameFromPipe(child)));
+                    parallelPipes.add(getPipeInstance(getNameFromPipe(child)));
                 }
             }
         }
