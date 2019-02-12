@@ -5,6 +5,7 @@ import org.apache.logging.log4j.Logger;
 import org.bdp4j.pipe.Pipe;
 import org.bdp4j.types.Instance;
 import org.bdp4j.util.Configurator;
+import org.bdp4j.util.PipeInfo;
 import org.bdp4j.util.PipeProvider;
 
 import java.io.File;
@@ -24,6 +25,7 @@ import java.util.List;
 public class Main {
     /* Logger instance for Main class */
     private static final Logger logger = LogManager.getLogger(Main.class);
+
     /* List of instances to process */
     private static List<Instance> carriers = new ArrayList<>();
 
@@ -36,11 +38,11 @@ public class Main {
 
         /* Load pipes from jar */
         PipeProvider pipeProvider = new PipeProvider(configurator.getProp("pluginsFolder"));
-        HashMap<String, Pipe> pipes = pipeProvider.serviceImpl();
+        HashMap<String, PipeInfo> pipes = pipeProvider.getPipes();
 
         /* Configure pipe */
         Pipe p = configurator.configurePipe(pipes);
-        System.out.println("\n\t" + p.toString() + "\n");
+        System.out.println("\nPipe structure:\n\t" + p.toString() + "\n");
 
         /* Check dependencies */
         if (!p.checkDependencies()) {
