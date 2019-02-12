@@ -8,7 +8,7 @@
     </general>
 
     <!-- Pipe structure that is going to be used -->
-    <pipeStructure>
+    <pipeline>
         <serialPipes>
             <serialPipes>
                 <pipe>
@@ -39,5 +39,5 @@
                 </pipe>
             </parallelPipes>
         </serialPipes>
-    </pipeStructure>
+    </pipeline>
 </configuration>
