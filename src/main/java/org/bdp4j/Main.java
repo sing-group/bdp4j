@@ -30,7 +30,7 @@ public class Main {
     private static List<Instance> carriers = new ArrayList<>();
 
     /* Singleton configuration instance */
-    private static Configurator configurator = Configurator.getInstance();
+    private static Configurator configurator = Configurator.getInstance("./config/configuration.xml");
 
     public static void main(String[] args) {
         /* Configure app from xml file */
