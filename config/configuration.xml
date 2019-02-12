@@ -32,8 +32,7 @@
                     <params>
                         <pipeParameter>
                             <name>outFile</name>
-                            <description>[CHANGED] The file to store the CSV representation of instances</description>
-                            <defaultValue>[NEW] output.csv</defaultValue>
+                            <value>output.csv</value>
                         </pipeParameter>
                     </params>
                 </pipe>
