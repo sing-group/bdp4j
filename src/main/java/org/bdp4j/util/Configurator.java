@@ -22,6 +22,8 @@ import java.util.HashMap;
 public class Configurator {
     private static final Logger logger = LogManager.getLogger(Configurator.class);
 
+    public static final String SAMPLES_FOLDER="samplesFolder";
+
     /**
      * The properties of the ...
      */

@@ -51,7 +51,7 @@ public class Main {
         }
 
         /* Load instances */
-        generateInstances(configurator.getProp("samplesFolder"));
+        generateInstances(configurator.getProp(Configurator.SAMPLES_FOLDER));
 
         /* Process instances */
         logger.info("Processing instances...");
