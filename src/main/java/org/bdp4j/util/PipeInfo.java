@@ -62,4 +62,12 @@ public class PipeInfo {
     public void setPipeParams(HashMap<String, PipeParameter> pipeParams) {
         this.pipeParams = pipeParams;
     }
+
+    public void setPipeParam(String pipeParameterName, String parameter, String value) {
+        if (parameter.equals("description")) {
+            pipeParams.get(pipeParameterName).setDescription(value);
+        } else if (parameter.equals("defaultValue")) {
+            pipeParams.get(pipeParameterName).setDefaultValue(value);
+        }
+    }
 }
