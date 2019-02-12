@@ -288,4 +288,13 @@ public abstract class Pipe {
     public boolean checkDependencies() {
         return this.alwaysBeforeDeps.length == 0;
     }
+
+    /**
+     * Achieves a string representation of the piping process
+     * @return the String representation of the pipe
+     */
+    @Override
+    public String toString(){
+        return getClass().getSimpleName();
+    }
 }
