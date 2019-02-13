@@ -20,29 +20,37 @@ import java.util.HashMap;
  * @author Yeray Lage
  */
 public class Configurator {
+    /**
+     * Default samples folder property key.
+     */
+    public static final String SAMPLES_FOLDER = "samplesFolder";
+    /**
+     * Default plugins folder property key.
+     */
+    public static final String PLUGINS_FOLDER = "pluginsFolder";
+    /**
+     * For logging purposes
+     */
     private static final Logger logger = LogManager.getLogger(Configurator.class);
-
-    public static final String SAMPLES_FOLDER="samplesFolder";
+    /**
+     * The default configuration file.
+     */
+    private static final String DEFAULT_CONFIG_PATH = "./config/configuration.xml";
 
     /**
-     * The properties of the ...
+     * The global properties.
      */
     private HashMap<String, String> props;
 
     /**
-     * The XML document
+     * The XML document.
      */
     private Document document;
 
     /**
-     * The available pipes
+     * The available pipes.
      */
     private HashMap<String, PipeInfo> pipes;
-
-    /**
-     * The default configuration file
-     */
-    private static final String DEFAULT_CONFIG_PATH = "./config/configuration.xml";
 
     /**
      * Default constructor
@@ -72,6 +80,7 @@ public class Configurator {
     /**
      * Singleton instance getter.
      *
+     * @param configPath Path to the configuration file.
      * @return The singleton instance.
      */
     public static Configurator getInstance(String configPath) {
@@ -169,7 +178,7 @@ public class Configurator {
     }
 
     /**
-     * Returns the pipe if exists.
+     * Returns the pipe if exists, and sets
      *
      * @param pipeName Name of the pipe.
      * @return Instance of the pipe.
@@ -317,4 +326,15 @@ public class Configurator {
 
         return props.get(k);
     }
+
+    /**
+     * Sets the property.
+     *
+     * @param k Key (name of property).
+     * @param v Value
+     */
+    public void setProp(String k, String v) {
+        props.put(k, v);
+    }
+
 }

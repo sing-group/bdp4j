@@ -18,6 +18,9 @@ import java.util.ServiceLoader;
  */
 public class PipeProvider {
     private ServiceLoader<Pipe> loader;
+    /**
+     * For logging purposes
+     */
     private static final Logger logger = LogManager.getLogger(PipeProvider.class);
 
     /**

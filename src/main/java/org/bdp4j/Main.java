@@ -23,7 +23,9 @@ import java.util.List;
  * @author Yeray Lage
  */
 public class Main {
-    /* Logger instance for Main class */
+    /**
+     * For logging purposes
+     */
     private static final Logger logger = LogManager.getLogger(Main.class);
 
     /* List of instances to process */
@@ -37,7 +39,7 @@ public class Main {
         configurator.configureApp();
 
         /* Load pipes from jar */
-        PipeProvider pipeProvider = new PipeProvider(configurator.getProp("pluginsFolder"));
+        PipeProvider pipeProvider = new PipeProvider(configurator.getProp(Configurator.PLUGINS_FOLDER));
         HashMap<String, PipeInfo> pipes = pipeProvider.getPipes();
 
         /* Configure pipe */
@@ -46,7 +48,7 @@ public class Main {
 
         /* Check dependencies */
         if (!p.checkDependencies()) {
-            logger.error("[CHECK DEPENDENCIES] " + Pipe.getErrorMesage());
+            logger.error("[CHECK DEPENDENCIES] " + Pipe.getErrorMessage());
             System.exit(-1);
         }
 
