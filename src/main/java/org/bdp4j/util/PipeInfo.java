@@ -1,5 +1,8 @@
 package org.bdp4j.util;
 
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
+
 import java.lang.reflect.Method;
 import java.util.HashMap;
 
@@ -9,8 +12,21 @@ import java.util.HashMap;
  * @author Yeray Lage
  */
 public class PipeInfo {
+    /**
+     * Logger variable for log generation.
+     */
+    private static final Logger logger = LogManager.getLogger(PipeInfo.class);
+    /**
+     * Name of the pipe.
+     */
     private String pipeName;
+    /**
+     * Class of the pipe.
+     */
     private Class pipeClass;
+    /**
+     * Defined pipeParameter of the pipe.
+     */
     private HashMap<String, PipeParameter> pipeParams;
 
     PipeInfo(String pipeName, Class<?> pipeClass) {
@@ -64,10 +80,14 @@ public class PipeInfo {
     }
 
     public void setPipeParam(String pipeParameterName, String parameter, String value) {
-        if (parameter.equals("description")) {
-            pipeParams.get(pipeParameterName).setDescription(value);
-        } else if (parameter.equals("defaultValue")) {
-            pipeParams.get(pipeParameterName).setDefaultValue(value);
+        if (pipeParams.get(pipeParameterName) == null) {
+            logger.warn("[SET PIPE PARAM] " + pipeParameterName + " is not defined on " + pipeClass.getSimpleName() + ".");
+        } else {
+            if (parameter.equals("description")) {
+                pipeParams.get(pipeParameterName).setDescription(value);
+            } else if (parameter.equals("defaultValue")) {
+                pipeParams.get(pipeParameterName).setDefaultValue(value);
+            }
         }
     }
 }

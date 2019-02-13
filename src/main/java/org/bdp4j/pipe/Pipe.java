@@ -88,7 +88,7 @@ public abstract class Pipe {
      *
      * @return The error message
      */
-    public static String getErrorMesage() {
+    public static String getErrorMessage() {
         return errorMessage;
     }
 
@@ -291,10 +291,11 @@ public abstract class Pipe {
 
     /**
      * Achieves a string representation of the piping process
+     *
      * @return the String representation of the pipe
      */
     @Override
-    public String toString(){
+    public String toString() {
         return getClass().getSimpleName();
     }
 }
