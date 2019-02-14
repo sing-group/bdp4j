@@ -165,7 +165,7 @@ public class SerialPipes extends Pipe {
                 outputType = pipe.getOutputType();
             } else {
                 logger.fatal("[SERIAL PIPE ADD] BAD compatibility between Pipes.");
-                System.exit(0);
+                System.exit(-1);
             }
         } else {
             // If first Pipe
@@ -218,7 +218,7 @@ public class SerialPipes extends Pipe {
 
             if (p == null) {
                 logger.fatal("Pipe " + i + " is null");
-                System.exit(0);
+                System.exit(-1);
             } else {
 
                 try {
@@ -231,7 +231,7 @@ public class SerialPipes extends Pipe {
                 } catch (Exception e) {
                     logger.fatal("Exception caught on pipe " + i + " (" + p.getClass().getName() + "). " + e.getMessage() + " while processing " + carrier.toString());
                     e.printStackTrace(System.err);
-                    System.exit(0);
+                    System.exit(-1);
                 }
             }
         }
@@ -251,7 +251,7 @@ public class SerialPipes extends Pipe {
             Pipe p = pipes.get(i);
             if (p == null) {
                 logger.fatal("Pipe " + i + " is null");
-                System.exit(0);
+                System.exit(-1);
             } else {
                 p.pipeAll(carriers);
             }
