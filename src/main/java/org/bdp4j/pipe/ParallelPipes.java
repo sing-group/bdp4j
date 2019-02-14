@@ -83,7 +83,7 @@ public class ParallelPipes extends Pipe {
                 (p) -> {
                     if (p == null) {
                         logger.fatal("Pipe is null");
-                        System.exit(0);
+                        System.exit(-1);
                     } else {
                         p.pipeAll(carriers);
                     }
@@ -96,8 +96,8 @@ public class ParallelPipes extends Pipe {
     @Override
     public Instance pipe(Instance original) {
         if (pipes.isEmpty()) {
-            logger.error("[PARALLEL PIPE] ParallelPipe is empty.");
-            System.exit(0);
+            logger.fatal("[PARALLEL PIPE] ParallelPipe is empty.");
+            System.exit(-1);
         }
 
         Instance originalCopy = new Instance(original); // Copy instance of original for saving Data state.
@@ -125,7 +125,7 @@ public class ParallelPipes extends Pipe {
                     } catch (Exception e) {
                         logger.fatal("Exception caught on pipe " + p.getClass().getName() + ". " + e.getMessage() + " while processing instance");
                         e.printStackTrace(System.err);
-                        System.exit(0);
+                        System.exit(-1);
                     }
                 }
         );
@@ -151,8 +151,8 @@ public class ParallelPipes extends Pipe {
             // We have to check inputType and match it with actual one.
             if (inputType != pipe.getInputType()) {
                 // If inputType doesn't match with actual.
-                logger.error("[PARALLEL PIPE ADD] BAD compatibility between Pipes.");
-                System.exit(0);
+                logger.fatal("[PARALLEL PIPE ADD] BAD compatibility between Pipes.");
+                System.exit(-1);
             }
 
             pipes.add(pipe);

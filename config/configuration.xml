@@ -16,7 +16,13 @@
                 </pipe>
                 <serialPipes>
                     <pipe>
-                        <name>FilesizePipe</name>
+                        <name>FileSizePipe</name>
+                        <params>
+                            <pipeParameter>
+                                <name>propName</name>
+                                <value>The file size</value>
+                            </pipeParameter>
+                        </params>
                     </pipe>
                 </serialPipes>
             </serialPipes>
@@ -27,16 +33,18 @@
                 <pipe>
                     <name>MeasureLengthPipe</name>
                 </pipe>
+            </parallelPipes>
+            <serialPipes>
                 <pipe>
                     <name>GenerateOutputPipe</name>
                     <params>
                         <pipeParameter>
                             <name>outFile</name>
-                            <value>output.csv</value>
+                            <value>changedOutput.csv</value>
                         </pipeParameter>
                     </params>
                 </pipe>
-            </parallelPipes>
+            </serialPipes>
         </serialPipes>
     </pipeline>
 </configuration>

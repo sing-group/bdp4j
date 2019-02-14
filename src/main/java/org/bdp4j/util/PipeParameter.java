@@ -4,6 +4,7 @@ public class PipeParameter {
     private String paramName;
     private String description;
     private String defaultValue;
+    private String value;
     private Class<?>[] types;
 
     PipeParameter(String paramName, String description, String defaultValue, Class<?>[] types) {
@@ -11,6 +12,7 @@ public class PipeParameter {
         this.description = description;
         this.defaultValue = defaultValue;
         this.types = types;
+        this.value = null;
     }
 
     public String getParamName() {
@@ -43,5 +45,15 @@ public class PipeParameter {
 
     public void setTypes(Class<?>[] types) {
         this.types = types;
+    }
+
+    public String getValue() {
+        return value;
+    }
+
+    public void setValue(String value) {
+        // Just changes it if is different to default
+        if (!defaultValue.equals(value))
+            this.value = value;
     }
 }

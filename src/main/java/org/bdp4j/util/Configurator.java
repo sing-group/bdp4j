@@ -4,6 +4,7 @@ import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.bdp4j.pipe.ParallelPipes;
 import org.bdp4j.pipe.Pipe;
+import org.bdp4j.pipe.PipeParameter;
 import org.bdp4j.pipe.SerialPipes;
 import org.w3c.dom.Document;
 import org.w3c.dom.Node;
@@ -12,6 +13,7 @@ import org.w3c.dom.NodeList;
 import javax.xml.parsers.DocumentBuilder;
 import javax.xml.parsers.DocumentBuilderFactory;
 import java.io.File;
+import java.lang.reflect.Method;
 import java.util.HashMap;
 
 /**
@@ -131,7 +133,7 @@ public class Configurator {
         } else if (globalPipe.getNodeName().equals("parallelPipes")) {
             configuredPipe = new ParallelPipes();
         } else {
-            logger.error("[PIPE CONFIGURATION] No serialPipe or parallelPipe is correctly defined.");
+            logger.fatal("[PIPE CONFIGURATION] No serialPipe or parallelPipe is correctly defined.");
             System.exit(-1);
         }
 
@@ -166,7 +168,7 @@ public class Configurator {
                             ((ParallelPipes) configuredPipe).add(getPipeInstance(child.getTextContent().trim(), child));
                         }
                     } catch (NullPointerException e) {
-                        logger.error("[PIPE CONFIGURATION] " + child.getTextContent().trim() +
+                        logger.fatal("[PIPE CONFIGURATION] " + child.getTextContent().trim() +
                                 " does not exist or is not loaded.");
                         System.exit(-1);
                     }
@@ -187,7 +189,7 @@ public class Configurator {
         Pipe pipe = null;
 
         if (pipes.get(pipeName) == null) {
-            logger.error("[PIPE GET] " + pipeName + " is not loaded.");
+            logger.fatal("[PIPE GET] " + pipeName + " is not loaded.");
             System.exit(-1);
         } else {
             PipeInfo pipeInfo = pipes.get(pipeName);
@@ -209,13 +211,9 @@ public class Configurator {
                                             if (pipeParameterValues.item(k).getNodeName().equals("name")) {
                                                 pipeParameterName = pipeParameterValues.item(k).getTextContent();
                                             }
-
-                                            if (pipeParameterValues.item(k).getNodeName().equals("description")) {
-                                                String description = pipeParameterValues.item(k).getTextContent();
-                                                pipeInfo.setPipeParam(pipeParameterName, "description", description);
-                                            } else if (pipeParameterValues.item(k).getNodeName().equals("defaultValue")) {
-                                                String defaultValue = pipeParameterValues.item(k).getTextContent();
-                                                pipeInfo.setPipeParam(pipeParameterName, "defaultValue", defaultValue);
+                                            if (pipeParameterValues.item(k).getNodeName().equals("value")) {
+                                                String value = pipeParameterValues.item(k).getTextContent();
+                                                pipeInfo.setPipeParam(pipeParameterName, value);
                                             }
                                         }
                                     }
@@ -228,8 +226,17 @@ public class Configurator {
 
             try {
                 pipe = (Pipe) pipes.get(pipeName).getPipeClass().newInstance();
+
+                Method[] methods = pipe.getClass().getMethods();
+                for (Method m : methods) {
+                    if (m.getAnnotation(PipeParameter.class) != null) {
+                        PipeParameter pipeParameter = m.getAnnotation(PipeParameter.class);
+                        String value = pipeInfo.getPipeParams().get(pipeParameter.name()).getValue();
+                        if (value != null) m.invoke(pipe, value);
+                    }
+                }
             } catch (Exception e) {
-                logger.error("[GET PIPE INSTANCE] Error getting pipe instance of " + pipeName);
+                logger.fatal("[GET PIPE INSTANCE] Error getting pipe instance of " + pipeName);
                 System.exit(-1);
             }
         }
@@ -306,7 +313,7 @@ public class Configurator {
             }
         }
 
-        logger.error("[GET NAME FROM PIPE] Could not get name from pipe.");
+        logger.fatal("[GET NAME FROM PIPE] Could not get name from pipe.");
         System.exit(-1);
         return name;
     }
@@ -320,7 +327,7 @@ public class Configurator {
     public String getProp(String k) {
         // Check if the property exists.
         if (props.get(k) == null) {
-            logger.error("[PROPERTY GET] The requested property '" + k + "' does not exists.");
+            logger.fatal("[PROPERTY GET] The requested property '" + k + "' does not exists.");
             System.exit(-1);
         }
 

@@ -79,15 +79,11 @@ public class PipeInfo {
         this.pipeParams = pipeParams;
     }
 
-    public void setPipeParam(String pipeParameterName, String parameter, String value) {
+    public void setPipeParam(String pipeParameterName, String value) {
         if (pipeParams.get(pipeParameterName) == null) {
             logger.warn("[SET PIPE PARAM] " + pipeParameterName + " is not defined on " + pipeClass.getSimpleName() + ".");
         } else {
-            if (parameter.equals("description")) {
-                pipeParams.get(pipeParameterName).setDescription(value);
-            } else if (parameter.equals("defaultValue")) {
-                pipeParams.get(pipeParameterName).setDefaultValue(value);
-            }
+            pipeParams.get(pipeParameterName).setValue(value);
         }
     }
 }

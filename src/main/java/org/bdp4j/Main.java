@@ -48,7 +48,7 @@ public class Main {
 
         /* Check dependencies */
         if (!p.checkDependencies()) {
-            logger.error("[CHECK DEPENDENCIES] " + Pipe.getErrorMessage());
+            logger.fatal("[CHECK DEPENDENCIES] " + Pipe.getErrorMessage());
             System.exit(-1);
         }
 
@@ -73,7 +73,7 @@ public class Main {
                     .filter(Files::isRegularFile)
                     .forEach(FileMng::visit);
         } catch (IOException e) {
-            System.exit(0);
+            System.exit(-1);
         }
     }
 

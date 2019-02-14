@@ -157,7 +157,7 @@ public abstract class Pipe {
         } catch (Exception e) {
             logger.fatal("Exception caught on pipe " + getClass().getName() + ". " + e.getMessage() + " while processing instance");
             e.printStackTrace(System.err);
-            System.exit(0);
+            System.exit(-1);
         }
 
         return carriers;

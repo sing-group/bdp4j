@@ -13,7 +13,7 @@ outputsyns\.csv
 .factorypath
 .vscode/settings.json
 
-output\.csv
+*.csv
 
 \.idea/
 
