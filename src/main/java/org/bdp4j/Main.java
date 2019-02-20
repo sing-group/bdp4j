@@ -23,9 +23,7 @@ import java.util.List;
  * @author Yeray Lage
  */
 public class Main {
-    /**
-     * For logging purposes
-     */
+    /* For logging purposes */
     private static final Logger logger = LogManager.getLogger(Main.class);
 
     /* List of instances to process */
@@ -44,7 +42,7 @@ public class Main {
 
         /* Configure pipe */
         Pipe p = configurator.configurePipe(pipes);
-        System.out.println("\nPipe structure:\n\t" + p.toString() + "\n");
+        logger.info("Pipe structure:\n\t" + p.toString() + "\n\tTee pipes: " + p.teePipesCount() + "\n");
 
         /* Check dependencies */
         if (!p.checkDependencies()) {
@@ -56,9 +54,10 @@ public class Main {
         generateInstances(configurator.getProp(Configurator.SAMPLES_FOLDER));
 
         /* Process instances */
-        logger.info("Processing instances...");
+        logger.info("Processing " + carriers.size() + " instances...");
+        long init = System.currentTimeMillis();
         p.pipeAll(carriers);
-        logger.info("Instances processed.");
+        logger.info("Instances processed in " + (System.currentTimeMillis() - init) + "ms.");
     }
 
     /**

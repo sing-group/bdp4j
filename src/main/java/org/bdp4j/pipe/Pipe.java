@@ -41,7 +41,7 @@ import java.util.List;
  * @author Maria Novo
  * @author Yeray Lage
  */
-public abstract class Pipe {
+public abstract class Pipe implements PipeInterface {
 
     /**
      * For logging purposes
@@ -62,7 +62,7 @@ public abstract class Pipe {
      * These dependences indicate what pipes must not be
      * executed after the current one.
      */
-    final Class<?>[] notAftterDeps;
+    final Class<?>[] notAfterDeps;
     /**
      * Marks if the next instance to pipe will be the last one to pipe
      */
@@ -79,7 +79,7 @@ public abstract class Pipe {
      * @param notAfterDeps     The dependences notAfter (pipes that cannot be executed after this one)
      */
     public Pipe(Class<?>[] alwaysBeforeDeps, Class<?>[] notAfterDeps) {
-        this.notAftterDeps = notAfterDeps;
+        this.notAfterDeps = notAfterDeps;
         this.alwaysBeforeDeps = alwaysBeforeDeps;
     }
 
@@ -237,7 +237,7 @@ public abstract class Pipe {
      * @return null if not sure about the fullfulling, true if the dependences are satisfied,
      * false if the dependences could not been satisfied
      */
-    Boolean checkAlwaysBeforeDeps(Pipe p, List<Class<?>> deps) {
+    public Boolean checkAlwaysBeforeDeps(Pipe p, List<Class<?>> deps) {
         if (this == p && deps.size() > 0) {
             errorMessage = "Unsatisfied AlwaysBefore dependencies for pipe " + p.getClass().getName() + " (";
             boolean first = true;
@@ -264,7 +264,7 @@ public abstract class Pipe {
      * @return null if not sure about the fullfulling, true if the dependences are satisfied,
      * false if the dependences could not been satisfied
      */
-    boolean checkNotAfterDeps(Pipe p, BooleanBean foundP) {
+    public boolean checkNotAfterDeps(Pipe p, BooleanBean foundP) {
         if (this == p)
             return true;
         else throw new RuntimeException("Seems this situation has no sense.");
@@ -287,6 +287,11 @@ public abstract class Pipe {
      */
     public boolean checkDependencies() {
         return this.alwaysBeforeDeps.length == 0;
+    }
+
+    // TODO this javaDoc
+    public Integer teePipesCount() {
+        return (this.getClass().getAnnotationsByType(TeePipe.class).length != 0) ? 1 : 0;
     }
 
     /**

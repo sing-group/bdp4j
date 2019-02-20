@@ -187,6 +187,7 @@ public class Configurator {
      */
     private Pipe getPipeInstance(String pipeName, Node pipeNode) {
         Pipe pipe = null;
+        pipeName = pipeName.split("\n")[0];
 
         if (pipes.get(pipeName) == null) {
             logger.fatal("[PIPE GET] " + pipeName + " is not loaded.");
