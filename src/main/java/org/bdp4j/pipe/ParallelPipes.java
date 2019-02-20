@@ -319,10 +319,7 @@ public class ParallelPipes extends Pipe implements PipeInterface {
     public Integer teePipesCount() {
         int result = 0;
 
-        for (Pipe p : pipes) {
-            result += p.teePipesCount();
-            logger.debug(p.getClass().getSimpleName() + " - " + result);
-        }
+        for (Pipe p : pipes) result += p.teePipesCount();
 
         return result;
     }
