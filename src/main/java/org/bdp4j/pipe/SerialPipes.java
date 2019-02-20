@@ -367,7 +367,7 @@ public class SerialPipes extends Pipe {
     /**
      * Check if notBeforeDeps are satisfied for pipe p recursively. Note that p should be inserted.
      *
-     * @param p The pipe that is being checked
+     * @param p      The pipe that is being checked
      * @param foundP // TODO what is this for?
      * @return null if not sure about the fullfulling, true if the dependencies are satisfied,
      * false if the dependencies could not been satisfied
@@ -410,10 +410,7 @@ public class SerialPipes extends Pipe {
     public Integer teePipesCount() {
         int result = 0;
 
-        for (Pipe p : pipes) {
-            result += p.teePipesCount();
-            logger.debug(p.getClass().getSimpleName() + " - " + result);
-        }
+        for (Pipe p : pipes) result += p.teePipesCount();
 
         return result;
     }
