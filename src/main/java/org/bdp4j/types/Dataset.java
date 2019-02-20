@@ -303,29 +303,31 @@ public class Dataset implements Serializable, Cloneable {
         for (Map.Entry<String, String> entry : newColumnNames.entrySet()) {
             String oldValue = entry.getKey();
             String newValue = entry.getValue();
-            try {
-                Attribute lastAttribute = instances.attribute(newValue);
-                Attribute att = instances.attribute(oldValue);
-                if (lastAttribute == null) {
-                    instances.renameAttribute(att, newValue);
-                } else {
-                    for (Instance instance : instances) {
-                        Double lastAttValue = instance.value(lastAttribute.index());
-                        Double oldAttValue = instance.value(att.index());
-                        Double combineValues = op.combine(lastAttValue, oldAttValue);
-                        instance.setValue(lastAttribute, combineValues);
+            if (!oldValue.equals("") || !newValue.equals("")) {
+                try {
+                    Attribute lastAttribute = instances.attribute(newValue);
+                    Attribute att = instances.attribute(oldValue);
+                    if (lastAttribute == null) {
+                        instances.renameAttribute(att, newValue);
+                    } else {
+                        for (Instance instance : instances) {
+                            Double lastAttValue = instance.value(lastAttribute.index());
+                            Double oldAttValue = instance.value(att.index());
+                            Double combineValues = op.combine(lastAttValue, oldAttValue);
+                            instance.setValue(lastAttribute, combineValues);
 
+                        }
+
+                        listAttributeName.add(oldValue);
                     }
-                    listAttributeName.add(oldValue);
-
+                } catch (NullPointerException ex) {
+                    logger.warn(" Attribute name doesn't exist. " + ex.getMessage());
                 }
-
-            } catch (NullPointerException ex) {
-                logger.warn(" Attribute name doesn't exist. " + ex.getMessage());
+            }
+            if (listAttributeName.size() > 0) {
+                deleteAttributeColumns(listAttributeName);
             }
         }
-        deleteAttributeColumns(listAttributeName);
-
         return this;
     }
 
@@ -360,12 +362,15 @@ public class Dataset implements Serializable, Cloneable {
         Instances instances = this.dataset;
         for (String attributeName : listAttributeName) {
             try {
-                int attPosition = instances.attribute(attributeName).index();
-                if (attPosition >= 0) {
-                    instances.deleteAttributeAt(attPosition);
+                Attribute attName = instances.attribute(attributeName);
+                if (attName != null) {
+                    int attPosition = instances.attribute(attributeName).index();
+                    if (attPosition >= 0) {
+                        instances.deleteAttributeAt(attPosition);
+                    }
                 }
             } catch (NullPointerException ex) {
-                logger.warn(Dataset.class.getClass().getName() + ". Attribute >>" + attributeName + "<< doesn't exist. " + ex.getMessage());
+                logger.warn(Dataset.class.getClass().getName() + ". Attribute >>" + attributeName + "<< doesn't exist. ");
             }
         }
         return this;
@@ -408,6 +413,7 @@ public class Dataset implements Serializable, Cloneable {
 
                     } catch (NullPointerException ex) {
                         logger.warn(Dataset.class.getClass().getName() + ". Attribute >>" + attributeToJoin + "<< doesn't exist. " + ex.getMessage());
+
                     }
                 }
             }
