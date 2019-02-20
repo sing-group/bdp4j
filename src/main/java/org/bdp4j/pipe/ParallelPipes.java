@@ -16,7 +16,7 @@ import java.util.List;
  *
  * @author Yeray Lage
  */
-public class ParallelPipes extends Pipe {
+public class ParallelPipes extends Pipe implements PipeInterface {
     /**
      * For logging purposes
      */
@@ -151,11 +151,14 @@ public class ParallelPipes extends Pipe {
             // We have to check inputType and match it with actual one.
             if (inputType != pipe.getInputType()) {
                 // If inputType doesn't match with actual.
-                logger.fatal("[PARALLEL PIPE ADD] BAD compatibility between Pipes.");
+                logger.fatal("[PIPE ADD] Bad compatibility between Pipes: " + pipes.get(0).getClass()
+                        .getSimpleName() + " | " + pipe.getClass().getSimpleName());
                 System.exit(-1);
             }
 
             pipes.add(pipe);
+            logger.info("[PIPE ADD] Good compatibility between Pipes: " + pipes.get(0).getClass()
+                    .getSimpleName() + " | " + pipe.getClass().getSimpleName());
         }
     }
 
@@ -190,7 +193,7 @@ public class ParallelPipes extends Pipe {
      * false if the dependences could not been satisfied
      */
     @Override
-    Boolean checkAlwaysBeforeDeps(Pipe p, List<Class<?>> deps) {
+    public Boolean checkAlwaysBeforeDeps(Pipe p, List<Class<?>> deps) {
         if (!containsPipe(p)) {
             for (Pipe p1 : this.pipes) {
                 Boolean retVal = p1.checkAlwaysBeforeDeps(p, deps);
@@ -217,7 +220,7 @@ public class ParallelPipes extends Pipe {
      * false if the dependences could not been satisfied
      */
     @Override
-    boolean checkNotAfterDeps(Pipe p, BooleanBean foundP) {
+    public boolean checkNotAfterDeps(Pipe p, BooleanBean foundP) {
         boolean retVal = true;
 
         if (!containsPipe(p)) {
@@ -225,7 +228,7 @@ public class ParallelPipes extends Pipe {
                 if (p1 instanceof SerialPipes || p1 instanceof ParallelPipes)
                     retVal = retVal && p1.checkNotAfterDeps(p, foundP);
                 else {
-                    if (foundP.getValue()) retVal = retVal && !(Arrays.asList(p.notAftterDeps).contains(p1.getClass()));
+                    if (foundP.getValue()) retVal = retVal && !(Arrays.asList(p.notAfterDeps).contains(p1.getClass()));
                     if (!retVal) {
                         errorMessage = "Unsatisfied NotAfter dependency for pipe " + p.getClass().getName() + " (" + p1.getClass().getName() + ")";
                         return retVal;
@@ -245,7 +248,7 @@ public class ParallelPipes extends Pipe {
                     retVal = retVal && pipeThatContainsP.checkNotAfterDeps(p, foundP);
                 else {
                     if (foundP.getValue()) {
-                        retVal = retVal && !(Arrays.asList(p.notAftterDeps).contains(pipeThatContainsP.getClass()));
+                        retVal = retVal && !(Arrays.asList(p.notAfterDeps).contains(pipeThatContainsP.getClass()));
                         if (!retVal) {
                             errorMessage = "Unsatisfied NotAfter dependency for pipe " + p.getClass().getName() + " (" + pipeThatContainsP.getClass().getName() + ")";
                             return retVal;
@@ -261,7 +264,7 @@ public class ParallelPipes extends Pipe {
                         retVal = retVal && p1.checkNotAfterDeps(p, foundP);
                     else {
                         if (foundP.getValue()) {
-                            retVal = retVal && !(Arrays.asList(p.notAftterDeps).contains(p1.getClass()));
+                            retVal = retVal && !(Arrays.asList(p.notAfterDeps).contains(p1.getClass()));
                             if (!retVal) {
                                 errorMessage = "Unsatisfied NotAfter dependency for pipe " + p.getClass().getName() + " (" + p1.getClass().getName() + ")";
                                 return retVal;
@@ -310,6 +313,18 @@ public class ParallelPipes extends Pipe {
         }
 
         return returnValue;
+    }
+
+    @Override
+    public Integer teePipesCount() {
+        int result = 0;
+
+        for (Pipe p : pipes) {
+            result += p.teePipesCount();
+            logger.debug(p.getClass().getSimpleName() + " - " + result);
+        }
+
+        return result;
     }
 
     /**

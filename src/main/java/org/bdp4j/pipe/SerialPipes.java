@@ -130,7 +130,6 @@ public class SerialPipes extends Pipe {
     public void setPipes(Pipe[] pipes) {
         this.pipes = new ArrayList<Pipe>(pipes.length);
 
-        //System.out.println ("SerialPipes init this = "+this);
         for (Pipe pipe : pipes) {
             this.add(pipe);
         }
@@ -153,7 +152,8 @@ public class SerialPipes extends Pipe {
     public void add(Pipe pipe) {
         if (!pipes.isEmpty()) {
             if (checkCompatibility(pipe)) {
-                logger.info("[PIPE ADD] Good compatibility between Pipes.");
+                logger.info("[PIPE ADD] Good compatibility between Pipes: " + pipes.get(pipes.size() - 1).getClass()
+                        .getSimpleName() + " | " + pipe.getClass().getSimpleName());
                 pipe.setParent(this);
                 pipes.add(pipe);
 
@@ -164,7 +164,8 @@ public class SerialPipes extends Pipe {
 
                 outputType = pipe.getOutputType();
             } else {
-                logger.fatal("[SERIAL PIPE ADD] BAD compatibility between Pipes.");
+                logger.fatal("[PIPE ADD] Bad compatibility between Pipes: " + pipes.get(pipes.size() - 1)
+                        .getClass().getSimpleName() + " | " + pipe.getClass().getSimpleName());
                 System.exit(-1);
             }
         } else {
@@ -336,7 +337,7 @@ public class SerialPipes extends Pipe {
         sb.append("[SP](");
 
         for (Pipe p : pipes)
-                sb.append(p).append(" | ");
+            sb.append(p).append(" | ");
 
         sb.delete(sb.length() - 3, sb.length());
         sb.append(")");
@@ -354,7 +355,7 @@ public class SerialPipes extends Pipe {
      * false if the dependences could not been satisfied
      */
     @Override
-    Boolean checkAlwaysBeforeDeps(Pipe p, List<Class<?>> deps) {
+    public Boolean checkAlwaysBeforeDeps(Pipe p, List<Class<?>> deps) {
         for (Pipe p1 : this.pipes) {
             Boolean retVal = p1.checkAlwaysBeforeDeps(p, deps);
             if (retVal != null) return retVal;
@@ -364,21 +365,22 @@ public class SerialPipes extends Pipe {
     }
 
     /**
-     * Check if notBeforeDeps are satisfied for pipe p recursivelly. Note that p should be inserted.
+     * Check if notBeforeDeps are satisfied for pipe p recursively. Note that p should be inserted.
      *
      * @param p The pipe that is being checked
-     * @return null if not sure about the fullfulling, true if the dependences are satisfied,
-     * false if the dependences could not been satisfied
+     * @param foundP // TODO what is this for?
+     * @return null if not sure about the fullfulling, true if the dependencies are satisfied,
+     * false if the dependencies could not been satisfied
      */
     @Override
-    boolean checkNotAfterDeps(Pipe p, BooleanBean foundP) {
+    public boolean checkNotAfterDeps(Pipe p, BooleanBean foundP) {
         boolean retVal = true;
 
         for (Pipe p1 : this.pipes) {
             if (p1 instanceof SerialPipes || p1 instanceof ParallelPipes)
                 retVal = retVal && p1.checkNotAfterDeps(p, foundP);
             else {
-                if (foundP.getValue()) retVal = retVal && !(Arrays.asList(p.notAftterDeps).contains(p1.getClass()));
+                if (foundP.getValue()) retVal = retVal && !(Arrays.asList(p.notAfterDeps).contains(p1.getClass()));
                 if (!retVal) {
                     errorMessage = "Unsatisfied NotAfter dependency for pipe " + p.getClass().getName() + " (" + p1.getClass().getName() + ")";
                     return retVal;
@@ -404,6 +406,17 @@ public class SerialPipes extends Pipe {
         return false;
     }
 
+    @Override
+    public Integer teePipesCount() {
+        int result = 0;
+
+        for (Pipe p : pipes) {
+            result += p.teePipesCount();
+            logger.debug(p.getClass().getSimpleName() + " - " + result);
+        }
+
+        return result;
+    }
 
     /**
      * Checks if the dependencies are satisfied
