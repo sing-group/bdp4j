@@ -15,6 +15,7 @@ package org.bdp4j.pipe;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.bdp4j.types.Instance;
+import org.bdp4j.types.PipeType;
 import org.bdp4j.util.BooleanBean;
 
 import java.util.ArrayList;
@@ -31,7 +32,7 @@ import java.util.List;
  * @author Maria Novo Loures
  * @author José Ramón Méndez
  */
-public class SerialPipes extends Pipe {
+public class SerialPipes extends AbstractPipe {
     /**
      * For logging purposes
      */
@@ -45,16 +46,16 @@ public class SerialPipes extends Pipe {
      */
     private Class<?> outputType = null;
     /**
-     * Pipe list
+     * AbstractPipe list
      */
-    private ArrayList<Pipe> pipes;
+    private ArrayList<AbstractPipe> pipes;
 
     /**
      * Build an empty SerialPipes
      */
     public SerialPipes() {
         super(new Class<?>[0], new Class<?>[0]);
-        this.pipes = new ArrayList<Pipe>();
+        this.pipes = new ArrayList<AbstractPipe>();
     }
 
     /**
@@ -63,11 +64,11 @@ public class SerialPipes extends Pipe {
      * @param pipes An array of pipes that will be included in the serialPipes
      *              in the same order
      */
-    public SerialPipes(Pipe[] pipes) {
+    public SerialPipes(AbstractPipe[] pipes) {
         super(new Class<?>[0], new Class<?>[0]);
-        this.pipes = new ArrayList<Pipe>(pipes.length);
+        this.pipes = new ArrayList<AbstractPipe>(pipes.length);
 
-        for (Pipe pipe : pipes) {
+        for (AbstractPipe pipe : pipes) {
             this.add(pipe);
         }
     }
@@ -78,11 +79,11 @@ public class SerialPipes extends Pipe {
      * @param pipeList An arrayList of pipes that will be included in the
      *                 serialPipes in the same order
      */
-    public SerialPipes(ArrayList<Pipe> pipeList) {
+    public SerialPipes(ArrayList<AbstractPipe> pipeList) {
         super(new Class<?>[0], new Class<?>[0]);
-        this.pipes = new ArrayList<Pipe>(pipeList.size());
+        this.pipes = new ArrayList<AbstractPipe>(pipeList.size());
 
-        for (Pipe aPipeList : pipeList) {
+        for (AbstractPipe aPipeList : pipeList) {
             this.add(aPipeList);
         }
     }
@@ -112,13 +113,13 @@ public class SerialPipes extends Pipe {
     /**
      * Return an array of pipes with the current pipe
      *
-     * @return a Pipe array containing the pipes that compound the serial pipes
+     * @return a AbstractPipe array containing the pipes that compound the serial pipes
      */
-    public Pipe[] getPipes() {
+    public AbstractPipe[] getPipes() {
         if (pipes == null) {
-            return new Pipe[0];
+            return new AbstractPipe[0];
         }
-        Pipe[] returnValue = new Pipe[pipes.size()];
+        AbstractPipe[] returnValue = new AbstractPipe[pipes.size()];
         return pipes.toArray(returnValue);
     }
 
@@ -127,18 +128,18 @@ public class SerialPipes extends Pipe {
      *
      * @param pipes pipes used
      */
-    public void setPipes(Pipe[] pipes) {
-        this.pipes = new ArrayList<Pipe>(pipes.length);
+    public void setPipes(AbstractPipe[] pipes) {
+        this.pipes = new ArrayList<AbstractPipe>(pipes.length);
 
-        for (Pipe pipe : pipes) {
+        for (AbstractPipe pipe : pipes) {
             this.add(pipe);
         }
     }
 
     /**
-     * Returns the current Pipe
+     * Returns the current AbstractPipe
      *
-     * @return current Pipe
+     * @return current AbstractPipe
      */
     public SerialPipes getPipe() {
         return this;
@@ -149,7 +150,7 @@ public class SerialPipes extends Pipe {
      *
      * @param pipe The new pipe to be added
      */
-    public void add(Pipe pipe) {
+    public void add(AbstractPipe pipe) {
         if (!pipes.isEmpty()) {
             if (checkCompatibility(pipe)) {
                 logger.info("[PIPE ADD] Good compatibility between Pipes: " + pipes.get(pipes.size() - 1).getClass()
@@ -158,7 +159,7 @@ public class SerialPipes extends Pipe {
                 pipes.add(pipe);
 
                 if (inputType == null) {
-                    // If first Pipe hasn't inputType
+                    // If first AbstractPipe hasn't inputType
                     inputType = pipe.getInputType();
                 }
 
@@ -169,7 +170,7 @@ public class SerialPipes extends Pipe {
                 System.exit(-1);
             }
         } else {
-            // If first Pipe
+            // If first AbstractPipe
             pipe.setParent(this);
             pipes.add(pipe);
 
@@ -185,14 +186,14 @@ public class SerialPipes extends Pipe {
      * @param pipe The pipe that will be added
      * @return true if the pipe can be placed at the end of the pipelist
      */
-    private boolean checkCompatibility(Pipe pipe) {
-        Pipe lastPipe = pipes.get(pipes.size() - 1);
+    private boolean checkCompatibility(AbstractPipe pipe) {
+        AbstractPipe lastPipe = pipes.get(pipes.size() - 1);
 
         return lastPipe.getOutputType() == pipe.getInputType();
     }
 
     /**
-     * Pipe an instance starting in a certain position of the pipe
+     * AbstractPipe an instance starting in a certain position of the pipe
      *
      * @param carrier       The instance to be processed
      * @param startingIndex The position of the fisrt pipe
@@ -215,10 +216,10 @@ public class SerialPipes extends Pipe {
     private Instance getInstance(Instance carrier, int startingIndex) {
         for (int i = startingIndex; i < pipes.size(); i++) {
 
-            Pipe p = pipes.get(i);
+            AbstractPipe p = pipes.get(i);
 
             if (p == null) {
-                logger.fatal("Pipe " + i + " is null");
+                logger.fatal("AbstractPipe " + i + " is null");
                 System.exit(-1);
             } else {
 
@@ -240,7 +241,7 @@ public class SerialPipes extends Pipe {
     }
 
     /**
-     * Pipe a collection of instances through the whole process
+     * AbstractPipe a collection of instances through the whole process
      *
      * @param carriers The instances to be processed
      * @return the instances after processing them
@@ -249,9 +250,9 @@ public class SerialPipes extends Pipe {
     public Collection<Instance> pipeAll(Collection<Instance> carriers) {
         //Call pipeAll for each pipe included in the serialPipes
         for (int i = 0; i < pipes.size(); i++) {
-            Pipe p = pipes.get(i);
+            AbstractPipe p = pipes.get(i);
             if (p == null) {
-                logger.fatal("Pipe " + i + " is null");
+                logger.fatal("AbstractPipe " + i + " is null");
                 System.exit(-1);
             } else {
                 p.pipeAll(carriers);
@@ -278,10 +279,10 @@ public class SerialPipes extends Pipe {
      * Replace a pipe in the pipeList
      *
      * @param index The position of the pipe that will be replaced
-     * @param p     The new Pipe
+     * @param p     The new AbstractPipe
      */
     //added by Fuchun Jan.30, 2004
-    public void replacePipe(int index, Pipe p) {
+    public void replacePipe(int index, AbstractPipe p) {
         try {
             pipes.set(index, p);
         } catch (Exception e) {
@@ -304,8 +305,8 @@ public class SerialPipes extends Pipe {
      * @param index The position of the pipe
      * @return the pipe included in the desired position
      */
-    public Pipe getPipe(int index) {
-        Pipe retPipe = null;
+    public AbstractPipe getPipe(int index) {
+        AbstractPipe retPipe = null;
 
         try {
             retPipe = pipes.get(index);
@@ -317,7 +318,7 @@ public class SerialPipes extends Pipe {
     }
 
     /**
-     * Pipe a instance through the whole piping process
+     * AbstractPipe a instance through the whole piping process
      *
      * @param carrier the instance to be piped
      * @return The instance achieved as processing result
@@ -336,7 +337,7 @@ public class SerialPipes extends Pipe {
         StringBuilder sb = new StringBuilder();
         sb.append("[SP](");
 
-        for (Pipe p : pipes)
+        for (AbstractPipe p : pipes)
             sb.append(p).append(" | ");
 
         sb.delete(sb.length() - 3, sb.length());
@@ -355,8 +356,8 @@ public class SerialPipes extends Pipe {
      * false if the dependences could not been satisfied
      */
     @Override
-    public Boolean checkAlwaysBeforeDeps(Pipe p, List<Class<?>> deps) {
-        for (Pipe p1 : this.pipes) {
+    public Boolean checkAlwaysBeforeDeps(AbstractPipe p, List<Class<?>> deps) {
+        for (AbstractPipe p1 : this.pipes) {
             Boolean retVal = p1.checkAlwaysBeforeDeps(p, deps);
             if (retVal != null) return retVal;
         }
@@ -373,10 +374,10 @@ public class SerialPipes extends Pipe {
      * false if the dependencies could not been satisfied
      */
     @Override
-    public boolean checkNotAfterDeps(Pipe p, BooleanBean foundP) {
+    public boolean checkNotAfterDeps(AbstractPipe p, BooleanBean foundP) {
         boolean retVal = true;
 
-        for (Pipe p1 : this.pipes) {
+        for (AbstractPipe p1 : this.pipes) {
             if (p1 instanceof SerialPipes || p1 instanceof ParallelPipes)
                 retVal = retVal && p1.checkNotAfterDeps(p, foundP);
             else {
@@ -399,18 +400,18 @@ public class SerialPipes extends Pipe {
      * @return true if this pipe contains p false otherwise
      */
     @Override
-    public boolean containsPipe(Pipe p) {
-        for (Pipe p1 : this.pipes) {
+    public boolean containsPipe(AbstractPipe p) {
+        for (AbstractPipe p1 : this.pipes) {
             if (p1.containsPipe(p)) return true;
         }
         return false;
     }
 
     @Override
-    public Integer teePipesCount() {
+    public Integer countPipes(PipeType pipeType) {
         int result = 0;
 
-        for (Pipe p : pipes) result += p.teePipesCount();
+        for (AbstractPipe p : pipes) result += p.countPipes(pipeType);
 
         return result;
     }
@@ -424,7 +425,7 @@ public class SerialPipes extends Pipe {
     public boolean checkDependencies() {
         boolean returnValue = true;
 
-        for (Pipe p1 : pipes) {
+        for (AbstractPipe p1 : pipes) {
             if (!(p1 instanceof SerialPipes) && !(p1 instanceof ParallelPipes)) {
                 returnValue = returnValue & getParentRoot().checkAlwaysBeforeDeps(p1, new ArrayList<Class<?>>(Arrays.asList(p1.alwaysBeforeDeps)));
                 returnValue = returnValue & getParentRoot().checkNotAfterDeps(p1, new BooleanBean(false));

@@ -12,7 +12,7 @@
    information, see the file `LICENSE' included with this distribution. */
 package org.bdp4j.types;
 
-import org.bdp4j.pipe.Pipe;
+import org.bdp4j.pipe.AbstractPipe;
 
 import java.io.File;
 import java.io.Serializable;
@@ -37,7 +37,7 @@ import java.util.Set;
  * <p>
  * Each field has no predefined type, and may change type as the instance is
  * processed. For example, the data field may start off being a string that
- * represents a file name and then be processed by a {@link org.bdp4j.pipe.Pipe}
+ * represents a file name and then be processed by a {@link AbstractPipe}
  * into a CharSequence representing the contents of the file, and eventually to
  * a feature vector holding words found in the file. It is
  * up to each pipe which fields in the Instance it modifies; the most common
@@ -48,7 +48,7 @@ import java.util.Set;
  * @author José Ramón Méndez Reboredo
  * @author Yeray Lage
  * @author Maria Novo
- * @see Pipe
+ * @see AbstractPipe
  */
 public class Instance implements Serializable {
     /**
@@ -112,7 +112,7 @@ public class Instance implements Serializable {
      * @param i The instance to be used as source for creating the new one
      */
     public Instance(Instance i) {
-        this.data = (Serializable) cloneObject((Object) i.data);
+        this.data = (Serializable) cloneObject(i.data);
         this.target = i.target;
         this.name = i.name;
         this.source = i.source;
@@ -161,7 +161,7 @@ public class Instance implements Serializable {
      * @return a new instance cloning the original one
      */
     public Instance clone() {
-        return new Instance((Serializable) cloneObject((Object) data), target, name, source);
+        return new Instance((Serializable) cloneObject(data), target, name, source);
     }
 
     /**

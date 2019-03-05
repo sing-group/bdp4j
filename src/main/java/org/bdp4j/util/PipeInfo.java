@@ -7,7 +7,7 @@ import java.lang.reflect.Method;
 import java.util.HashMap;
 
 /**
- * Pipe class with name and params.
+ * AbstractPipe class with name and params.
  *
  * @author Yeray Lage
  */

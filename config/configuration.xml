@@ -7,7 +7,7 @@
         <outputDir>./output</outputDir>
     </general>
 
-    <!-- Pipe structure that is going to be used -->
+    <!-- AbstractPipe structure that is going to be used -->
     <pipeline>
         <serialPipes>
 

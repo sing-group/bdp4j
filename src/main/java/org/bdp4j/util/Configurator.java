@@ -2,8 +2,8 @@ package org.bdp4j.util;
 
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
+import org.bdp4j.pipe.AbstractPipe;
 import org.bdp4j.pipe.ParallelPipes;
-import org.bdp4j.pipe.Pipe;
 import org.bdp4j.pipe.PipeParameter;
 import org.bdp4j.pipe.SerialPipes;
 import org.w3c.dom.Document;
@@ -113,9 +113,9 @@ public class Configurator {
      * @param availablePipes All the available pipes
      * @return Configured pipe with the available ones and the defined structure.
      */
-    public Pipe configurePipe(HashMap<String, PipeInfo> availablePipes) {
+    public AbstractPipe configurePipe(HashMap<String, PipeInfo> availablePipes) {
         pipes = availablePipes;
-        Pipe configuredPipe = null;
+        AbstractPipe configuredPipe = null;
 
         // Full pipeStructure
         Node pipeStructure = document.getElementsByTagName("pipeline").item(0);
@@ -146,21 +146,21 @@ public class Configurator {
                 Node child = globalPipeChildren.item(i);
 
                 if (child.getNodeName().equals("serialPipes")) {
-                    // Pipe is serialPipes
+                    // AbstractPipe is serialPipes
                     if (configuredPipe instanceof SerialPipes) {
                         ((SerialPipes) configuredPipe).add(pipesFromSerial(child));
                     } else {
                         ((ParallelPipes) configuredPipe).add(pipesFromSerial(child));
                     }
                 } else if (child.getNodeName().equals("parallelPipes")) {
-                    // Pipe is parallelPipes
+                    // AbstractPipe is parallelPipes
                     if (configuredPipe instanceof SerialPipes) {
                         ((SerialPipes) configuredPipe).add(pipesFromParallel(child));
                     } else {
                         ((ParallelPipes) configuredPipe).add(pipesFromParallel(child));
                     }
                 } else {
-                    // Pipe is a type of processing pipe
+                    // AbstractPipe is a type of processing pipe
                     try {
                         if (configuredPipe instanceof SerialPipes) {
                             ((SerialPipes) configuredPipe).add(getPipeInstance(child.getTextContent().trim(), child));
@@ -185,8 +185,8 @@ public class Configurator {
      * @param pipeName Name of the pipe.
      * @return Instance of the pipe.
      */
-    private Pipe getPipeInstance(String pipeName, Node pipeNode) {
-        Pipe pipe = null;
+    private AbstractPipe getPipeInstance(String pipeName, Node pipeNode) {
+        AbstractPipe pipe = null;
         pipeName = pipeName.split("\n")[0];
 
         if (pipes.get(pipeName) == null) {
@@ -226,7 +226,7 @@ public class Configurator {
             }
 
             try {
-                pipe = (Pipe) pipes.get(pipeName).getPipeClass().newInstance();
+                pipe = (AbstractPipe) pipes.get(pipeName).getPipeClass().newInstance();
 
                 Method[] methods = pipe.getClass().getMethods();
                 for (Method m : methods) {

@@ -3,6 +3,7 @@ package org.bdp4j.pipe;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.bdp4j.types.Instance;
+import org.bdp4j.types.PipeType;
 import org.bdp4j.util.BooleanBean;
 
 import java.util.ArrayList;
@@ -16,7 +17,7 @@ import java.util.List;
  *
  * @author Yeray Lage
  */
-public class ParallelPipes extends Pipe implements PipeInterface {
+public class ParallelPipes extends AbstractPipe implements Pipe {
     /**
      * For logging purposes
      */
@@ -35,7 +36,7 @@ public class ParallelPipes extends Pipe implements PipeInterface {
     /**
      * Pipes being executed in parallel
      */
-    private ArrayList<Pipe> pipes;
+    private ArrayList<AbstractPipe> pipes;
 
     /**
      * Default constructor, initializes the arrayList.
@@ -50,11 +51,11 @@ public class ParallelPipes extends Pipe implements PipeInterface {
      *
      * @param pipeList The array of pipes to be included in the parallelPipe.
      */
-    public ParallelPipes(Pipe[] pipeList) {
+    public ParallelPipes(AbstractPipe[] pipeList) {
         super(new Class<?>[0], new Class<?>[0]);
-        this.pipes = new ArrayList<Pipe>(pipeList.length);
+        this.pipes = new ArrayList<AbstractPipe>(pipeList.length);
 
-        for (Pipe p : pipeList) this.add(p);
+        for (AbstractPipe p : pipeList) this.add(p);
     }
 
     /**
@@ -62,15 +63,15 @@ public class ParallelPipes extends Pipe implements PipeInterface {
      *
      * @param pipeList The ArrayList of pipes to be included in the parallelPipe.
      */
-    public ParallelPipes(ArrayList<Pipe> pipeList) {
+    public ParallelPipes(ArrayList<AbstractPipe> pipeList) {
         super(new Class<?>[0], new Class<?>[0]);
-        this.pipes = new ArrayList<Pipe>(pipeList.size());
+        this.pipes = new ArrayList<AbstractPipe>(pipeList.size());
 
-        for (Pipe p : pipeList) this.add(p);
+        for (AbstractPipe p : pipeList) this.add(p);
     }
 
     /**
-     * Pipe a collection of instances through the whole process.
+     * AbstractPipe a collection of instances through the whole process.
      *
      * @param carriers Collection of instances to pipe.
      * @return Collection of instances after being processed.
@@ -82,7 +83,7 @@ public class ParallelPipes extends Pipe implements PipeInterface {
         pipes.stream().parallel().forEach(
                 (p) -> {
                     if (p == null) {
-                        logger.fatal("Pipe is null");
+                        logger.fatal("AbstractPipe is null");
                         System.exit(-1);
                     } else {
                         p.pipeAll(carriers);
@@ -130,7 +131,7 @@ public class ParallelPipes extends Pipe implements PipeInterface {
                 }
         );
 
-        // We return the original Pipe, processed the data with the first pipe and the properties with the others.
+        // We return the original AbstractPipe, processed the data with the first pipe and the properties with the others.
         return original;
     }
 
@@ -139,9 +140,9 @@ public class ParallelPipes extends Pipe implements PipeInterface {
      *
      * @param pipe The new pipe added.
      */
-    public void add(Pipe pipe) {
+    public void add(AbstractPipe pipe) {
         if (pipes.isEmpty()) {
-            // Is pipes arrayList is empty, this is the output Pipe.
+            // Is pipes arrayList is empty, this is the output AbstractPipe.
             // Then, inputType and outputType of parallelPipes is theirs.
             pipes.add(pipe);
             inputType = pipe.getInputType();
@@ -193,14 +194,14 @@ public class ParallelPipes extends Pipe implements PipeInterface {
      * false if the dependences could not been satisfied
      */
     @Override
-    public Boolean checkAlwaysBeforeDeps(Pipe p, List<Class<?>> deps) {
+    public Boolean checkAlwaysBeforeDeps(AbstractPipe p, List<Class<?>> deps) {
         if (!containsPipe(p)) {
-            for (Pipe p1 : this.pipes) {
+            for (AbstractPipe p1 : this.pipes) {
                 Boolean retVal = p1.checkAlwaysBeforeDeps(p, deps);
                 if (retVal != null) return retVal;
             }
         } else {
-            for (Pipe p1 : this.pipes) {
+            for (AbstractPipe p1 : this.pipes) {
                 if (p1.containsPipe(p)) {
                     Boolean retVal = p1.checkAlwaysBeforeDeps(p, deps);
                     if (retVal != null) return retVal;
@@ -220,11 +221,11 @@ public class ParallelPipes extends Pipe implements PipeInterface {
      * false if the dependences could not been satisfied
      */
     @Override
-    public boolean checkNotAfterDeps(Pipe p, BooleanBean foundP) {
+    public boolean checkNotAfterDeps(AbstractPipe p, BooleanBean foundP) {
         boolean retVal = true;
 
         if (!containsPipe(p)) {
-            for (Pipe p1 : this.pipes) {
+            for (AbstractPipe p1 : this.pipes) {
                 if (p1 instanceof SerialPipes || p1 instanceof ParallelPipes)
                     retVal = retVal && p1.checkNotAfterDeps(p, foundP);
                 else {
@@ -237,7 +238,7 @@ public class ParallelPipes extends Pipe implements PipeInterface {
                 }
             }
         } else {
-            Pipe pipeThatContainsP = null;
+            AbstractPipe pipeThatContainsP = null;
 
             int i = 0;
             for (; i < pipes.size() - 1 && !pipes.get(i).containsPipe(p); i++) ;
@@ -258,7 +259,7 @@ public class ParallelPipes extends Pipe implements PipeInterface {
                 }
             }
 
-            for (Pipe p1 : this.pipes) {
+            for (AbstractPipe p1 : this.pipes) {
                 if (p1 != pipeThatContainsP) {
                     if (p1 instanceof SerialPipes || p1 instanceof ParallelPipes)
                         retVal = retVal && p1.checkNotAfterDeps(p, foundP);
@@ -287,8 +288,8 @@ public class ParallelPipes extends Pipe implements PipeInterface {
      * @return true if this pipe contains p false otherwise
      */
     @Override
-    public boolean containsPipe(Pipe p) {
-        for (Pipe p1 : this.pipes) {
+    public boolean containsPipe(AbstractPipe p) {
+        for (AbstractPipe p1 : this.pipes) {
             if (p1.containsPipe(p)) return true;
         }
         return false;
@@ -303,7 +304,7 @@ public class ParallelPipes extends Pipe implements PipeInterface {
     public boolean checkDependencies() {
         boolean returnValue = true;
 
-        for (Pipe p1 : pipes) {
+        for (AbstractPipe p1 : pipes) {
             if (!(p1 instanceof SerialPipes) && !(p1 instanceof ParallelPipes)) {
                 returnValue = returnValue & getParentRoot().checkAlwaysBeforeDeps(p1, new ArrayList<Class<?>>(Arrays.asList(p1.alwaysBeforeDeps)));
                 returnValue = returnValue & getParentRoot().checkNotAfterDeps(p1, new BooleanBean(false));
@@ -316,10 +317,10 @@ public class ParallelPipes extends Pipe implements PipeInterface {
     }
 
     @Override
-    public Integer teePipesCount() {
+    public Integer countPipes(PipeType pipeType) {
         int result = 0;
 
-        for (Pipe p : pipes) result += p.teePipesCount();
+        for (AbstractPipe p : pipes) result += p.countPipes(pipeType);
 
         return result;
     }
@@ -334,7 +335,7 @@ public class ParallelPipes extends Pipe implements PipeInterface {
         StringBuilder sb = new StringBuilder();
         sb.append("[PP](");
 
-        for (Pipe p : pipes) sb.append(p).append(" | ");
+        for (AbstractPipe p : pipes) sb.append(p).append(" | ");
 
         sb.delete(sb.length() - 3, sb.length());
         sb.append(")");
