@@ -2,8 +2,9 @@ package org.bdp4j;
 
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
-import org.bdp4j.pipe.Pipe;
+import org.bdp4j.pipe.AbstractPipe;
 import org.bdp4j.types.Instance;
+import org.bdp4j.types.PipeType;
 import org.bdp4j.util.Configurator;
 import org.bdp4j.util.PipeInfo;
 import org.bdp4j.util.PipeProvider;
@@ -41,12 +42,14 @@ public class Main {
         HashMap<String, PipeInfo> pipes = pipeProvider.getPipes();
 
         /* Configure pipe */
-        Pipe p = configurator.configurePipe(pipes);
-        logger.info("Pipe structure:\n\t" + p.toString() + "\n\tTee pipes: " + p.teePipesCount() + "\n");
-
+        AbstractPipe p = configurator.configurePipe(pipes);
+        logger.info("Pipe structure:\n\t" + p.toString() + "\n");
+        for (PipeType pipeType : PipeType.values()) {
+            logger.info("[PIPES COUNT] " + pipeType.name() + ": " + p.countPipes(pipeType));
+        }
         /* Check dependencies */
         if (!p.checkDependencies()) {
-            logger.fatal("[CHECK DEPENDENCIES] " + Pipe.getErrorMessage());
+            logger.fatal("[CHECK DEPENDENCIES] " + AbstractPipe.getErrorMessage());
             System.exit(-1);
         }
 

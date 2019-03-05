@@ -17,7 +17,7 @@ public interface PipeOutputAccumulator {
 
     // "subPipe" is either the iteratedPipe in IteratingPipe or one
     // of the parallel pipes in ParallelPipe.
-    void pipeOutputAccumulate(Instance carrier, Pipe subPipe);
+    void pipeOutputAccumulate(Instance carrier, AbstractPipe subPipe);
 
     // This must not simply raise UnsupportedOperationException!
     PipeOutputAccumulator clonePipeOutputAccumulator();
