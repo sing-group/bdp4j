@@ -63,13 +63,16 @@ public class Enum2IntTransformer extends Transformer {
      */
     @Override
     public double transform(Object input) {
-        if (this.transformList.containsKey(input.toString())) {
-            return this.transformList.get(input.toString());
-        } else {
-            int index = this.getNextIndex();
-            this.transformList.put(input.toString(), index);
-            return index;
-        }
+        if (input != null) {
+            if (this.transformList.containsKey(input.toString())) {
+                return this.transformList.get(input.toString());
+            } else {
+                int index = this.getNextIndex();
+                this.transformList.put(input.toString(), index);
+                return index;
+            }
+        } 
+        return -1;
     }
 
     /**
@@ -104,8 +107,7 @@ public class Enum2IntTransformer extends Transformer {
         }
         return values.toString();
     }
-    
-    
+
     public Class<?> getInputType() {
         return String.class;
     }

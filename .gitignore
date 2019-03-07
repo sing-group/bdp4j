@@ -18,3 +18,5 @@ outputsyns\.csv
 \.idea/
 
 *.jar
+
+nbproject/project\.properties

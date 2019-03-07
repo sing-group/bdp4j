@@ -33,7 +33,7 @@ public class Double2BinaryTransformer extends Transformer {
                 if (value > 0)
                     return 1;
                 else return 0;
-            } catch (NullPointerException ex) {
+            } catch (Exception ex) {
                 return 0;
             }
         } else {
