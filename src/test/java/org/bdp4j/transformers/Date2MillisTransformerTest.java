@@ -1,17 +1,15 @@
+package org.bdp4j.transformers;
+
 /*
  * To change this license header, choose License Headers in Project Properties.
  * To change this template file, choose Tools | Templates
  * and open the template in the editor.
  */
-package org.bdp4j.transformers;
 
-import java.text.SimpleDateFormat;
-import java.util.List;
+
 import java.util.Date;
 import org.junit.After;
-import org.junit.AfterClass;
 import org.junit.Before;
-import org.junit.BeforeClass;
 import org.junit.Test;
 import static org.junit.Assert.*;
 
@@ -38,9 +36,7 @@ public class Date2MillisTransformerTest {
     @Test
     public void testTransformDate() {
         double expected = 1444686300000d; // 10/12/2015 21:45:00
-
-        Date input = new Date((long) expected);
-        
+        Date input = new Date((long) expected);        
         double actual = this.transformer.transform(input);
         
         assertEquals(expected, actual, 0d);
