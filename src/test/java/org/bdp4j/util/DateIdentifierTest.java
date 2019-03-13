@@ -36,17 +36,18 @@ public class DateIdentifierTest {
         //EEE MMM dd HH:mm:ss ZZZZ yyyy
         value = "Mon Aug 12 22:29:15 CEST 2002";
         actual = DateIdentifier.getDefault().checkDate(value);
-        assertNotNull(actual);
+        assertNotNull("The date format is wrong: "+value, actual);
         
         //EEE MMM dd HH:mm:ss ZZZ yyyy
-        value = "Mon Aug 12 22:29:15 CET 2002";
+        value = "Mon Aug 12 22:29:15 CEST 2002";
         actual = DateIdentifier.getDefault().checkDate(value);
-        assertNotNull(actual);
+        assertNotNull("The date format is wrong: "+value, actual);
 
         //EEE, dd MMM yyyy HH:mm:ss ZZZZZ (zzz)
         value = "Mon, 12 Aug 2002 22:29:15 CEST (cest)";
         actual = DateIdentifier.getDefault().checkDate(value);
-        assertNotNull(actual);
+        assertNotNull("The date format is wrong: "+value, actual);
+        
     }
     
     public void testCheckDateNull(){
