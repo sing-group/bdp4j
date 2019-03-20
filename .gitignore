@@ -18,5 +18,6 @@ outputsyns\.csv
 \.idea/
 
 *.jar
+.DS_Store
 
 nbproject/project\.properties
