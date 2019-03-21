@@ -5,10 +5,11 @@
         <samplesFolder>./samples</samplesFolder>
         <pluginsFolder>./plugins</pluginsFolder>
         <outputDir>./output</outputDir>
+        <tempDir>./temp</tempDir>
     </general>
 
     <!-- AbstractPipe structure that is going to be used -->
-    <pipeline>
+    <pipeline serializable="yes" debug="yes">
         <serialPipes>
 
             <pipe>
