@@ -120,6 +120,10 @@ public class Configurator {
         // Full pipeStructure
         Node pipeStructure = document.getElementsByTagName("pipeline").item(0);
 
+        // Temp attributes properties
+        props.put("serializable", pipeStructure.getAttributes().getNamedItem("serializable").getNodeValue());
+        props.put("debug", pipeStructure.getAttributes().getNamedItem("debug").getNodeValue());
+
         // Global pipe (serialPipe or parallelPipe)
         Node globalPipe = null;
         for (int x = 0; x < pipeStructure.getChildNodes().getLength(); x++) {
