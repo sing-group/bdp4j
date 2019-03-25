@@ -59,7 +59,7 @@ public class Instance implements Serializable {
     /**
      * A linked hashmap with the properties
      */
-    private Map<String, Object> properties = new LinkedHashMap<>();
+    private Map<String, Serializable> properties = new LinkedHashMap<>();
 
     /**
      * The input/output data for pipes
@@ -69,19 +69,19 @@ public class Instance implements Serializable {
     /**
      * The target (label) of the instance
      */
-    private Object target;
+    private Serializable target;
 
     /**
      * A readable name of the source (for instance the original file or an id)
      * this useful for ML analysis
      */
-    private Object name;
+    private Serializable name;
 
     /**
      * The instance in its oririnal form (for instance the original file where
      * is stored)
      */
-    private Object source;
+    private Serializable source;
 
     /**
      * Represents whether the instance is valid or not
@@ -98,7 +98,7 @@ public class Instance implements Serializable {
      * @param source The original form of the instance (often this is the same
      *               as data)
      */
-    public Instance(Serializable data, Object target, Object name, Object source) {
+    public Instance(Serializable data, Serializable target, Serializable name, Serializable source) {
         this.data = data;
         this.target = target;
         this.name = name;
@@ -196,7 +196,7 @@ public class Instance implements Serializable {
      *
      * @param t target classification of the instance
      */
-    public void setTarget(Object t) {
+    public void setTarget(Serializable t) {
         target = t;
     }
 
@@ -214,7 +214,7 @@ public class Instance implements Serializable {
      *
      * @param n New name (id) for the current instance
      */
-    public void setName(Object n) {
+    public void setName(Serializable n) {
         name = n;
     }
 
@@ -234,7 +234,7 @@ public class Instance implements Serializable {
      *
      * @param s The new source especification for the data (usually a file)
      */
-    public void setSource(Object s) {
+    public void setSource(Serializable s) {
         source = s;
     }
 
@@ -252,7 +252,7 @@ public class Instance implements Serializable {
      *
      * @return set of values of all properties stored
      */
-    public synchronized Collection<Object> getValueList() {
+    public synchronized Collection<Serializable> getValueList() {
         return properties.values();
     }
 
@@ -262,7 +262,7 @@ public class Instance implements Serializable {
      * @param key   The key to be stored
      * @param value The value for the key
      */
-    public synchronized void setProperty(String key, Object value) {
+    public synchronized void setProperty(String key, Serializable value) {
         properties.put(key, value);
     }
 
