@@ -31,6 +31,10 @@ public class Configurator {
      */
     public static final String PLUGINS_FOLDER = "pluginsFolder";
     /**
+     * Default serializable folder property key.
+     */
+    public static final String TMP_FOLDER = "tmp";
+    /**
      * For logging purposes
      */
     private static final Logger logger = LogManager.getLogger(Configurator.class);
