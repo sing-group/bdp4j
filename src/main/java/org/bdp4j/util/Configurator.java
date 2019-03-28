@@ -17,27 +17,78 @@ import java.lang.reflect.Method;
 import java.util.HashMap;
 
 /**
- * Singleton configurator class for configure the app and pipe from de configuration file.
+ * Singleton configurator class for configure the app and pipe from de
+ * configuration file.
  *
  * @author Yeray Lage
  */
-public class Configurator {
+public final class Configurator {
+
     /**
      * Default samples folder property key.
      */
     public static final String SAMPLES_FOLDER = "samplesFolder";
+    
+    /**
+     * Default samples folder property value.
+     */
+    public static final String DEFAULT_SAMPLES_FOLDER = "./samples";
+
     /**
      * Default plugins folder property key.
      */
     public static final String PLUGINS_FOLDER = "pluginsFolder";
+    
     /**
-     * Default serializable folder property key.
+     * Default plugins folder property value.
      */
-    public static final String TMP_FOLDER = "tmp";
+    public static final String DEFAULT_PLUGINS_FOLDER = "./plugins";
+
+    /**
+     * Default output folder property key.
+     */
+    public static final String OUTPUT_FOLDER = "outputFolder";
+    
+    /**
+     * Default output folder property value.
+     */
+    public static final String DEFAULT_OUTPUT_FOLDER = "./output";
+
+    /**
+     * Default tmp folder property key.
+     */
+    public static final String TEMP_FOLDER = "tempFolder";
+    
+    /**
+     * Default tmp folder property value.
+     */
+    public static final String DEFAULT_TEMP_FOLDER = System.getProperty("java.io.tmpdir");
+
+    /**
+     * Default debug mode property key.
+     */
+    public static final String DEBUG_MODE = "debug";
+    
+    /**
+     * Default debug mode property value.
+     */
+    public static final String DEFAULT_DEBUG_MODE = "no";
+    
+    /**
+     * Default serializable mode property key.
+     */
+    public static final String SERIALIZABLE_MODE = "serializable";
+    
+    /**
+     * Default serializable mode property value.
+     */
+    public static final String DEFAULT_SERIALIZABLE_MODE = "no";
+
     /**
      * For logging purposes
      */
     private static final Logger logger = LogManager.getLogger(Configurator.class);
+
     /**
      * The default configuration file.
      */
@@ -59,18 +110,34 @@ public class Configurator {
     private HashMap<String, PipeInfo> pipes;
 
     /**
+     * The configurations
+     */
+    private static HashMap<String, Configurator> configurations = new HashMap<>();
+
+    /**
+     * The last used configuration
+     */
+    private static Configurator lastUsed = null;
+
+    /**
      * Default constructor
      */
     private Configurator() {
-        this(DEFAULT_CONFIG_PATH);
+        props = new HashMap<>();
+        this.setProp(SAMPLES_FOLDER, DEFAULT_SAMPLES_FOLDER);
+        this.setProp(PLUGINS_FOLDER, DEFAULT_PLUGINS_FOLDER);
+        this.setProp(OUTPUT_FOLDER, DEFAULT_OUTPUT_FOLDER);
+        this.setProp(TEMP_FOLDER, DEFAULT_TEMP_FOLDER);
+        this.setProp(DEBUG_MODE, DEFAULT_DEBUG_MODE);
+        this.setProp(SERIALIZABLE_MODE, DEFAULT_SERIALIZABLE_MODE);
     }
 
     /**
-     * Empty constructor that initializes the props HashMap and instantiates the document from the config file.
+     * Empty constructor that initializes the props HashMap and instantiates the
+     * document from the config file.
      */
     private Configurator(String configPath) {
-        props = new HashMap<>();
-
+        this();
         try {
             File file = new File(configPath);
             DocumentBuilderFactory documentBuilderFactory = DocumentBuilderFactory.newInstance();
@@ -84,13 +151,35 @@ public class Configurator {
     }
 
     /**
-     * Singleton instance getter.
+     * Singleton instance getter. If configPath is null (or void string),then
+     * the default configuration parameters are loaded in the configuration
      *
      * @param configPath Path to the configuration file.
      * @return The singleton instance.
      */
     public static Configurator getInstance(String configPath) {
-        return new Configurator(configPath);
+        String requestedConfiguration = (configPath == null) ? "" : configPath;
+        Configurator returnValue = configurations.get(requestedConfiguration);
+
+        if (requestedConfiguration.equals("")) {
+            if (configPath == null) {
+                returnValue = new Configurator();
+            } else {
+                returnValue = new Configurator(configPath);
+            }
+        }
+
+        lastUsed = returnValue;
+        return returnValue;
+    }
+
+    /**
+     * Returns the last configuration used
+     *
+     * @return The last used configuration
+     */
+    public static Configurator getLastUsed() {
+        return lastUsed;
     }
 
     /**
@@ -115,7 +204,8 @@ public class Configurator {
      * This method sets the pipe with the defined structure
      *
      * @param availablePipes All the available pipes
-     * @return Configured pipe with the available ones and the defined structure.
+     * @return Configured pipe with the available ones and the defined
+     * structure.
      */
     public AbstractPipe configurePipe(HashMap<String, PipeInfo> availablePipes) {
         pipes = availablePipes;
@@ -125,9 +215,9 @@ public class Configurator {
         Node pipeStructure = document.getElementsByTagName("pipeline").item(0);
 
         // Temp attributes properties
-        props.put("serializable", pipeStructure.getAttributes().getNamedItem("serializable").getNodeValue());
-        props.put("debug", pipeStructure.getAttributes().getNamedItem("debug").getNodeValue());
-
+        props.put(SERIALIZABLE_MODE, pipeStructure.getAttributes().getNamedItem(SERIALIZABLE_MODE).getNodeValue());
+        props.put(DEBUG_MODE, pipeStructure.getAttributes().getNamedItem(DEBUG_MODE).getNodeValue());
+        
         // Global pipe (serialPipe or parallelPipe)
         Node globalPipe = null;
         for (int x = 0; x < pipeStructure.getChildNodes().getLength(); x++) {
@@ -176,8 +266,8 @@ public class Configurator {
                             ((ParallelPipes) configuredPipe).add(getPipeInstance(child.getTextContent().trim(), child));
                         }
                     } catch (NullPointerException e) {
-                        logger.fatal("[PIPE CONFIGURATION] " + child.getTextContent().trim() +
-                                " does not exist or is not loaded.");
+                        logger.fatal("[PIPE CONFIGURATION] " + child.getTextContent().trim()
+                                + " does not exist or is not loaded.");
                         System.exit(-1);
                     }
                 }
@@ -241,7 +331,9 @@ public class Configurator {
                     if (m.getAnnotation(PipeParameter.class) != null) {
                         PipeParameter pipeParameter = m.getAnnotation(PipeParameter.class);
                         String value = pipeInfo.getPipeParams().get(pipeParameter.name()).getValue();
-                        if (value != null) m.invoke(pipe, value);
+                        if (value != null) {
+                            m.invoke(pipe, value);
+                        }
                     }
                 }
             } catch (Exception e) {
