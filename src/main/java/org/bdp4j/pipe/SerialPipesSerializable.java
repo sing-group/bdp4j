@@ -7,32 +7,32 @@ package org.bdp4j.pipe;
 
 import java.io.BufferedInputStream;
 import java.io.BufferedOutputStream;
-import java.io.ByteArrayInputStream;
 import java.io.FileOutputStream;
 import java.io.File;
 import java.io.FileFilter;
 import java.io.FileInputStream;
-import java.io.FileNotFoundException;
-import java.io.IOException;
-import java.io.InputStream;
 import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
-import java.io.OutputStream;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
-import java.util.Comparator;
-import java.util.List;
 import java.util.logging.Level;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.bdp4j.types.Instance;
 import java.security.*;
 import java.util.Base64;
+import java.util.HashMap;
+import java.util.Map;
 import org.bdp4j.util.Configurator;
-import org.bdp4j.util.PipeProvider;
 
 /**
+ * Convert an instance through a sequence of pipes.
+ *
+ * The configuration of the pipe (including the temporal folder, the debug
+ * mode...) is created using the last used Configurator
+ * (Configurator.getLastUsed()). If another configuration is required, please
+ * stablish it through apropiate setters.
  *
  * @author María Novo
  */
@@ -43,12 +43,11 @@ public class SerialPipesSerializable extends SerialPipes {
      */
     private static final Logger logger = LogManager.getLogger(SerialPipes.class);
 
-    /* Singleton configuration instance */
-    private static Configurator configurator = Configurator.getInstance("./config/configuration.xml");
+    /**
+     * Default configuration
+     */
+    private Configurator configurator = Configurator.getLastUsed();
 
-    private static String SERIALIZABLE_PATH = Configurator.TMP_FOLDER;
-    private static String DEBUG_MODE = "yes";
-    private static String SERIALIZABLE_MODE = "yes";
     /**
      * AbstractPipe list
      */
@@ -69,12 +68,31 @@ public class SerialPipesSerializable extends SerialPipes {
     }
 
     /**
+     * Set the configuration
+     *
+     * @param configurator The configuration to use.
+     */
+    @PipeParameter(name = "configurator", description = "The configuration to use", defaultValue = "")
+    public void setConfigurator(Configurator configurator) {
+        this.configurator = configurator;
+    }
+
+    /**
+     * Get the configuration
+     *
+     * @return The used configuration.
+     */
+    public Configurator getConfigurator() {
+        return this.configurator;
+    }
+
+    /**
      * Saved data in a file
      *
      * @param filename File name where the data is saved
      * @param carriers Data to save
      */
-    public void writeFile(String filename, Object carriers) {
+    public void saveData(String filename, Object carriers) {
         try (FileOutputStream outputFile = new FileOutputStream(filename);
                 BufferedOutputStream buffer = new BufferedOutputStream(outputFile);
                 ObjectOutputStream output = new ObjectOutputStream(buffer);) {
@@ -95,7 +113,7 @@ public class SerialPipesSerializable extends SerialPipes {
      * @param filename File name to retrieve data
      * @return an Object with the deserialized retrieve data
      */
-    public Object readFile(String filename) {
+    public Object retrieveData(String filename) {
         File file = new File(filename);
         try (BufferedInputStream buffer = new BufferedInputStream(new FileInputStream(file))) {
             ObjectInputStream input = new ObjectInputStream(buffer);
@@ -108,23 +126,82 @@ public class SerialPipesSerializable extends SerialPipes {
         return null;
     }
 
-    @Override
+    public boolean checkDataManager(AbstractPipe[] pipeList) {
+        Class<?> abstractPipeClass = null;
+        boolean returnValueReader = false;
+        boolean returnValueWriter = false;
+        String errorReader = "";
+        String errorWriter = "";
+
+        for (AbstractPipe abstractPipe : pipeList) {
+            abstractPipeClass = abstractPipe.getClass();
+            // Reader
+            if (abstractPipeClass.getAnnotationsByType(DataReaderPipe.class).length > 0) {
+                returnValueReader = false;
+                errorReader = "Pipe " + abstractPipeClass.getSimpleName() + " has to implement DataReader interface.";
+                Class<?>[] interfaces = abstractPipeClass.getInterfaces();
+                for (Class<?> aInterface : interfaces) {
+                    if (aInterface.equals(DataReader.class)) {
+                        returnValueReader = true;
+                    }
+                }
+                if (!returnValueReader) {
+                    logger.error(errorReader);
+                    return false;
+                }
+
+            } else {
+                returnValueReader = true;
+            }
+            // Writer
+            if (returnValueReader == true) {
+                returnValueWriter = false;
+                if (abstractPipeClass.getAnnotationsByType(DataWriterPipe.class).length > 0) {
+                    errorWriter = "Pipe " + abstractPipeClass.getSimpleName() + " has to implement DataWriter interface.";
+                    Class<?>[] interfaces = abstractPipeClass.getInterfaces();
+                    for (Class<?> aInterface : interfaces) {
+                        if (aInterface.equals(DataWriter.class)) {
+                            returnValueWriter = true;
+                        }
+                    }
+                    if (!returnValueWriter) {
+                        logger.error(errorWriter);
+                        return false;
+                    }
+                } else {
+                    returnValueWriter = true;
+                }
+            }
+        }
+        if (!errorReader.equals("")) {
+            logger.error(errorReader);
+        }
+        if (!errorWriter.equals("")) {
+            logger.error(errorWriter);
+        }
+        return returnValueReader && returnValueWriter;
+    }
+
     /**
-     * AbstractPipe a collection of instances through the whole process. 
-     * In addiction, it calculates the step to continue execution,
-     * depending on the configuration.
+     * AbstractPipe a collection of instances through the whole process. In
+     * addiction, it calculates the step to continue execution, depending on the
+     * configuration.
      *
      * @param carriers The instances to be processed
      * @return the instances after processing them
      */
+    @Override
     public Collection<Instance> pipeAll(Collection<Instance> carriers) {
         int step = 0;
-        if (SERIALIZABLE_MODE.equals("yes")) {
+
+        if (configurator.getProp(Configurator.SERIALIZABLE_MODE).equals("yes")) {
             // Calculate pipe to continue execution
             AbstractPipe[] pipeList = super.getPipes();
-
+            if (!checkDataManager(pipeList)) {
+                System.exit(0);
+            }
             String md5PipeName = generateMD5(this.toString());
-            File sourcePath = new File(SERIALIZABLE_PATH + "/" + md5PipeName);
+            File sourcePath = new File(configurator.getProp(Configurator.TEMP_FOLDER) + "/" + md5PipeName);
             // Get all files but txt with the serialized instances
             FileFilter filter = (File pathname) -> {
                 if (pathname.getPath().endsWith(md5PipeName + ".txt")) {
@@ -136,7 +213,7 @@ public class SerialPipesSerializable extends SerialPipes {
             File[] listFiles = sourcePath.listFiles(filter);
 
             if (sourcePath.exists() && sourcePath.isDirectory() && listFiles.length > 0) {
-                // if exists check if file with instances matches with md5PipeName.txt
+                // If exists check if file with instances matches with md5PipeName.txt
                 Arrays.sort(sourcePath.listFiles(), (File f1, File f2) -> Long.valueOf(f1.lastModified()).compareTo(f2.lastModified()));
 
                 File lastModifiedFile = listFiles[0];
@@ -153,13 +230,12 @@ public class SerialPipesSerializable extends SerialPipes {
                             md5Carriers.append(md5Carrier);
                         });
 
-                        // Las instancias coinciden, por lo que se trata de la misma ejecución, se puede ejecutar desde el paso X
-                        String deserializedCarriers = (String) readFile(sourcePath + "/" + md5PipeName + ".txt");
+                        String deserializedCarriers = (String) retrieveData(sourcePath + "/" + md5PipeName + ".txt");
                         // If instances match, the pipe and instances are the same, so, this is the first step
                         if (deserializedCarriers.equals(md5Carriers.toString())) {
                             String[] pipeIndex = filename.split("_");
                             step = Integer.parseInt(pipeIndex[0]) + 1;
-                            Collection<Instance> instances = (Collection<Instance>) readFile(sourcePath + "/" + filename);
+                            Collection<Instance> instances = (Collection<Instance>) retrieveData(sourcePath + "/" + filename);
                             return this.pipeAll(instances, step);
                         }
                     }
@@ -170,8 +246,8 @@ public class SerialPipesSerializable extends SerialPipes {
     }
 
     /**
-     * AbstractPipe a collection of instances through the whole process, from de defined step and save
-     * this, depending of the configuration.
+     * AbstractPipe a collection of instances through the whole process, from de
+     * defined step and save this, depending of the configuration.
      *
      * @param step The index of instance to start processing
      * @param carriers The instances to be processed
@@ -182,8 +258,8 @@ public class SerialPipesSerializable extends SerialPipes {
             int i = 0;
             AbstractPipe p = null;
             AbstractPipe[] pipeList = super.getPipes();
-            if (SERIALIZABLE_MODE.equals("yes")) {
-                File sourcePath = new File(SERIALIZABLE_PATH);
+            if (configurator.getProp(Configurator.SERIALIZABLE_MODE).equals("yes")) {
+                File sourcePath = new File(configurator.getProp(Configurator.TEMP_FOLDER));
                 if (!sourcePath.exists()) {
                     sourcePath.mkdir();
                 }
@@ -197,7 +273,7 @@ public class SerialPipesSerializable extends SerialPipes {
                         md5Carriers.append(md5Carrier);
                     });
 
-                    File path = new File(SERIALIZABLE_PATH + "/" + md5PipeName + "/");
+                    File path = new File(configurator.getProp(Configurator.TEMP_FOLDER) + "/" + md5PipeName + "/");
                     if (!path.exists()) {
                         path.mkdir();
                     }
@@ -205,7 +281,7 @@ public class SerialPipesSerializable extends SerialPipes {
                     // Create file with md5Carrier
                     if (sourcePath.exists() && sourcePath.isDirectory()) {
                         File instancesFile = new File(path.getPath() + "/" + md5PipeName + ".txt");
-                        writeFile(instancesFile.getPath(), md5Carriers.toString());
+                        saveData(instancesFile.getPath(), md5Carriers.toString());
                     }
 
                     for (i = step; i < pipeList.length; i++) {
@@ -221,11 +297,11 @@ public class SerialPipesSerializable extends SerialPipes {
 
                         // Guardar instancias
                         String filename = path + "/" + i + "_" + p.toString() + ".ser";
-                        if (DEBUG_MODE.equals("yes")) {
-                            writeFile(filename, carriers);
+                        if (configurator.getProp(Configurator.DEBUG_MODE).equals("yes")) {
+                            saveData(filename, carriers);
                         } else {
                             if (i == pipeList.length - 1) {
-                                writeFile(filename, carriers);
+                                saveData(filename, carriers);
                             }
                         }
                     }
