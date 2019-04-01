@@ -17,7 +17,6 @@ public interface DataReader {
      * Retrieve data from filepath
      *
      * @param filename File name/path from retrieve data
-     * @return The saved data
      */
-    Object retrieveData(String filename);
+    void retrieveData(String filename);
 }

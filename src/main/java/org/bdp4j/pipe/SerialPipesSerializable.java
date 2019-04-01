@@ -22,9 +22,8 @@ import org.apache.logging.log4j.Logger;
 import org.bdp4j.types.Instance;
 import java.security.*;
 import java.util.Base64;
-import java.util.HashMap;
-import java.util.Map;
 import org.bdp4j.util.Configurator;
+import org.bdp4j.util.EBoolean;
 
 /**
  * Convert an instance through a sequence of pipes.
@@ -126,7 +125,18 @@ public class SerialPipesSerializable extends SerialPipes {
         return null;
     }
 
+    /**
+     * Checks if pipes that are annotated as DataReaderPipe or DataWriterPipe
+     * implements the corresponding interface.
+     *
+     * @param pipeList List of pipes to check
+     * @return False if any pipe annotated as DataReaderPipe or
+     * DataWriterPipe don't implement the corresponding interface.True in
+     * any other case.
+     *
+     */
     public boolean checkDataManager(AbstractPipe[] pipeList) {
+
         Class<?> abstractPipeClass = null;
         boolean returnValueReader = false;
         boolean returnValueWriter = false;
@@ -193,8 +203,8 @@ public class SerialPipesSerializable extends SerialPipes {
     @Override
     public Collection<Instance> pipeAll(Collection<Instance> carriers) {
         int step = 0;
-
-        if (configurator.getProp(Configurator.SERIALIZABLE_MODE).equals("yes")) {
+        boolean serializableMode = EBoolean.getBoolean(configurator.getProp(Configurator.SERIALIZABLE_MODE));
+        if (serializableMode) {
             // Calculate pipe to continue execution
             AbstractPipe[] pipeList = super.getPipes();
             if (!checkDataManager(pipeList)) {
@@ -258,8 +268,12 @@ public class SerialPipesSerializable extends SerialPipes {
             int i = 0;
             AbstractPipe p = null;
             AbstractPipe[] pipeList = super.getPipes();
-            if (configurator.getProp(Configurator.SERIALIZABLE_MODE).equals("yes")) {
-                File sourcePath = new File(configurator.getProp(Configurator.TEMP_FOLDER));
+            boolean serializableMode = EBoolean.getBoolean(configurator.getProp(Configurator.SERIALIZABLE_MODE));
+            boolean debugMode = EBoolean.getBoolean(configurator.getProp(Configurator.DEBUG_MODE));
+            String temp_folder = configurator.getProp(Configurator.TEMP_FOLDER);
+
+            if (serializableMode) {
+                File sourcePath = new File(temp_folder);
                 if (!sourcePath.exists()) {
                     sourcePath.mkdir();
                 }
@@ -273,7 +287,7 @@ public class SerialPipesSerializable extends SerialPipes {
                         md5Carriers.append(md5Carrier);
                     });
 
-                    File path = new File(configurator.getProp(Configurator.TEMP_FOLDER) + "/" + md5PipeName + "/");
+                    File path = new File(temp_folder + "/" + md5PipeName + "/");
                     if (!path.exists()) {
                         path.mkdir();
                     }
@@ -297,7 +311,7 @@ public class SerialPipesSerializable extends SerialPipes {
 
                         // Guardar instancias
                         String filename = path + "/" + i + "_" + p.toString() + ".ser";
-                        if (configurator.getProp(Configurator.DEBUG_MODE).equals("yes")) {
+                        if (debugMode) {
                             saveData(filename, carriers);
                         } else {
                             if (i == pipeList.length - 1) {
