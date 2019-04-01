@@ -17,6 +17,6 @@ import java.lang.annotation.Target;
  *
  * @author María Novo
  */
-public @interface DataWriterPipe {
+public @interface DataWriterPipe{
 
 }

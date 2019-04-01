@@ -17,7 +17,6 @@ public interface DataWriter {
      * Save data in a filepath
      *
      * @param filename File name/path where the data is saved
-     * @param data Data to save
      */
-    void saveData(String filename, Object data);
+    void saveData(String filename);
 }
