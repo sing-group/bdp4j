@@ -22,6 +22,7 @@ import java.io.FileReader;
 import java.io.IOException;
 import java.util.*;
 import java.util.function.Predicate;
+import org.bdp4j.util.DateTimeIdentifier;
 
 /**
  * Generate Dataset from file. This dataset will contain only columns with a
@@ -62,7 +63,7 @@ public class DatasetFromFile {
      * Create a CSVDatasetFromFile object from a filepath/filename and a
      * transformers list
      *
-     * @param filePath         The filepath/filename
+     * @param filePath The filepath/filename
      * @param transformersList The list of transformers.
      */
     public DatasetFromFile(String filePath, Map<String, Transformer> transformersList) {
@@ -121,7 +122,7 @@ public class DatasetFromFile {
         }
         // Check if the field is Date                            
         try {
-            if (DateIdentifier.getDefault().checkDate(value) != null) {
+            if (DateIdentifier.getDefault().checkDate(value) != null || DateTimeIdentifier.getDefault().checkDateTime(value) != null) {
                 return "Date";
             }
         } catch (Exception ex) {
@@ -183,7 +184,7 @@ public class DatasetFromFile {
                             } else {
                                 // Create a Map to an easier generation of dataset
                                 detectedTypes.add(headers.get(index));
-                                if ( isDetectedColumnType.test("target")) {
+                                if (isDetectedColumnType.test("target")) {
                                     // Target field always has to be the last one
                                     int lastColumnTypesPosition = columnTypes.size() - 1;
                                     Pair<String, String> targetPair = columnTypes.get(lastColumnTypesPosition);
@@ -223,7 +224,7 @@ public class DatasetFromFile {
                     .anyMatch(attribute -> attribute.name().equals(name));
 
             attributes.add(new Attribute("id", true));
-            boolean hasTargetAdd =  false;
+            boolean hasTargetAdd = false;
             if (!columnTypes.isEmpty()) {
                 for (Pair<String, String> next : columnTypes) {
                     final String type = next.getObj2();
@@ -256,7 +257,9 @@ public class DatasetFromFile {
                     int indInstance = 0;
                     for (int index = 0; index < headers.size(); index++) {
                         field = record.get(index);
-
+                        if (field.equals("date")) {
+                            System.err.println("");
+                        }
                         if (isAttribute.test(headers.get(index))) {
                             Transformer t;
                             try {

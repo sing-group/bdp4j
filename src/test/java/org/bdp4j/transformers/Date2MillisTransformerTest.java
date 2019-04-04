@@ -7,6 +7,9 @@ package org.bdp4j.transformers;
  */
 
 
+import java.time.Instant;
+import java.time.LocalDateTime;
+import java.time.ZoneId;
 import java.util.Date;
 import org.junit.After;
 import org.junit.Before;
@@ -34,28 +37,37 @@ public class Date2MillisTransformerTest {
      * Test of transform method, of class Date2MillisTransformer.
      */
     @Test
-    public void testTransformDate() {
-        double expected = 1444686300000d; // 10/12/2015 21:45:00
-        Date input = new Date((long) expected);        
+    public void testTransformDateTime() {
+        double expected = 1444686300000d; // 12/10/2015 23:45:00 
+        LocalDateTime input = Instant.ofEpochMilli((long)expected).atZone(ZoneId.systemDefault()).toLocalDateTime();
         double actual = this.transformer.transform(input);
-        
+        System.out.println(actual);
         assertEquals(expected, actual, 0d);
     }
 
     /**
      * Test of transform method, of class Date2MillisTransformer.
      */
+    
 //    @Test
-//    public void testTransformString() {
-//        double expected = 1444686300000d; // 10/12/2015 9:45:00
-//
-//        String input = "10/12/2015 21:45:00";
-//        
+//    public void testTransformDate() {
+//        double expected = 1449705600000d; // 10/12/2015 21:45:00
+//        Date input = new Date((long) expected);        
 //        double actual = this.transformer.transform(input);
 //        
 //        assertEquals(expected, actual, 0d);
 //    }
-
+    /**
+     * Test of transform method, of class Date2MillisTransformer.
+     */
+    @Test
+    public void testTransformString() {
+        double expected = 1444686300000d; // 12/10/2015 23:45:00
+        String input = "12/10/2015 23:45:00";     
+        double actual = this.transformer.transform(input);
+        assertEquals(expected, actual, 0d);
+    }
+    
     /**
      * Test of transform method, of class Date2MillisTransformer.
      */
