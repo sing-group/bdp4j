@@ -88,37 +88,37 @@ public class DateTimeIdentifierTest {
         
        // Datetime using patterns
         
-        value = "lun mar 25 13:05:34 GMT+01:00 2019";
-        actual = DateTimeIdentifier.getDefault().checkDateTime(value);
-        assertNotNull("The date format is wrong: "+value, actual);
+        //value = "lun mar 25 13:05:34 GMT+01:00 2019";
+        //actual = DateTimeIdentifier.getDefault().checkDateTime(value);
+        //assertNotNull("The date format is wrong: "+value, actual);
         
-        value = "lun mar 25 13:05:34 +0100 2019";
-        actual = DateTimeIdentifier.getDefault().checkDateTime(value);
-        assertNotNull("The date format is wrong: "+value, actual);
+        //value = "lun mar 25 13:05:34 +0100 2019";
+        //actual = DateTimeIdentifier.getDefault().checkDateTime(value);
+        //assertNotNull("The date format is wrong: "+value, actual);
         
-        value = "lun, 25 mar 2019 14:19:30 +01:00 (CET)";
-        actual = DateTimeIdentifier.getDefault().checkDateTime(value);
-        assertNotNull("The date format is wrong: "+value, actual);
+        //value = "lun, 25 mar 2019 14:19:30 +01:00 (CET)";
+        //actual = DateTimeIdentifier.getDefault().checkDateTime(value);
+        //assertNotNull("The date format is wrong: "+value, actual);
        
-        value = "lun, 25 mar 2019 14:21:48 +01:00";
-        actual = DateTimeIdentifier.getDefault().checkDateTime(value);
-        assertNotNull("The date format is wrong: "+value, actual);
+        //value = "lun, 25 mar 2019 14:21:48 +01:00";
+        //actual = DateTimeIdentifier.getDefault().checkDateTime(value);
+        //assertNotNull("The date format is wrong: "+value, actual);
         
-        value = "25 mar 2019 14:23:21 +01:00";
-        actual = DateTimeIdentifier.getDefault().checkDateTime(value);
-        assertNotNull("The date format is wrong: "+value, actual);
+        //value = "25 mar 2019 14:23:21 +01:00";
+        //actual = DateTimeIdentifier.getDefault().checkDateTime(value);
+        //assertNotNull("The date format is wrong: "+value, actual);
         
         value = "Tue, Jun 30 07:03:47 2009";
         actual = DateTimeIdentifier.getDefault().checkDateTime(value);
         assertNotNull("The date format is wrong: "+value, actual);
         
-        value = "mar, 25 2019 14:42:33 PM +01:00";
-        actual = DateTimeIdentifier.getDefault().checkDateTime(value);
-        assertNotNull("The date format is wrong: "+value, actual);
+        //value = "mar, 25 2019 14:42:33 PM +01:00";
+        //actual = DateTimeIdentifier.getDefault().checkDateTime(value);
+        //assertNotNull("The date format is wrong: "+value, actual);
         
-        value = "lun, 25 mar 2019 14:43:59 ++01:00";
-        actual = DateTimeIdentifier.getDefault().checkDateTime(value);
-        assertNotNull("The date format is wrong: "+value, actual);
+        //value = "lun, 25 mar 2019 14:43:59 ++01:00";
+        //actual = DateTimeIdentifier.getDefault().checkDateTime(value);
+        //assertNotNull("The date format is wrong: "+value, actual);
         
         value = "Mon, 25 Mar 2019 18:59:06 CET";
         actual = DateTimeIdentifier.getDefault().checkDateTime(value);
