@@ -1,3 +1,24 @@
+/*
+ * BDP4j implements a pipeline framework to allow definining 
+ * project pipelines from XML. The main goal of the pipelines of this 
+ * application is to transform imput data received from multiple sources 
+ * into fully qualified datasets to be used with Machine Learning.
+ *
+ * Copyright (C) 2018  Sing Group (University of Vigo)
+ *
+ * This program is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation, either version 3 of the License, or
+ * (at your option) any later version.
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public License
+ * along with this program.  If not, see <https://www.gnu.org/licenses/>.
+ */
 
 package org.bdp4j.util;
 
@@ -9,20 +30,22 @@ import java.util.ArrayList;
 import java.util.Locale;
 
 /**
- * Procesador de fechas en String
+ * Identifies dates from their string representation
  *
- * @author 
+ * @author Maria Novo
+ * @author Reyes Pavon
  * @since jdk1.8
  */
 public class DateTimeIdentifier {
 
     /**
-     * Patron singleton (Referencia local)
+     * Singleton pattern (local reference)
      */
     private static DateTimeIdentifier defaultDateTimeProcessor = null;
     boolean debug = true;
+
     /**
-     * Vector de formatos de fecha
+     * Date format vector
      */
     private ArrayList<DateTimeFormatter> sdfs = new ArrayList<>(); 
     private ArrayList<DateTimeFormatter> patternsDate = new ArrayList<>();
@@ -32,7 +55,7 @@ public class DateTimeIdentifier {
 
     
     /**
-     * Constructor privado de datetimeprocessor
+     * Private constructor
      */
     private DateTimeIdentifier() {
         sdfs.add(DateTimeFormatter.ofPattern("yyyy-MM-dd'T'HH:mm:ss"));
@@ -72,9 +95,9 @@ public class DateTimeIdentifier {
     }
 
     /**
-     * Patron Singleton
+     * Achives a instance of a Date Identifier
      *
-     * @return devuelve un procesador de fechas por defecto
+     * @return Te default date processor
      */
     public static DateTimeIdentifier getDefault() {
         if (defaultDateTimeProcessor == null) {
@@ -83,14 +106,20 @@ public class DateTimeIdentifier {
         return defaultDateTimeProcessor;
     }
 
+
+    /**
+     * Scan a string to find the represented dateTime
+     * @param dateTimeStr The string to analyze
+     * @return The date/time represented by the string (null if the format can not be guessed)
+     */
     public LocalDateTime checkDateTime(String dateTimeStr) {
      
         LocalDateTime date = null;
 
-        //Hacer un trim de la cadena
+        //Do a trim from string
         dateTimeStr = dateTimeStr.trim();
 
-        //Sacar los espacios que sobra
+        //Drop unnecesary spaces
         while (dateTimeStr.indexOf("  ") > 0) {
             if (debug) {
                 System.out.print("*");
@@ -98,12 +127,13 @@ public class DateTimeIdentifier {
             dateTimeStr = dateTimeStr.replaceAll("  ", " ");
         }
 
-        //Si la cadena est� vac�a devolver null
+        //Return null if the input string is void
         if (dateTimeStr.equals("")) {
             return null;
         }
         
         DateTimeFormatter dtf;
+        
         // DateTime Using localized styles and default locale
         for (Locale current:locales){
             for(int i = 0; i < styles.length; i++){
