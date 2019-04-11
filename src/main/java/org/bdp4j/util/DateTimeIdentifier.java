@@ -28,6 +28,7 @@ import java.time.format.DateTimeFormatter;
 import java.time.format.FormatStyle;
 import java.util.ArrayList;
 import java.util.Locale;
+import java.time.format.DateTimeParseException;
 
 /**
  * Identifies dates from their string representation
@@ -42,7 +43,7 @@ public class DateTimeIdentifier {
      * Singleton pattern (local reference)
      */
     private static DateTimeIdentifier defaultDateTimeProcessor = null;
-    boolean debug = true;
+    //boolean debug = true;
 
     /**
      * Date format vector
@@ -121,9 +122,9 @@ public class DateTimeIdentifier {
 
         //Drop unnecesary spaces
         while (dateTimeStr.indexOf("  ") > 0) {
-            if (debug) {
-                System.out.print("*");
-            }
+            //if (debug) {
+            //    System.out.print("*");
+            //}
             dateTimeStr = dateTimeStr.replaceAll("  ", " ");
         }
 
@@ -144,9 +145,9 @@ public class DateTimeIdentifier {
                         // dtf = DateTimeFormatter.ofLocalizedDateTime(styles[i], styles[j]).withLocale(Locale.getDefault());
                         try {
                             date = LocalDateTime.parse(dateTimeStr , dtf);
-                            System.out.println("Style " +styles[i] + ", " + styles[j] + ", " + current + ": " + date);
+                            //System.out.println("Style " +styles[i] + ", " + styles[j] + ", " + current + ": " + date);
                             found=true;
-                        } catch (java.time.format.DateTimeParseException pe) {
+                        } catch (DateTimeParseException pe) {
                             date = null;
                         }
                     }
@@ -164,8 +165,8 @@ public class DateTimeIdentifier {
                             dtf = DateTimeFormatter.ofLocalizedDateTime(styles[i], styles[j]).withLocale(current);
                             try {
                                 date = LocalDateTime.parse(dateTimeStr , dtf);
-                                System.out.println("Style " +styles[i] + ", " + styles[j] + ", " + current + ": " + date);
-                            } catch (java.time.format.DateTimeParseException pe) {
+                                //System.out.println("Style " +styles[i] + ", " + styles[j] + ", " + current + ": " + date);
+                            } catch (DateTimeParseException pe) {
                                 date = null;
                             }
                         }
@@ -176,40 +177,45 @@ public class DateTimeIdentifier {
         
         // DateTime using pattern 
          if (date == null) {
-            
-            byte i = 0;
-            while (date == null && i < sdfs.size()) {
-                try{
-                    date = LocalDateTime.parse(dateTimeStr, sdfs.get(i));    
-                    System.out.println("Pattern DateTime");
-                    System.out.println("caso -> "+ date);                    
-                } catch (java.time.format.DateTimeParseException pe) {
+            for(Locale current:locales){
+                //System.out.println("Locale:"+ current.toString());
+                byte i = 0;
+                while (date == null && i < sdfs.size()) {
+                    //System.out.println("format "+i);
+                    try{
+                        date = LocalDateTime.parse(dateTimeStr, sdfs.get(i).withLocale(current));
+                        //System.out.println("Pattern DateTime");
+                        //System.out.println("caso -> "+ date);                    
+                    } catch (DateTimeParseException pe) {
 
+                    }
+                    i++;
                 }
-                i++;
+                if (date!=null) break;
             }
-            
         }
          
         // Date Using localized styles
-        for (Locale current:locales){
-            for(int i = 0; i < styles.length; i++){
-                if (date == null){ 
-                    LocalDate ld;
-                    dtf = DateTimeFormatter.ofLocalizedDate(styles[i]).withLocale(current);
-                    try {
-                        ld = LocalDate.parse(dateTimeStr, dtf);
-                        System.out.println("Style " + styles[i] + ", " + current + ": " + ld);
-                        date = ld.atStartOfDay();
-                    } catch (java.time.format.DateTimeParseException pe) {
-                        date = null;
+        if (date==null){
+            for (Locale current:locales){
+                for(int i = 0; i < styles.length; i++){
+                    if (date == null){ 
+                        LocalDate ld;
+                        dtf = DateTimeFormatter.ofLocalizedDate(styles[i]).withLocale(current);
+                        try {
+                            ld = LocalDate.parse(dateTimeStr, dtf);
+                            //System.out.println("Style " + styles[i] + ", " + current + ": " + ld);
+                            date = ld.atStartOfDay();
+                        } catch (DateTimeParseException pe) {
+                            date = null;
+                        }
                     }
-                }
-            }  
+                }  
+            }
         }
         
         //Date using pattern 
-         if (date == null) {            
+        if (date == null) {            
             LocalDate ld;
             byte i = 0;
             
@@ -217,11 +223,11 @@ public class DateTimeIdentifier {
             while (date == null && i < patternsDate.size()) {
                 try{
                     ld = LocalDate.parse(dateTimeStr, patternsDate.get(i));
-                    System.out.println("Pattern Date");
-                    System.out.println("caso -> "+ ld);
+                    //System.out.println("Pattern Date");
+                    //System.out.println("caso -> "+ ld);
                     date = ld.atStartOfDay();
                     
-                } catch (java.time.format.DateTimeParseException pe) {
+                } catch (DateTimeParseException pe) {
                     date=null;
                 }
                 i++;
