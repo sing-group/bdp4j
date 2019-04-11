@@ -135,20 +135,24 @@ public class DateTimeIdentifier {
         DateTimeFormatter dtf;
         
         // DateTime Using localized styles and default locale
+        boolean found=false;
         for (Locale current:locales){
-            for(int i = 0; i < styles.length; i++){
-                for(int j = 0; j < styles.length; j++){                
+            for(int i = 0; !found && i < styles.length; i++){
+                for(int j = 0; !found &&  j < styles.length; j++){                
                     if (date == null){    
-                        dtf = DateTimeFormatter.ofLocalizedDateTime(styles[i], styles[j]).withLocale(Locale.getDefault());
+                        dtf = DateTimeFormatter.ofLocalizedDateTime(styles[i], styles[j]).withLocale(current);
+                        // dtf = DateTimeFormatter.ofLocalizedDateTime(styles[i], styles[j]).withLocale(Locale.getDefault());
                         try {
                             date = LocalDateTime.parse(dateTimeStr , dtf);
                             System.out.println("Style " +styles[i] + ", " + styles[j] + ", " + current + ": " + date);
+                            found=true;
                         } catch (java.time.format.DateTimeParseException pe) {
                             date = null;
                         }
                     }
                 }
-            }  
+            } 
+            if (found) break;
         }
         
         // DateTime Using localized styles
@@ -178,10 +182,9 @@ public class DateTimeIdentifier {
                 try{
                     date = LocalDateTime.parse(dateTimeStr, sdfs.get(i));    
                     System.out.println("Pattern DateTime");
-                    System.out.println("caso -> "+ date);
-                    
+                    System.out.println("caso -> "+ date);                    
                 } catch (java.time.format.DateTimeParseException pe) {
-                    date=null;
+
                 }
                 i++;
             }
@@ -189,7 +192,6 @@ public class DateTimeIdentifier {
         }
          
         // Date Using localized styles
-        
         for (Locale current:locales){
             for(int i = 0; i < styles.length; i++){
                 if (date == null){ 
@@ -210,7 +212,9 @@ public class DateTimeIdentifier {
          if (date == null) {            
             LocalDate ld;
             byte i = 0;
-            while (date == null && i < sdfs.size()) {
+            
+            //while (date == null && i < sdfs.size()) {
+            while (date == null && i < patternsDate.size()) {
                 try{
                     ld = LocalDate.parse(dateTimeStr, patternsDate.get(i));
                     System.out.println("Pattern Date");
