@@ -136,24 +136,22 @@ public class DateTimeIdentifier {
         DateTimeFormatter dtf;
         
         // DateTime Using localized styles and default locale
-        boolean found=false;
         for (Locale current:locales){
-            for(int i = 0; !found && i < styles.length; i++){
-                for(int j = 0; !found &&  j < styles.length; j++){                
+            for(int i = 0; date==null && i < styles.length; i++){
+                for(int j = 0; date==null &&  j < styles.length; j++){                
                     if (date == null){    
                         dtf = DateTimeFormatter.ofLocalizedDateTime(styles[i], styles[j]).withLocale(current);
                         // dtf = DateTimeFormatter.ofLocalizedDateTime(styles[i], styles[j]).withLocale(Locale.getDefault());
                         try {
                             date = LocalDateTime.parse(dateTimeStr , dtf);
                             //System.out.println("Style " +styles[i] + ", " + styles[j] + ", " + current + ": " + date);
-                            found=true;
                         } catch (DateTimeParseException pe) {
-                            date = null;
+                            //date = null;
                         }
                     }
                 }
             } 
-            if (found) break;
+            if (date!=null) break;
         }
         
         // DateTime Using localized styles
