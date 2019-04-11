@@ -78,6 +78,7 @@ public class SerialPipesSerializable extends SerialPipes {
 
     /**
      * Build an empty SerialPipes
+     * @param pipes The pipes that included in the SerialPipe
      */
     public SerialPipesSerializable(AbstractPipe[] pipes) {
         super(pipes);
