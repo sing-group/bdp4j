@@ -19,7 +19,6 @@
  * You should have received a copy of the GNU General Public License
  * along with this program.  If not, see <https://www.gnu.org/licenses/>.
  */
-
 package org.bdp4j.types;
 
 import org.apache.logging.log4j.LogManager;
@@ -337,7 +336,6 @@ public class Dataset implements Serializable, Cloneable {
                             Double oldAttValue = instance.value(att.index());
                             Double combineValues = op.combine(lastAttValue, oldAttValue);
                             instance.setValue(lastAttribute, combineValues);
-
                         }
 
                         listAttributeName.add(oldValue);
@@ -444,6 +442,25 @@ public class Dataset implements Serializable, Cloneable {
             logger.warn(ex.getMessage());
         }
         return this;
+    }
+
+    /**
+     *
+     * @param columsToAdd List of columns to add. Each column is represented as
+     * <columnName, position>
+     * @return the dataset with added columns
+     */
+    public void addColumns(Map<String, Integer> columsToAdd) {
+        // TODO
+    }
+
+    /**
+     *
+     * @param rowsToAdd List of rows to add. 
+     * @return the dataset with added rows
+     */
+    public void addRows(Object[][] rowsToAdd) {
+        // TODO
     }
 
     @Override

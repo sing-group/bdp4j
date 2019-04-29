@@ -116,6 +116,7 @@ public class Instance implements Serializable {
         this.target = i.target;
         this.name = i.name;
         this.source = i.source;
+        this.properties = i.properties;
     }
 
     /**
@@ -161,7 +162,9 @@ public class Instance implements Serializable {
      * @return a new instance cloning the original one
      */
     public Instance clone() {
-        return new Instance((Serializable) cloneObject(data), target, name, source);
+        Instance returnValue = new Instance((Serializable) cloneObject(data), target, name, source);
+        returnValue.properties = properties;
+        return returnValue;
     }
 
     /**

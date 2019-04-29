@@ -19,7 +19,6 @@
  * You should have received a copy of the GNU General Public License
  * along with this program.  If not, see <https://www.gnu.org/licenses/>.
  */
-
 package org.bdp4j.util;
 
 import org.apache.logging.log4j.LogManager;
@@ -50,7 +49,7 @@ public final class Configurator {
      * Default samples folder property key.
      */
     public static final String SAMPLES_FOLDER = "samplesFolder";
-    
+
     /**
      * Default samples folder property value.
      */
@@ -60,7 +59,7 @@ public final class Configurator {
      * Default plugins folder property key.
      */
     public static final String PLUGINS_FOLDER = "pluginsFolder";
-    
+
     /**
      * Default plugins folder property value.
      */
@@ -70,7 +69,7 @@ public final class Configurator {
      * Default output folder property key.
      */
     public static final String OUTPUT_FOLDER = "outputFolder";
-    
+
     /**
      * Default output folder property value.
      */
@@ -80,7 +79,7 @@ public final class Configurator {
      * Default tmp folder property key.
      */
     public static final String TEMP_FOLDER = "tempFolder";
-    
+
     /**
      * Default tmp folder property value.
      */
@@ -90,22 +89,32 @@ public final class Configurator {
      * Default debug mode property key.
      */
     public static final String DEBUG_MODE = "debug";
-    
+
     /**
      * Default debug mode property value.
      */
     public static final String DEFAULT_DEBUG_MODE = "no";
-    
-    /**
-     * Default serializable mode property key.
-     */
-    public static final String SERIALIZABLE_MODE = "serializable";
-    
-    /**
-     * Default serializable mode property value.
-     */
-    public static final String DEFAULT_SERIALIZABLE_MODE = "no";
 
+    /**
+     * Default resumable mode property key.
+     */
+    public static final String RESUMABLE_MODE = "resumable";
+
+    /**
+     * Default resumable mode property value.
+     */
+    public static final String DEFAULT_RESUMABLE_MODE = "no";
+
+    /**
+     * Default debug index property key.
+     */
+    public static final String DEBUG_INDEX = "debugIndex";
+
+    /**
+     * Default debug index property value.
+     */
+    public static final String DEFAULT_DEBUG_INDEX = "0";
+      
     /**
      * For logging purposes
      */
@@ -151,7 +160,8 @@ public final class Configurator {
         this.setProp(OUTPUT_FOLDER, DEFAULT_OUTPUT_FOLDER);
         this.setProp(TEMP_FOLDER, DEFAULT_TEMP_FOLDER);
         this.setProp(DEBUG_MODE, DEFAULT_DEBUG_MODE);
-        this.setProp(SERIALIZABLE_MODE, DEFAULT_SERIALIZABLE_MODE);
+        this.setProp(RESUMABLE_MODE, DEFAULT_RESUMABLE_MODE);
+        this.setProp(DEBUG_INDEX, DEFAULT_DEBUG_INDEX);
     }
 
     /**
@@ -237,9 +247,9 @@ public final class Configurator {
         Node pipeStructure = document.getElementsByTagName("pipeline").item(0);
 
         // Temp attributes properties
-        props.put(SERIALIZABLE_MODE, pipeStructure.getAttributes().getNamedItem(SERIALIZABLE_MODE).getNodeValue());
+        props.put(RESUMABLE_MODE, pipeStructure.getAttributes().getNamedItem(RESUMABLE_MODE).getNodeValue());
         props.put(DEBUG_MODE, pipeStructure.getAttributes().getNamedItem(DEBUG_MODE).getNodeValue());
-        
+
         // Global pipe (serialPipe or parallelPipe)
         Node globalPipe = null;
         for (int x = 0; x < pipeStructure.getChildNodes().getLength(); x++) {

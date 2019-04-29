@@ -356,7 +356,7 @@ public class SerialPipes extends AbstractPipe {
      * false if the dependences could not been satisfied
      */
     @Override
-    public Boolean checkAlwaysBeforeDeps(AbstractPipe p, List<Class<?>> deps) {
+    public Boolean checkAlwaysBeforeDeps(Pipe p, List<Class<?>> deps) {
         for (AbstractPipe p1 : this.pipes) {
             Boolean retVal = p1.checkAlwaysBeforeDeps(p, deps);
             if (retVal != null) return retVal;
@@ -374,14 +374,14 @@ public class SerialPipes extends AbstractPipe {
      * false if the dependencies could not been satisfied
      */
     @Override
-    public boolean checkNotAfterDeps(AbstractPipe p, BooleanBean foundP) {
+    public boolean checkNotAfterDeps(Pipe p, BooleanBean foundP) {
         boolean retVal = true;
 
         for (AbstractPipe p1 : this.pipes) {
             if (p1 instanceof SerialPipes || p1 instanceof ParallelPipes)
                 retVal = retVal && p1.checkNotAfterDeps(p, foundP);
             else {
-                if (foundP.getValue()) retVal = retVal && !(Arrays.asList(p.notAfterDeps).contains(p1.getClass()));
+                if (foundP.getValue()) retVal = retVal && !(Arrays.asList(p.getNotAfterDeps()).contains(p1.getClass()));
                 if (!retVal) {
                     errorMessage = "Unsatisfied NotAfter dependency for pipe " + p.getClass().getName() + " (" + p1.getClass().getName() + ")";
                     return retVal;
@@ -400,7 +400,7 @@ public class SerialPipes extends AbstractPipe {
      * @return true if this pipe contains p false otherwise
      */
     @Override
-    public boolean containsPipe(AbstractPipe p) {
+    public boolean containsPipe(Pipe p) {
         for (AbstractPipe p1 : this.pipes) {
             if (p1.containsPipe(p)) return true;
         }
