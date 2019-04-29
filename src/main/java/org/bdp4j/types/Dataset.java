@@ -446,21 +446,24 @@ public class Dataset implements Serializable, Cloneable {
 
     /**
      *
-     * @param columsToAdd List of columns to add. Each column is represented as
-     * <columnName, position>
-     * @return the dataset with added columns
+     * @param columnsToAdd List of columns to add. Each column is represented as
+     * &lt;columnName, position&gt; where columName stands for
+     * and position is the position where the column is inserted
+     * @return true if the columns were sucessfully added, false otherwise
      */
-    public void addColumns(Map<String, Integer> columsToAdd) {
-        // TODO
+    public boolean addColumns(Map<String, Integer> columnsToAdd) {
+        // TODO: implement it
+        return false;
     }
 
     /**
-     *
+     * Add rows to the dataset
      * @param rowsToAdd List of rows to add. 
-     * @return the dataset with added rows
+     * @return true if the rows could be added; false otherwise
      */
-    public void addRows(Object[][] rowsToAdd) {
-        // TODO
+    public boolean addRows(Object[][] rowsToAdd) {
+        // TODO: implement it
+        return false;
     }
 
     @Override
@@ -472,7 +475,6 @@ public class Dataset implements Serializable, Cloneable {
      * Interface that defines the operation to combine 2 columns
      */
     public interface CombineOperator {
-
         /**
          * Combine values of an atrribute for two columns
          *
