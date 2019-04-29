@@ -19,7 +19,7 @@
  * You should have received a copy of the GNU General Public License
  * along with this program.  If not, see <https://www.gnu.org/licenses/>.
  */
-package org.bdp4j.ml;
+package org.bdp4j.dataset;
 
 import org.apache.commons.csv.CSVFormat;
 import org.apache.commons.csv.CSVRecord;
@@ -249,9 +249,10 @@ public class DatasetFromFile {
                     if (header.equalsIgnoreCase("target") && !hasTargetAdd) {
                         List<String> target_values = new ArrayList<String>();
                         Transformer transformer = transformersList.get(header);
-                        for (Object value : transformer.getListValues()) {
-                            target_values.add(value.toString());
-
+                        if (transformer != null) {
+                            for (Object value : transformer.getListValues()) {
+                                target_values.add(value.toString());
+                            }
                         }
                         attributes.add(new Attribute(header, target_values));
                         hasTargetAdd = true;
@@ -273,9 +274,6 @@ public class DatasetFromFile {
                     int indInstance = 0;
                     for (int index = 0; index < headers.size(); index++) {
                         field = record.get(index);
-                        if (field.equals("date")) {
-                            System.err.println("");
-                        }
                         if (isAttribute.test(headers.get(index))) {
                             Transformer t;
                             try {
@@ -288,7 +286,7 @@ public class DatasetFromFile {
                                                 instance.setValue(indInstance, t.transform(field));
                                             } catch (Exception ex) {
                                                 instance.setValue(indInstance, 0d);
-                                                logger.error(ex.getMessage());
+                                                logger.error("1" + ex.getMessage());
                                             }
                                         } else {
                                             instance.setValue(indInstance, 0d);
@@ -301,7 +299,7 @@ public class DatasetFromFile {
                                             } catch (NumberFormatException ex) {
 
                                                 instance.setValue(indInstance, 0d);
-                                                logger.error(ex.getMessage());
+                                                logger.error("2" + ex.getMessage());
                                             }
                                         } else {
                                             instance.setValue(indInstance, 0d);
@@ -309,7 +307,7 @@ public class DatasetFromFile {
                                     }
                                 }
                             } catch (Exception ex) {
-                                logger.error(ex.getMessage());
+                                logger.error("3" + ex.getMessage());
                                 ex.printStackTrace();
                             }
                             indInstance++;

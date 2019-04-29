@@ -25,8 +25,8 @@ import java.util.List;
  * The abstract superclass of all Pipes, which transform one data type to
  * another. Pipes are most often used for feature extraction.
  * <p>
- * A pipe operates on an {@link org.bdp4j.types.Instance}, which is a carrier
- * of data. A pipe reads from and writes to fields in the Instance when it is
+ * A pipe operates on an {@link org.bdp4j.types.Instance}, which is a carrier of
+ * data. A pipe reads from and writes to fields in the Instance when it is
  * requested to process the instance. It is up to the pipe which fields in the
  * Instance it reads from and writes to, but usually a pipe will read its input
  * from and write its output to the "data" field of an instance.
@@ -53,15 +53,13 @@ public abstract class AbstractPipe implements Pipe {
      */
     static String errorMessage;
     /**
-     * Dependencies of the type alwaysBefore
-     * These dependences indicate what pipes must be
-     * executed before the current one.
+     * Dependencies of the type alwaysBefore These dependences indicate what
+     * pipes must be executed before the current one.
      */
     final Class<?>[] alwaysBeforeDeps;
     /**
-     * Dependencies of the type notAfter
-     * These dependences indicate what pipes must not be
-     * executed after the current one.
+     * Dependencies of the type notAfter These dependences indicate what pipes
+     * must not be executed after the current one.
      */
     final Class<?>[] notAfterDeps;
     /**
@@ -76,8 +74,10 @@ public abstract class AbstractPipe implements Pipe {
     /**
      * Create a pipe with its dependences
      *
-     * @param alwaysBeforeDeps The dependences alwaysBefore (pipes that must be executed before this one)
-     * @param notAfterDeps     The dependences notAfter (pipes that cannot be executed after this one)
+     * @param alwaysBeforeDeps The dependences alwaysBefore (pipes that must be
+     * executed before this one)
+     * @param notAfterDeps The dependences notAfter (pipes that cannot be
+     * executed after this one)
      */
     public AbstractPipe(Class<?>[] alwaysBeforeDeps, Class<?>[] notAfterDeps) {
         this.notAfterDeps = notAfterDeps;
@@ -98,8 +98,8 @@ public abstract class AbstractPipe implements Pipe {
      * modifies it in some way, and returns it. This is the method by which all
      * pipes are eventually run.
      * <p>
-     * One can create a new concrete subclass of AbstractPipe simply by implementing
-     * this method.
+     * One can create a new concrete subclass of AbstractPipe simply by
+     * implementing this method.
      *
      * @param carrier Instance to be processed.
      * @return Instancia procesada
@@ -141,8 +141,7 @@ public abstract class AbstractPipe implements Pipe {
                         }
                     }
             );
-            */
-
+             */
             // This is the serial-way
             for (int i = 0; i < lastValidInstanceIdx; i++) {
                 if (carriersAsArray[i].isValid()) {
@@ -176,14 +175,14 @@ public abstract class AbstractPipe implements Pipe {
     /**
      * Stablished the parent pipe for this one
      *
-     * @param p The parent AbstractPipe for this one
+     * @param p The parent Pipe for this one
      */
-    public void setParent(AbstractPipe p) {
+    public void setParent(Pipe p) {
         if (parent != null) {
             throw new IllegalStateException("Parent already set.");
         }
 
-        parent = p;
+        parent = (AbstractPipe) p;
     }
 
     /**
@@ -203,6 +202,24 @@ public abstract class AbstractPipe implements Pipe {
         }
 
         return p;
+    }
+
+    /**
+     * Get the dependences alwaysBefore
+     *
+     * @return the dependences alwaysBefore
+     */
+    public Class<?>[] getAlwaysBeforeDeps() {
+        return this.alwaysBeforeDeps;
+    }
+
+    /**
+     * Get the dependences notAfter
+     *
+     * @return the dependences notAfter
+     */
+    public Class<?>[] getNotAfterDeps() {
+        return this.notAfterDeps;
     }
 
     /**
@@ -229,18 +246,29 @@ public abstract class AbstractPipe implements Pipe {
     public abstract Class<?> getOutputType();
 
     /**
-     * Check if alwaysBeforeDeps are satisfied for pipe p (inserted). Initially deps contain
-     * all alwaysBefore dependences for p. These dependencies are deleted (marked as resolved)
-     * by recursivelly calling this method.
+     * Get the store path to save data
      *
-     * @param p    The pipe that is being checked
-     * @param deps The dependences that are not confirmed in a certain moment
-     * @return null if not sure about the fullfulling, true if the dependences are satisfied,
-     * false if the dependences could not been satisfied
+     * @return the store path to save data
      */
-    public Boolean checkAlwaysBeforeDeps(AbstractPipe p, List<Class<?>> deps) {
-        if (this == p && deps.size() > 0) {
-            errorMessage = "Unsatisfied AlwaysBefore dependencies for pipe " + p.getClass().getName() + " (";
+    
+    public String getStorePath() {
+        // TODO
+        return "";
+    }
+
+    /**
+     * Check if alwaysBeforeDeps are satisfied for pipe p (inserted). Initially
+     * deps contain all alwaysBefore dependences for p. These dependencies are
+     * deleted (marked as resolved) by recursivelly calling this method.
+     *
+     * @param p The pipe that is being checked
+     * @param deps The dependences that are not confirmed in a certain moment
+     * @return null if not sure about the fullfulling, true if the dependences
+     * are satisfied, false if the dependences could not been satisfied
+     */
+    public Boolean checkAlwaysBeforeDeps(Pipe p, List<Class<?>> deps) {
+        if (this == (AbstractPipe)p && deps.size() > 0) {
+            errorMessage = "Unsatisfied AlwaysBefore dependencies for pipe " + ((AbstractPipe)p).getClass().getName() + " (";
             boolean first = true;
             for (Class<?> dep : deps) {
                 errorMessage += ((!first ? ", " : "") + dep.getName());
@@ -253,22 +281,27 @@ public abstract class AbstractPipe implements Pipe {
 
         deps.remove(this.getClass());
 
-        if (deps.size() == 0) return true;
+        if (deps.size() == 0) {
+            return true;
+        }
 
         return null;
     }
 
     /**
-     * Check if notBeforeDeps are satisfied for pipe p recursivelly. Note that p should be inserted.
+     * Check if notBeforeDeps are satisfied for pipe p recursivelly. Note that p
+     * should be inserted.
      *
      * @param p The pipe that is being checked
-     * @return null if not sure about the fullfulling, true if the dependences are satisfied,
-     * false if the dependences could not been satisfied
+     * @return null if not sure about the fullfulling, true if the dependences
+     * are satisfied, false if the dependences could not been satisfied
      */
-    public boolean checkNotAfterDeps(AbstractPipe p, BooleanBean foundP) {
-        if (this == p)
+    public boolean checkNotAfterDeps(Pipe p, BooleanBean foundP) {
+        if (this == (AbstractPipe)p) {
             return true;
-        else throw new RuntimeException("Seems this situation has no sense.");
+        } else {
+            throw new RuntimeException("Seems this situation has no sense.");
+        }
     }
 
     /**
@@ -277,8 +310,8 @@ public abstract class AbstractPipe implements Pipe {
      * @param p The pipe to search
      * @return true if this pipe contains p false otherwise
      */
-    public boolean containsPipe(AbstractPipe p) {
-        return this == p;
+    public boolean containsPipe(Pipe p) {
+        return this == (AbstractPipe)p;
     }
 
     /**

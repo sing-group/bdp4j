@@ -19,7 +19,6 @@
  * You should have received a copy of the GNU General Public License
  * along with this program.  If not, see <https://www.gnu.org/licenses/>.
  */
-
 package org.bdp4j.pipe;
 
 import java.io.BufferedInputStream;
@@ -52,7 +51,7 @@ import org.bdp4j.util.EBoolean;
  *
  * @author María Novo
  */
-public class SerialPipesSerializable extends SerialPipes {
+public class ResumableSerialPipes extends SerialPipes {
 
     /**
      * For logging purposes
@@ -72,15 +71,16 @@ public class SerialPipesSerializable extends SerialPipes {
     /**
      * Build an empty SerialPipes
      */
-    public SerialPipesSerializable() {
+    public ResumableSerialPipes() {
         super();
     }
 
     /**
      * Build an empty SerialPipes
+     *
      * @param pipes The pipes that included in the SerialPipe
      */
-    public SerialPipesSerializable(AbstractPipe[] pipes) {
+    public ResumableSerialPipes(AbstractPipe[] pipes) {
         super(pipes);
     }
 
@@ -109,7 +109,7 @@ public class SerialPipesSerializable extends SerialPipes {
      * @param filename File name where the data is saved
      * @param carriers Data to save
      */
-    public void saveData(String filename, Object carriers) {
+    public void writeToDisk(String filename, Object carriers) {
         try (FileOutputStream outputFile = new FileOutputStream(filename);
                 BufferedOutputStream buffer = new BufferedOutputStream(outputFile);
                 ObjectOutputStream output = new ObjectOutputStream(buffer);) {
@@ -120,7 +120,7 @@ public class SerialPipesSerializable extends SerialPipes {
             }
             output.close();
         } catch (Exception ex) {
-            java.util.logging.Logger.getLogger(SerialPipesSerializable.class.getName()).log(Level.SEVERE, null, ex);
+            java.util.logging.Logger.getLogger(ResumableSerialPipes.class.getName()).log(Level.SEVERE, null, ex);
         }
     }
 
@@ -130,7 +130,7 @@ public class SerialPipesSerializable extends SerialPipes {
      * @param filename File name to retrieve data
      * @return an Object with the deserialized retrieve data
      */
-    public Object retrieveData(String filename) {
+    public Object readFromDisk(String filename) {
         File file = new File(filename);
         try (BufferedInputStream buffer = new BufferedInputStream(new FileInputStream(file))) {
             ObjectInputStream input = new ObjectInputStream(buffer);
@@ -138,76 +138,9 @@ public class SerialPipesSerializable extends SerialPipes {
             return input.readObject();
 
         } catch (Exception ex) {
-            java.util.logging.Logger.getLogger(SerialPipesSerializable.class.getName()).log(Level.SEVERE, null, ex);
+            java.util.logging.Logger.getLogger(ResumableSerialPipes.class.getName()).log(Level.SEVERE, null, ex);
         }
         return null;
-    }
-
-    /**
-     * Checks if pipes that are annotated as DataReaderPipe or DataWriterPipe
-     * implements the corresponding interface.
-     *
-     * @param pipeList List of pipes to check
-     * @return False if any pipe annotated as DataReaderPipe or
-     * DataWriterPipe don't implement the corresponding interface.True in
-     * any other case.
-     *
-     */
-    public boolean checkDataManager(AbstractPipe[] pipeList) {
-
-        Class<?> abstractPipeClass = null;
-        boolean returnValueReader = false;
-        boolean returnValueWriter = false;
-        String errorReader = "";
-        String errorWriter = "";
-
-        for (AbstractPipe abstractPipe : pipeList) {
-            abstractPipeClass = abstractPipe.getClass();
-            // Reader
-            if (abstractPipeClass.getAnnotationsByType(DataReaderPipe.class).length > 0) {
-                returnValueReader = false;
-                errorReader = "Pipe " + abstractPipeClass.getSimpleName() + " has to implement DataReader interface.";
-                Class<?>[] interfaces = abstractPipeClass.getInterfaces();
-                for (Class<?> aInterface : interfaces) {
-                    if (aInterface.equals(DataReader.class)) {
-                        returnValueReader = true;
-                    }
-                }
-                if (!returnValueReader) {
-                    logger.error(errorReader);
-                    return false;
-                }
-
-            } else {
-                returnValueReader = true;
-            }
-            // Writer
-            if (returnValueReader == true) {
-                returnValueWriter = false;
-                if (abstractPipeClass.getAnnotationsByType(DataWriterPipe.class).length > 0) {
-                    errorWriter = "Pipe " + abstractPipeClass.getSimpleName() + " has to implement DataWriter interface.";
-                    Class<?>[] interfaces = abstractPipeClass.getInterfaces();
-                    for (Class<?> aInterface : interfaces) {
-                        if (aInterface.equals(DataWriter.class)) {
-                            returnValueWriter = true;
-                        }
-                    }
-                    if (!returnValueWriter) {
-                        logger.error(errorWriter);
-                        return false;
-                    }
-                } else {
-                    returnValueWriter = true;
-                }
-            }
-        }
-        if (!errorReader.equals("")) {
-            logger.error(errorReader);
-        }
-        if (!errorWriter.equals("")) {
-            logger.error(errorWriter);
-        }
-        return returnValueReader && returnValueWriter;
     }
 
     /**
@@ -221,13 +154,11 @@ public class SerialPipesSerializable extends SerialPipes {
     @Override
     public Collection<Instance> pipeAll(Collection<Instance> carriers) {
         int step = 0;
-        boolean serializableMode = EBoolean.getBoolean(configurator.getProp(Configurator.SERIALIZABLE_MODE));
-        if (serializableMode) {
+        boolean resumableMode = EBoolean.getBoolean(configurator.getProp(Configurator.RESUMABLE_MODE));
+        if (resumableMode) {
             // Calculate pipe to continue execution
             AbstractPipe[] pipeList = super.getPipes();
-            if (!checkDataManager(pipeList)) {
-                System.exit(0);
-            }
+
             String md5PipeName = generateMD5(this.toString());
             File sourcePath = new File(configurator.getProp(Configurator.TEMP_FOLDER) + "/" + md5PipeName);
             // Get all files but txt with the serialized instances
@@ -258,12 +189,12 @@ public class SerialPipesSerializable extends SerialPipes {
                             md5Carriers.append(md5Carrier);
                         });
 
-                        String deserializedCarriers = (String) retrieveData(sourcePath + "/" + md5PipeName + ".txt");
+                        String deserializedCarriers = (String) readFromDisk(sourcePath + "/" + md5PipeName + ".txt");
                         // If instances match, the pipe and instances are the same, so, this is the first step
                         if (deserializedCarriers.equals(md5Carriers.toString())) {
                             String[] pipeIndex = filename.split("_");
                             step = Integer.parseInt(pipeIndex[0]) + 1;
-                            Collection<Instance> instances = (Collection<Instance>) retrieveData(sourcePath + "/" + filename);
+                            Collection<Instance> instances = (Collection<Instance>) readFromDisk(sourcePath + "/" + filename);
                             return this.pipeAll(instances, step);
                         }
                     }
@@ -286,11 +217,13 @@ public class SerialPipesSerializable extends SerialPipes {
             int i = 0;
             AbstractPipe p = null;
             AbstractPipe[] pipeList = super.getPipes();
-            boolean serializableMode = EBoolean.getBoolean(configurator.getProp(Configurator.SERIALIZABLE_MODE));
+            boolean resumableMode = EBoolean.getBoolean(configurator.getProp(Configurator.RESUMABLE_MODE));
             boolean debugMode = EBoolean.getBoolean(configurator.getProp(Configurator.DEBUG_MODE));
+            //int debugIndex = Integer.parseInt(configurator.getProp(Configurator.DEBUG_INDEX));
             String temp_folder = configurator.getProp(Configurator.TEMP_FOLDER);
 
-            if (serializableMode) {
+            //if (resumableMode && debugIndex > 0 && step < debugIndex) {
+            if (resumableMode) {
                 File sourcePath = new File(temp_folder);
                 if (!sourcePath.exists()) {
                     sourcePath.mkdir();
@@ -313,7 +246,7 @@ public class SerialPipesSerializable extends SerialPipes {
                     // Create file with md5Carrier
                     if (sourcePath.exists() && sourcePath.isDirectory()) {
                         File instancesFile = new File(path.getPath() + "/" + md5PipeName + ".txt");
-                        saveData(instancesFile.getPath(), md5Carriers.toString());
+                        writeToDisk(instancesFile.getPath(), md5Carriers.toString());
                     }
 
                     for (i = step; i < pipeList.length; i++) {
@@ -327,13 +260,13 @@ public class SerialPipesSerializable extends SerialPipes {
                             }
                         }
 
-                        // Guardar instancias
+                        // Save instances
                         String filename = path + "/" + i + "_" + p.toString() + ".ser";
                         if (debugMode) {
-                            saveData(filename, carriers);
+                            writeToDisk(filename, carriers);
                         } else {
                             if (i == pipeList.length - 1) {
-                                saveData(filename, carriers);
+                                writeToDisk(filename, carriers);
                             }
                         }
                     }
@@ -353,7 +286,7 @@ public class SerialPipesSerializable extends SerialPipes {
             }
 
         } catch (Exception ex) {
-            java.util.logging.Logger.getLogger(SerialPipesSerializable.class.getName()).log(Level.SEVERE, null, ex);
+            java.util.logging.Logger.getLogger(ResumableSerialPipes.class.getName()).log(Level.SEVERE, null, ex);
         }
         return carriers;
     }
@@ -376,7 +309,7 @@ public class SerialPipesSerializable extends SerialPipes {
             }
             return md5Name.toString();
         } catch (NoSuchAlgorithmException ex) {
-            java.util.logging.Logger.getLogger(SerialPipesSerializable.class.getName()).log(Level.SEVERE, null, ex);
+            java.util.logging.Logger.getLogger(ResumableSerialPipes.class.getName()).log(Level.SEVERE, null, ex);
         }
         return "";
     }

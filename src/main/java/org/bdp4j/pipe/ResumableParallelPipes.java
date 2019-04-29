@@ -39,11 +39,11 @@ import java.util.List;
  *
  * @author Yeray Lage
  */
-public class ParallelPipes extends AbstractPipe{
+public class ResumableParallelPipes extends AbstractPipe{
     /**
      * For logging purposes
      */
-    private static final Logger logger = LogManager.getLogger(ParallelPipes.class);
+    private static final Logger logger = LogManager.getLogger(ResumableParallelPipes.class);
 
     /**
      * The input type
@@ -63,7 +63,7 @@ public class ParallelPipes extends AbstractPipe{
     /**
      * Default constructor, initializes the arrayList.
      */
-    public ParallelPipes() {
+    public ResumableParallelPipes() {
         super(new Class<?>[0], new Class<?>[0]);
         this.pipes = new ArrayList<>();
     }
@@ -73,7 +73,7 @@ public class ParallelPipes extends AbstractPipe{
      *
      * @param pipeList The array of pipes to be included in the parallelPipe.
      */
-    public ParallelPipes(AbstractPipe[] pipeList) {
+    public ResumableParallelPipes(AbstractPipe[] pipeList) {
         super(new Class<?>[0], new Class<?>[0]);
         this.pipes = new ArrayList<AbstractPipe>(pipeList.length);
 
@@ -85,7 +85,7 @@ public class ParallelPipes extends AbstractPipe{
      *
      * @param pipeList The ArrayList of pipes to be included in the parallelPipe.
      */
-    public ParallelPipes(ArrayList<AbstractPipe> pipeList) {
+    public ResumableParallelPipes(ArrayList<AbstractPipe> pipeList) {
         super(new Class<?>[0], new Class<?>[0]);
         this.pipes = new ArrayList<AbstractPipe>(pipeList.size());
 

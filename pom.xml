@@ -92,6 +92,11 @@
             <groupId>nz.ac.waikato.cms.weka</groupId>
             <artifactId>weka-stable</artifactId>
             <version>3.8.3</version>
+        </dependency>        
+        <dependency>
+            <groupId>org.ini4j</groupId>
+            <artifactId>ini4j</artifactId>
+            <version>0.5.4</version>
         </dependency>
     </dependencies>
 

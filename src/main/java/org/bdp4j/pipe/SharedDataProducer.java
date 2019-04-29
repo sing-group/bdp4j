@@ -22,17 +22,20 @@
 package org.bdp4j.pipe;
 
 /**
- * Classes that need to save data, like a Singleton class, had to implement this
- * interface.
+ * This interface is used in case of resume execution from a particular pipe to
+ * save data.
+ *
+ * If you need to save aditional data, for example, a Singleton class, you have
+ * to implement this interface, to specify how to save data.
  *
  * @author María Novo
  */
-public interface DataReader {
+public interface SharedDataProducer {
 
     /**
-     * Retrieve data from filepath
+     * Save data in a filepath
      *
-     * @param filename File name/path from retrieve data
+     * @param filename File name/path where the data is saved
      */
-    void retrieveData(String filename);
+    void writeToDisk(String filename);
 }
