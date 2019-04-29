@@ -447,7 +447,7 @@ public class Dataset implements Serializable, Cloneable {
     /**
      *
      * @param columnsToAdd List of columns to add. Each column is represented as
-     * &lt;columnName, position&gt; where columName stands for
+     * &lt;columnName, position&gt; where columName stands for the name of the column
      * and position is the position where the column is inserted
      * @return true if the columns were sucessfully added, false otherwise
      */
@@ -458,7 +458,7 @@ public class Dataset implements Serializable, Cloneable {
 
     /**
      * Add rows to the dataset
-     * @param rowsToAdd List of rows to add. 
+     * @param rowsToAdd List of rows to add
      * @return true if the rows could be added; false otherwise
      */
     public boolean addRows(Object[][] rowsToAdd) {
