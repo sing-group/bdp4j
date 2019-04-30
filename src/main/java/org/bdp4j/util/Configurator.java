@@ -1,7 +1,7 @@
 /*
- * BDP4j implements a pipeline framework to allow definining 
- * project pipelines from XML. The main goal of the pipelines of this 
- * application is to transform imput data received from multiple sources 
+ * BDP4j implements a pipeline framework to allow definining
+ * project pipelines from XML. The main goal of the pipelines of this
+ * application is to transform imput data received from multiple sources
  * into fully qualified datasets to be used with Machine Learning.
  *
  * Copyright (C) 2018  Sing Group (University of Vigo)
@@ -27,6 +27,7 @@ import org.bdp4j.pipe.AbstractPipe;
 import org.bdp4j.pipe.ParallelPipes;
 import org.bdp4j.pipe.PipeParameter;
 import org.bdp4j.pipe.SerialPipes;
+import org.bdp4j.types.PipeType;
 import org.w3c.dom.Document;
 import org.w3c.dom.Node;
 import org.w3c.dom.NodeList;
@@ -114,7 +115,7 @@ public final class Configurator {
      * Default debug index property value.
      */
     public static final String DEFAULT_DEBUG_INDEX = "0";
-      
+
     /**
      * For logging purposes
      */
@@ -194,6 +195,12 @@ public final class Configurator {
         Configurator returnValue = configurations.get(requestedConfiguration);
 
         if (requestedConfiguration.equals("")) {
+            if (configPath == null) {
+                returnValue = new Configurator();
+            } else {
+                returnValue = new Configurator(configPath);
+            }
+        } else if (returnValue == null) {
             if (configPath == null) {
                 returnValue = new Configurator();
             } else {
@@ -304,6 +311,11 @@ public final class Configurator {
                     }
                 }
             }
+        }
+
+        if (configuredPipe.countPipes(PipeType.TARGET_ASSIGNING_PIPE) > 1) {
+            logger.fatal("[PIPE CONFIGURATION] The number of target assigning pipes must be one or zero.");
+            System.exit(-1);
         }
 
         return configuredPipe;
