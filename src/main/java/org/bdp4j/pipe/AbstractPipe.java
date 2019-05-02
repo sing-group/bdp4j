@@ -72,12 +72,17 @@ public abstract class AbstractPipe implements Pipe {
     AbstractPipe parent;
 
     /**
+     * For debugging purposes.
+     */
+    boolean isDebug = false;
+
+    /**
      * Create a pipe with its dependences
      *
      * @param alwaysBeforeDeps The dependences alwaysBefore (pipes that must be
-     * executed before this one)
-     * @param notAfterDeps The dependences notAfter (pipes that cannot be
-     * executed after this one)
+     *                         executed before this one)
+     * @param notAfterDeps     The dependences notAfter (pipes that cannot be
+     *                         executed after this one)
      */
     public AbstractPipe(Class<?>[] alwaysBeforeDeps, Class<?>[] notAfterDeps) {
         this.notAfterDeps = notAfterDeps;
@@ -145,7 +150,9 @@ public abstract class AbstractPipe implements Pipe {
             // This is the serial-way
             for (int i = 0; i < lastValidInstanceIdx; i++) {
                 if (carriersAsArray[i].isValid()) {
+
                     pipe(carriersAsArray[i]);
+
                 } else {
                     logger.info("Skipping invalid instance " + carriersAsArray[i].toString());
                 }
@@ -250,7 +257,7 @@ public abstract class AbstractPipe implements Pipe {
      *
      * @return the store path to save data
      */
-    
+
     public String getStorePath() {
         // TODO
         return "";
@@ -261,14 +268,14 @@ public abstract class AbstractPipe implements Pipe {
      * deps contain all alwaysBefore dependences for p. These dependencies are
      * deleted (marked as resolved) by recursivelly calling this method.
      *
-     * @param p The pipe that is being checked
+     * @param p    The pipe that is being checked
      * @param deps The dependences that are not confirmed in a certain moment
      * @return null if not sure about the fullfulling, true if the dependences
      * are satisfied, false if the dependences could not been satisfied
      */
     public Boolean checkAlwaysBeforeDeps(Pipe p, List<Class<?>> deps) {
-        if (this == (AbstractPipe)p && deps.size() > 0) {
-            errorMessage = "Unsatisfied AlwaysBefore dependencies for pipe " + ((AbstractPipe)p).getClass().getName() + " (";
+        if (this == (AbstractPipe) p && deps.size() > 0) {
+            errorMessage = "Unsatisfied AlwaysBefore dependencies for pipe " + ((AbstractPipe) p).getClass().getName() + " (";
             boolean first = true;
             for (Class<?> dep : deps) {
                 errorMessage += ((!first ? ", " : "") + dep.getName());
@@ -297,7 +304,7 @@ public abstract class AbstractPipe implements Pipe {
      * are satisfied, false if the dependences could not been satisfied
      */
     public boolean checkNotAfterDeps(Pipe p, BooleanBean foundP) {
-        if (this == (AbstractPipe)p) {
+        if (this == (AbstractPipe) p) {
             return true;
         } else {
             throw new RuntimeException("Seems this situation has no sense.");
@@ -311,7 +318,7 @@ public abstract class AbstractPipe implements Pipe {
      * @return true if this pipe contains p false otherwise
      */
     public boolean containsPipe(Pipe p) {
-        return this == (AbstractPipe)p;
+        return this == (AbstractPipe) p;
     }
 
     /**
@@ -326,6 +333,14 @@ public abstract class AbstractPipe implements Pipe {
     // TODO this javaDoc
     public Integer countPipes(PipeType c) {
         return (this.getClass().getAnnotationsByType(c.typeClass()).length != 0) ? 1 : 0;
+    }
+
+    public boolean isDebug() {
+        return isDebug;
+    }
+
+    public void setDebug(boolean debug) {
+        isDebug = debug;
     }
 
     /**
