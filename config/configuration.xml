@@ -9,7 +9,7 @@
     </general>
 
     <!-- AbstractPipe structure that is going to be used -->
-    <pipeline serializable="yes" debug="yes">
+    <pipeline resumable="yes" debug="yes">
         <serialPipes>
 
             <pipe>
@@ -24,6 +24,7 @@
                         <value>The file size</value>
                     </pipeParameter>
                 </params>
+                <debug/>
             </pipe>
 
             <pipe>

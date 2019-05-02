@@ -330,6 +330,7 @@ public final class Configurator {
     private AbstractPipe getPipeInstance(String pipeName, Node pipeNode) {
         AbstractPipe pipe = null;
         pipeName = pipeName.split("\n")[0];
+        boolean pipeIsDebug = false;
 
         if (pipes.get(pipeName) == null) {
             logger.fatal("[PIPE GET] " + pipeName + " is not loaded.");
@@ -339,6 +340,7 @@ public final class Configurator {
 
             // We check the pipeParameters from configuration file
             NodeList pipeNodeChildren = pipeNode.getChildNodes();
+
 
             for (int i = 0; i < pipeNodeChildren.getLength(); i++) {
                 if (!pipeNodeChildren.item(i).getNodeName().contains("#")) {
@@ -363,6 +365,8 @@ public final class Configurator {
                                 }
                             }
                         }
+                    } else if (pipeNodeChildren.item(i).getNodeName().equals("debug")) {
+                        pipeIsDebug = true;
                     }
                 }
             }
@@ -385,6 +389,8 @@ public final class Configurator {
                 System.exit(-1);
             }
         }
+
+        if (pipeIsDebug) pipe.setDebug(true);
 
         return pipe;
     }
