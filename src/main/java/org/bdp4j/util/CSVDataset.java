@@ -293,23 +293,26 @@ public class CSVDataset {
      * @return true if sucessfully added, false otherwise
      */
     public boolean addRow(Object[] values) {
-        if (values.length == this.getColumnCount())
-            return false;
+        final String lineSep = System.getProperty("line.separator");
+
+        if (values.length != this.getColumnCount()) return false;
 
         if (br != null) flushAndClose();
 
         try {
             //Open the file for appending
-            bw = new BufferedWriter(new OutputStreamWriter(new FileOutputStream(csvDataset, true)));
+            if (bw==null)
+                bw = new BufferedWriter(new OutputStreamWriter(new FileOutputStream(csvDataset, true)));
+
             for (Object o:values){
                 bw.append(escapeCSV(o.toString())).append(getCSVSep());
-                
             }
+            bw.append(lineSep);
         } catch (FileNotFoundException e) {
-            // TODO error and log
+            logger.error("Unable to find/create file "+csvDataset.getAbsolutePath());
             return false;
         } catch ( IOException e){
-            // TODO error and log
+            logger.error("I/O error when manipulating file "+csvDataset.getAbsolutePath());
             return false;
         }
 
@@ -320,9 +323,10 @@ public class CSVDataset {
      * Add a column to the dataset
      * @param columnName The name of the column
      * @param defaultValue The default value for the rows included
+     * @return true if sucessfull, false otherwise
      */
-    public void addColumn(String columnName, String defaultValue) {
-        if (defaultValue == null || defaultValue.length() == 0) {
+    public boolean addColumn(String columnName, Object defaultValue) {
+        if (defaultValue == null || defaultValue.toString().length() == 0) {
             defaultValue = "0";
         }
 
@@ -334,6 +338,28 @@ public class CSVDataset {
         final String lineSep = System.getProperty("line.separator");
 
         File sourceFile = csvDataset;
+        if (!sourceFile.exists())
+            try {
+                sourceFile.createNewFile();
+            } catch (IOException e1) {
+                logger.error("Unable to create the file "+sourceFile);
+            }
+
+        if (sourceFile.length()==0){
+            try {
+                bw = new BufferedWriter(new OutputStreamWriter(new FileOutputStream(sourceFile)));
+                bw.write(columnName/*+lineSep*/);
+                bw.close();
+                bw=null;
+                this.columnCount=1;
+                return true;
+            } catch (FileNotFoundException e) {
+                logger.error("Unable to add column" + e.getMessage());
+            }catch  (IOException e) {
+                logger.error("Unable to add column" + e.getMessage());
+            }
+        }    
+
         File destinationFile = new File(csvDataset.getParent(), "copy_" + csvDataset.getName());
 
         try {
@@ -341,21 +367,215 @@ public class CSVDataset {
             bw = new BufferedWriter(new OutputStreamWriter(new FileOutputStream(destinationFile)));
             int i = 0;
             for (String line = br.readLine(); line != null; line = br.readLine(), i++) {
-                int initLastColumn = line.lastIndexOf(getCSVSep());
-                if (initLastColumn > 0) {
-                    String beforeNewColumn = line.substring(0, initLastColumn);
-                    String afterNewColumn = line.substring(initLastColumn + 1);
-                    String column = ((i == 0) ? columnName : defaultValue);
-                    bw.write(beforeNewColumn + getCSVSep() + column + getCSVSep() + afterNewColumn + lineSep);
-                }
+                    String column = ((i == 0) ? columnName : defaultValue.toString());
+                    bw.write((line==null||line.equals("")?"":line+getCSVSep()) + column + lineSep);
             }
             bw.flush();
+            bw.close();
+            br.close();
+            br=null;
+            bw=null;
             sourceFile.delete();
             destinationFile.renameTo(sourceFile);
             columnCount++;
         } catch (Exception e) {
-            logger.warn(e.getMessage());
+            logger.error("Unable to add column" + e.getMessage());
+            return false;
         }
+        return true;
+    }
+
+    /**
+     * Add a columns to the dataset (inserted before the last one)
+     * @param columnNames The name of the columns
+     * @param defaultValues The default values for the columns included
+     * @return true if sucessfull, false otherwise
+     */
+    public boolean addColumns(String columnNames[], Object defaultValues[]) {
+        if (columnNames.length!=defaultValues.length) return false;
+
+        flushAndClose();
+        if (columnCount==null){
+            getColumnCount();
+        }
+
+        final String lineSep = System.getProperty("line.separator");
+
+        File sourceFile = csvDataset;
+        if (!sourceFile.exists())
+            try {
+                sourceFile.createNewFile();
+            } catch (IOException e1) {
+                logger.error("Unable to create the file "+sourceFile);
+            }
+
+        if (sourceFile.length()==0){
+            try {
+                bw = new BufferedWriter(new OutputStreamWriter(new FileOutputStream(sourceFile)));
+                String columns="";
+                for (int k=0;k<columnNames.length;k++){
+                    columns += columnNames[k] ;
+                    columns += (k!=columnNames.length-1)?getCSVSep():"";
+                }
+                bw.write(columns/*+lineSep*/);
+                bw.close();
+                bw=null;
+                this.columnCount=columnNames.length;
+                return true;
+            } catch (FileNotFoundException e) {
+                logger.error("Unable to add column" + e.getMessage());
+            }catch  (IOException e) {
+                logger.error("Unable to add column" + e.getMessage());
+            }
+        }
+
+        File destinationFile = new File(csvDataset.getParent(), "copy_" + csvDataset.getName());
+
+        try {
+            br = new BufferedReader(new InputStreamReader(new FileInputStream(sourceFile)));
+            bw = new BufferedWriter(new OutputStreamWriter(new FileOutputStream(destinationFile)));
+            int i = 0;
+            for (String line = br.readLine(); line != null; line = br.readLine(), i++) {
+                    String columns="";
+                    for (int k=0;k<columnNames.length;k++){
+                        columns += ((i == 0) ? columnNames[k] : defaultValues[k]);
+                        columns += (k!=columnNames.length-1)?getCSVSep():"";
+                    }
+                    bw.write((line==null||line.equals("")?"":line+getCSVSep()) + columns + lineSep);
+            }
+            
+            bw.flush();
+            bw.close();
+            br.close();
+            br=null;
+            bw=null;
+
+            sourceFile.delete();
+            destinationFile.renameTo(sourceFile);
+            columnCount+=columnNames.length;
+        } catch (Exception e) {
+            logger.error("The column could not be inserted "+e.getMessage());
+        }
+
+        return true;
+    }    
+
+    /**
+     * Insert columns to the dataset (inserted before a certain position)
+     * @param columnNames The name of the columns
+     * @param defaultValues The default values for the columns included
+     * @param position The index where the new columns will be inserted (0 upto the number of columns - 1)
+     * @return true if sucessfull, false otherwise
+     */
+    public boolean insertColumnsAt(String columnNames[], Object defaultValues[], int position) {
+        if (columnNames.length!=defaultValues.length) return false;
+
+        flushAndClose();
+        if (columnCount==null){
+            getColumnCount();
+        }
+
+        if (position>getColumnCount()-1) return false;
+
+        final String lineSep = System.getProperty("line.separator");
+
+        File sourceFile = csvDataset;
+        File destinationFile = new File(csvDataset.getParent(), "copy_" + csvDataset.getName());
+
+        try {
+            br = new BufferedReader(new InputStreamReader(new FileInputStream(sourceFile)));
+            bw = new BufferedWriter(new OutputStreamWriter(new FileOutputStream(destinationFile)));
+            int i = 0;
+            for (String line = br.readLine(); line != null; line = br.readLine(), i++) {
+
+                int whereToInsert = 0;
+                if (position == getColumnCount()-1) whereToInsert = line.length()-1;
+                else for (int k=0;k<position;k++) whereToInsert=line.indexOf(getCSVSep(),whereToInsert+1);
+
+                if (whereToInsert > 0) {
+                    String beforeNewColumn = line.substring(0, whereToInsert);
+                    String afterNewColumn = line.substring(whereToInsert + 1);
+                    String columns="";
+                    for (int k=0;k<columnNames.length;k++){
+                        columns += ((i == 0) ? columnNames[k] : defaultValues[k]);
+                        columns += (k!=columnNames.length-1)?getCSVSep():"";
+                    }
+                    bw.write(beforeNewColumn + (whereToInsert!=0?getCSVSep():"") + columns + (afterNewColumn.trim().length()==0?"":(getCSVSep()+afterNewColumn)) + lineSep);
+                }
+            }
+            
+            bw.flush();
+            bw.close();
+            br.close();
+            br=null;
+            bw=null;
+
+            sourceFile.delete();
+            destinationFile.renameTo(sourceFile);
+            columnCount+=columnNames.length;
+        } catch (Exception e) {
+            logger.error("The column could not be inserted "+e.getMessage());
+            return false;
+        }
+
+        return true;
+    }    
+
+
+    /**
+     * Insert a column to the dataset (inserted before a certain position)
+     * @param columnName The name of the column
+     * @param defaultValue The default values for the column included
+     * @param position The index where the new column will be inserted (0 upto the number of columns - 1)
+     * @return true if sucessfull, false otherwise
+     */
+    public boolean insertColumnAt(String columnName, Object defaultValue, int position) {
+        if (defaultValue==null || defaultValue.toString().length()==0) defaultValue=getStrVoidField();
+
+        flushAndClose();
+        if (columnCount==null){
+            getColumnCount();
+        }
+
+        if (position>getColumnCount()-1) return false;
+
+        final String lineSep = System.getProperty("line.separator");
+
+        File sourceFile = csvDataset;
+        File destinationFile = new File(csvDataset.getParent(), "copy_" + csvDataset.getName());
+
+        try {
+            br = new BufferedReader(new InputStreamReader(new FileInputStream(sourceFile)));
+            bw = new BufferedWriter(new OutputStreamWriter(new FileOutputStream(destinationFile)));
+            int i = 0;
+            for (String line = br.readLine(); line != null; line = br.readLine(), i++) {
+                int whereToInsert = 0;
+                if (position == getColumnCount()-1) whereToInsert = line.length()-1;
+                else for (int k=0;k<position;k++) whereToInsert=line.indexOf(getCSVSep(),whereToInsert+1);
+
+                if (whereToInsert > 0) {
+                    String beforeNewColumn = line.substring(0, whereToInsert);
+                    String afterNewColumn = line.substring(whereToInsert + 1);
+                    String column=((i == 0) ? columnName : defaultValue.toString());
+                    bw.write(beforeNewColumn + (whereToInsert!=0?getCSVSep():"") + column + (afterNewColumn.trim().length()==0?"":(getCSVSep())) + afterNewColumn + lineSep);
+                }
+            }
+            
+            bw.flush();
+            bw.close();
+            br.close();
+            br=null;
+            bw=null;
+
+            sourceFile.delete();
+            destinationFile.renameTo(sourceFile);
+            columnCount++;
+        } catch (Exception e) {
+            logger.error("The column could not be inserted "+e.getMessage());
+            return false;
+        }
+
+        return true;
     }
 
     /**
@@ -373,7 +593,12 @@ public class CSVDataset {
      */
     public String[] getColumnNames() {
         flushAndClose();
+
         try {
+            if (!csvDataset.exists() || csvDataset.length()==0) {
+                this.columnCount=0;
+                return new String[0];
+            }
             br = new BufferedReader(new InputStreamReader(new FileInputStream(csvDataset)));
             String line = br.readLine();
             if (line != null) {
