@@ -1,7 +1,7 @@
 /*
- * BDP4j implements a pipeline framework to allow definining 
- * project pipelines from XML. The main goal of the pipelines of this 
- * application is to transform imput data received from multiple sources 
+ * BDP4j implements a pipeline framework to allow definining
+ * project pipelines from XML. The main goal of the pipelines of this
+ * application is to transform imput data received from multiple sources
  * into fully qualified datasets to be used with Machine Learning.
  *
  * Copyright (C) 2018  Sing Group (University of Vigo)
@@ -21,6 +21,7 @@
  */
 package org.bdp4j;
 
+import gui.JGraphX;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.bdp4j.pipe.AbstractPipe;
@@ -49,7 +50,7 @@ public class Main {
     private static final Logger logger = LogManager.getLogger(Main.class);
 
     /* List of instances to process */
-    private static List<Instance> carriers = new ArrayList<>();
+    public static List<Instance> carriers = new ArrayList<>();
 
     /* Singleton configuration instance */
     private static Configurator configurator = Configurator.getInstance("./config/configuration.xml");
@@ -62,8 +63,15 @@ public class Main {
         PipeProvider pipeProvider = new PipeProvider(configurator.getProp(Configurator.PLUGINS_FOLDER));
         HashMap<String, PipeInfo> pipes = pipeProvider.getPipes();
 
-        /* Configure pipe */
-        AbstractPipe p = configurator.configurePipe(pipes);
+        AbstractPipe p;
+        if (args[0].equals("gui")) {
+            /* GUI testing */
+            p = new JGraphX(pipes).start();
+        } else {
+            /* Configure pipe */
+            p = configurator.configurePipe(pipes);
+        }
+
         logger.info("Pipe structure:\n\t" + p.toString() + "\n");
         for (PipeType pipeType : PipeType.values()) {
             logger.info("[PIPES COUNT] " + pipeType.name() + ": " + p.countPipes(pipeType));
@@ -82,6 +90,8 @@ public class Main {
         long init = System.currentTimeMillis();
         p.pipeAll(carriers);
         logger.info("Instances processed in " + (System.currentTimeMillis() - init) + "ms.");
+
+        System.exit(0);
     }
 
     /**
