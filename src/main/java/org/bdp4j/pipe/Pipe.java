@@ -78,7 +78,7 @@ interface Pipe {
      * @return the dependences alwaysBefore
      */
     public Class<?>[] getAlwaysBeforeDeps();
-    
+
     /**
      * Get the dependences notAfter
      *
@@ -109,11 +109,11 @@ interface Pipe {
 
     /**
      * Get the store path to save data
-     * 
+     *
      * @return the store path to save data
-    */
-     String getStorePath();
-    
+     */
+    String getStorePath();
+
     /**
      * Check if alwaysBeforeDeps are satisfied for pipe p (inserted). Initially
      * deps contain all alwaysBefore dependences for p. These dependencies are

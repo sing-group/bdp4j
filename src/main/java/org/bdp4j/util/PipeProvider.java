@@ -31,6 +31,7 @@ import java.net.URL;
 import java.net.URLClassLoader;
 import java.util.HashMap;
 import java.util.ServiceLoader;
+import org.bdp4j.types.PipeType;
 
 /**
  * Class for loading jar with new Pipes dynamically
@@ -38,6 +39,7 @@ import java.util.ServiceLoader;
  * @author Yeray Lage
  */
 public class PipeProvider {
+
     private ServiceLoader<AbstractPipe> loader;
     /**
      * For logging purposes
@@ -73,7 +75,8 @@ public class PipeProvider {
     /**
      * Returns the pipeInfo of each AbstractPipe with their names as key.
      *
-     * @return HashMap were key is the name of pipe and value is the AbstractPipe.
+     * @return HashMap were key is the name of pipe and value is the
+     * AbstractPipe.
      */
     public HashMap<String, PipeInfo> getPipes() {
         HashMap<String, PipeInfo> pipeList = new HashMap<>();
@@ -81,6 +84,18 @@ public class PipeProvider {
         for (AbstractPipe pipe : loader) {
 
             PipeInfo pipeInfo = new PipeInfo(pipe.getClass().getSimpleName(), pipe.getClass());
+
+            if (pipe.countPipes(PipeType.TRANSFORMATION_PIPE) > 0) {
+                if (pipe.getInputType().equals(pipe.getOutputType())) {
+                    logger.fatal("[GET PIPES] Error checking types in pipe " + pipe.getClass().getSimpleName());
+                    System.exit(-1);
+                }
+            } else {
+                if (!pipe.getInputType().equals(pipe.getOutputType())) {
+                    logger.fatal("[GET PIPES] Error checking types in pipe " + pipe.getClass().getSimpleName());
+                    System.exit(-1);
+                }
+            }
 
             pipeList.put(pipeInfo.getPipeName(), pipeInfo);
 

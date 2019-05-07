@@ -33,6 +33,7 @@ import java.util.List;
  * @author José Ramón Méndez
  */
 public class SerialPipes extends AbstractPipe {
+
     /**
      * For logging purposes
      */
@@ -62,7 +63,7 @@ public class SerialPipes extends AbstractPipe {
      * Build a serial pipes using an array of individual pipes
      *
      * @param pipes An array of pipes that will be included in the serialPipes
-     *              in the same order
+     * in the same order
      */
     public SerialPipes(AbstractPipe[] pipes) {
         super(new Class<?>[0], new Class<?>[0]);
@@ -77,7 +78,7 @@ public class SerialPipes extends AbstractPipe {
      * Build a serial pipes using an ArrayList of individual pipes
      *
      * @param pipeList An arrayList of pipes that will be included in the
-     *                 serialPipes in the same order
+     * serialPipes in the same order
      */
     public SerialPipes(ArrayList<AbstractPipe> pipeList) {
         super(new Class<?>[0], new Class<?>[0]);
@@ -111,9 +112,21 @@ public class SerialPipes extends AbstractPipe {
     }
 
     /**
+     * Find the position of a pipe
+     *
+     * @param p The pipe from which we want to get the position
+     * @return The position of the pipe
+     */
+    @Override
+    public int findPosition(Pipe p) {
+        return this.pipes.indexOf(p);
+    }
+
+    /**
      * Return an array of pipes with the current pipe
      *
-     * @return a AbstractPipe array containing the pipes that compound the serial pipes
+     * @return a AbstractPipe array containing the pipes that compound the
+     * serial pipes
      */
     public AbstractPipe[] getPipes() {
         if (pipes == null) {
@@ -195,7 +208,7 @@ public class SerialPipes extends AbstractPipe {
     /**
      * AbstractPipe an instance starting in a certain position of the pipe
      *
-     * @param carrier       The instance to be processed
+     * @param carrier The instance to be processed
      * @param startingIndex The position of the fisrt pipe
      * @return The instance achieved as result of processing
      */
@@ -209,7 +222,7 @@ public class SerialPipes extends AbstractPipe {
      * Computes the instance transformation when executing the pipe processing
      * from a certain execution point
      *
-     * @param carrier       The instance to be pipes
+     * @param carrier The instance to be pipes
      * @param startingIndex The execution point to begin the processing
      * @return the instance after being processed
      */
@@ -241,7 +254,7 @@ public class SerialPipes extends AbstractPipe {
     }
 
     /**
-     * AbstractPipe a collection of instances through the whole process
+     * Pipe a collection of instances through the whole process
      *
      * @param carriers The instances to be processed
      * @return the instances after processing them
@@ -279,7 +292,7 @@ public class SerialPipes extends AbstractPipe {
      * Replace a pipe in the pipeList
      *
      * @param index The position of the pipe that will be replaced
-     * @param p     The new AbstractPipe
+     * @param p The new AbstractPipe
      */
     //added by Fuchun Jan.30, 2004
     public void replacePipe(int index, AbstractPipe p) {
@@ -337,8 +350,9 @@ public class SerialPipes extends AbstractPipe {
         StringBuilder sb = new StringBuilder();
         sb.append("[SP](");
 
-        for (AbstractPipe p : pipes)
+        for (AbstractPipe p : pipes) {
             sb.append(p).append(" | ");
+        }
 
         sb.delete(sb.length() - 3, sb.length());
         sb.append(")");
@@ -346,42 +360,47 @@ public class SerialPipes extends AbstractPipe {
     }
 
     /**
-     * Check if alwaysBeforeDeps are satisfied for pipe p (inserted). Initially deps contain
-     * all alwaysBefore dependences for p. These dependencies are deleted (marked as resolved)
-     * by recursivelly calling this method.
+     * Check if alwaysBeforeDeps are satisfied for pipe p (inserted). Initially
+     * deps contain all alwaysBefore dependences for p. These dependencies are
+     * deleted (marked as resolved) by recursivelly calling this method.
      *
-     * @param p    The pipe that is being checked
+     * @param p The pipe that is being checked
      * @param deps The dependences that are not confirmed in a certain moment
-     * @return null if not sure about the fullfulling, true if the dependences are satisfied,
-     * false if the dependences could not been satisfied
+     * @return null if not sure about the fullfulling, true if the dependences
+     * are satisfied, false if the dependences could not been satisfied
      */
     @Override
     public Boolean checkAlwaysBeforeDeps(Pipe p, List<Class<?>> deps) {
         for (AbstractPipe p1 : this.pipes) {
             Boolean retVal = p1.checkAlwaysBeforeDeps(p, deps);
-            if (retVal != null) return retVal;
+            if (retVal != null) {
+                return retVal;
+            }
         }
 
         return null;
     }
 
     /**
-     * Check if notBeforeDeps are satisfied for pipe p recursively. Note that p should be inserted.
+     * Check if notBeforeDeps are satisfied for pipe p recursively. Note that p
+     * should be inserted.
      *
-     * @param p      The pipe that is being checked
+     * @param p The pipe that is being checked
      * @param foundP // TODO what is this for?
-     * @return null if not sure about the fullfulling, true if the dependencies are satisfied,
-     * false if the dependencies could not been satisfied
+     * @return null if not sure about the fullfulling, true if the dependencies
+     * are satisfied, false if the dependencies could not been satisfied
      */
     @Override
     public boolean checkNotAfterDeps(Pipe p, BooleanBean foundP) {
         boolean retVal = true;
 
         for (AbstractPipe p1 : this.pipes) {
-            if (p1 instanceof SerialPipes || p1 instanceof ParallelPipes)
+            if (p1 instanceof SerialPipes || p1 instanceof ParallelPipes) {
                 retVal = retVal && p1.checkNotAfterDeps(p, foundP);
-            else {
-                if (foundP.getValue()) retVal = retVal && !(Arrays.asList(p.getNotAfterDeps()).contains(p1.getClass()));
+            } else {
+                if (foundP.getValue()) {
+                    retVal = retVal && !(Arrays.asList(p.getNotAfterDeps()).contains(p1.getClass()));
+                }
                 if (!retVal) {
                     errorMessage = "Unsatisfied NotAfter dependency for pipe " + p.getClass().getName() + " (" + p1.getClass().getName() + ")";
                     return retVal;
@@ -402,7 +421,9 @@ public class SerialPipes extends AbstractPipe {
     @Override
     public boolean containsPipe(Pipe p) {
         for (AbstractPipe p1 : this.pipes) {
-            if (p1.containsPipe(p)) return true;
+            if (p1.containsPipe(p)) {
+                return true;
+            }
         }
         return false;
     }
@@ -411,7 +432,9 @@ public class SerialPipes extends AbstractPipe {
     public Integer countPipes(PipeType pipeType) {
         int result = 0;
 
-        for (AbstractPipe p : pipes) result += p.countPipes(pipeType);
+        for (AbstractPipe p : pipes) {
+            result += p.countPipes(pipeType);
+        }
 
         return result;
     }

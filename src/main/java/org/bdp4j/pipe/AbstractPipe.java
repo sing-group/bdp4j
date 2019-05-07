@@ -12,6 +12,10 @@
    information, see the file `LICENSE' included with this distribution. */
 package org.bdp4j.pipe;
 
+import java.io.File;
+import java.security.MessageDigest;
+import java.security.NoSuchAlgorithmException;
+import java.util.Base64;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.bdp4j.types.Instance;
@@ -20,6 +24,8 @@ import org.bdp4j.util.BooleanBean;
 
 import java.util.Collection;
 import java.util.List;
+import java.util.logging.Level;
+import org.bdp4j.util.Configurator;
 
 /**
  * The abstract superclass of all Pipes, which transform one data type to
@@ -74,15 +80,15 @@ public abstract class AbstractPipe implements Pipe {
     /**
      * For debugging purposes.
      */
-    boolean isDebug = false;
+    boolean debugging = false;
 
     /**
      * Create a pipe with its dependences
      *
      * @param alwaysBeforeDeps The dependences alwaysBefore (pipes that must be
-     *                         executed before this one)
-     * @param notAfterDeps     The dependences notAfter (pipes that cannot be
-     *                         executed after this one)
+     * executed before this one)
+     * @param notAfterDeps The dependences notAfter (pipes that cannot be
+     * executed after this one)
      */
     public AbstractPipe(Class<?>[] alwaysBeforeDeps, Class<?>[] notAfterDeps) {
         this.notAfterDeps = notAfterDeps;
@@ -149,10 +155,20 @@ public abstract class AbstractPipe implements Pipe {
              */
             // This is the serial-way
             for (int i = 0; i < lastValidInstanceIdx; i++) {
+
+                int numberOfPropertiesBefore = carriersAsArray[i].getPropertyList().size();
+                int numberOfPropertiesAfter = 0;
+                boolean propertyComputingPipe = (this.countPipes(PipeType.PROPERTY_COMPUTING_PIPE) > 0);
+
                 if (carriersAsArray[i].isValid()) {
-
                     pipe(carriersAsArray[i]);
-
+                    if (propertyComputingPipe) {
+                        numberOfPropertiesAfter = carriersAsArray[i].getPropertyList().size();
+                        if (numberOfPropertiesBefore >= numberOfPropertiesAfter) {
+                            logger.fatal("[PIPE ALL] Error adding properties in " + this.getClass().getSimpleName());
+                            System.exit(-1);
+                        }
+                    }
                 } else {
                     logger.info("Skipping invalid instance " + carriersAsArray[i].toString());
                 }
@@ -193,10 +209,53 @@ public abstract class AbstractPipe implements Pipe {
     }
 
     /**
+     * Stablished mode debug to pipe
+     *
+     * @param debugging True if you want to debug this pipe, false otherwise
+     */
+    public void setDebugging(boolean debugging) {
+        this.debugging = debugging;
+    }
+
+    /**
+     * Get if pipe is marked to debug or not
+     *
+     * @return True if pipe is marked to debug, false otherwise
+     */
+    public boolean isDebugging() {
+        return this.debugging;
+    }
+
+    /**
+     * Check if current pipe is marked to debug
+     *
+     * @return True is current pipe is marked to debug.
+     */
+    public boolean isDebuggingPipe() {
+
+        if (this.isDebugging()) {
+            if (this.getParent() != null) {
+                this.getParent().setDebugging(true);
+            }
+            return true;
+        } else if (this.getParent() == null) {
+            return false;
+        } else {
+            return this.getParent().isDebuggingPipe();
+        }
+    }
+
+    /**
+     * Achieves a string representation of the piping process
+     *
+     * @return the String representation of the pipe
+     */
+    /**
      * Finds the parent root
      *
      * @return the root parent
      */
+    @Override
     public AbstractPipe getParentRoot() {
         if (parent == null) {
             return this;
@@ -216,6 +275,7 @@ public abstract class AbstractPipe implements Pipe {
      *
      * @return the dependences alwaysBefore
      */
+    @Override
     public Class<?>[] getAlwaysBeforeDeps() {
         return this.alwaysBeforeDeps;
     }
@@ -225,6 +285,7 @@ public abstract class AbstractPipe implements Pipe {
      *
      * @return the dependences notAfter
      */
+    @Override
     public Class<?>[] getNotAfterDeps() {
         return this.notAfterDeps;
     }
@@ -234,6 +295,7 @@ public abstract class AbstractPipe implements Pipe {
      *
      * @return true if the current Instance is the last being processed
      */
+    @Override
     public boolean isLast() {
         return isLast;
     }
@@ -243,6 +305,7 @@ public abstract class AbstractPipe implements Pipe {
      *
      * @return the output type for the data attribute of the Instances processed
      */
+    @Override
     public abstract Class<?> getInputType();
 
     /**
@@ -250,17 +313,95 @@ public abstract class AbstractPipe implements Pipe {
      *
      * @return the datatype expected in the data attribute of a Instance
      */
+    @Override
     public abstract Class<?> getOutputType();
+
+    /**
+     * Find the position of a pipe
+     *
+     * @param p The pipe from which we want to get the position
+     * @return The position of the pipe
+     */
+    public int findPosition(Pipe p) {
+        if (p.getParent() instanceof SerialPipes) {
+            return ((SerialPipes) p.getParent()).findPosition(p);
+        } else if (p.getParent() instanceof ParallelPipes) {
+            return ((ParallelPipes) p.getParent()).findPosition(p);
+        }
+        return 0;
+    }
+
+    /**
+     * Generate a md5 from a String
+     *
+     * @param name String name to generate a md5
+     * @return a md5 from String
+     */
+    private String generateMD5(String name) {
+        try {
+            MessageDigest md = MessageDigest.getInstance("MD5");
+            byte[] base64Name = Base64.getEncoder().encode(name.getBytes());
+            md.update(base64Name);
+
+            StringBuilder md5Name = new StringBuilder();
+            for (byte b : md.digest()) {
+                md5Name.append(String.format("%02x", b & 0xff));
+            }
+            return md5Name.toString();
+        } catch (NoSuchAlgorithmException ex) {
+            java.util.logging.Logger.getLogger(ResumableSerialPipes.class.getName()).log(Level.SEVERE, null, ex);
+        }
+        return "";
+    }
+
+    /**
+     * Check if a path exists, and otherwise, creates that.
+     *
+     * @param path that needs to create
+     * @return the path created, empty string otherwise
+     */
+    public String getPath(String path) {
+        File filepath = new File(path);
+        if (filepath.exists()) {
+            return path;
+        } else if (filepath.mkdirs()) {
+            return path;
+        }
+        return "";
+    }
 
     /**
      * Get the store path to save data
      *
      * @return the store path to save data
      */
-
+    @Override
     public String getStorePath() {
-        // TODO
-        return "";
+        String storePath = "";
+        String fileSeparator = System.getProperty("file.separator");
+        Configurator configurator = Configurator.getLastUsed();
+        String temp_folder = configurator.getProp(Configurator.TEMP_FOLDER);
+
+        File sourcePath = new File(temp_folder);
+        if (!sourcePath.exists()) {
+            sourcePath.mkdir();
+        }
+        if (getParent() == null) {
+            if (this instanceof SerialPipes || this instanceof ParallelPipes) {
+                storePath = getPath(temp_folder + generateMD5(this.toString()) + fileSeparator);
+                return storePath;
+            } else {
+                return findPosition(this) + "_" + generateMD5(this.toString()) + ".ser";
+            }
+        } else {
+            if (this instanceof SerialPipes || this instanceof ParallelPipes) {
+                storePath = getParent().getStorePath() + this.getParent().findPosition(this) + "_" + generateMD5(this.toString()) + fileSeparator;
+                return getPath(storePath);
+
+            } else {
+                return getParent().getStorePath() + findPosition(this) + "_" + generateMD5(this.toString()) + ".ser";
+            }
+        }
     }
 
     /**
@@ -268,11 +409,12 @@ public abstract class AbstractPipe implements Pipe {
      * deps contain all alwaysBefore dependences for p. These dependencies are
      * deleted (marked as resolved) by recursivelly calling this method.
      *
-     * @param p    The pipe that is being checked
+     * @param p The pipe that is being checked
      * @param deps The dependences that are not confirmed in a certain moment
      * @return null if not sure about the fullfulling, true if the dependences
      * are satisfied, false if the dependences could not been satisfied
      */
+    @Override
     public Boolean checkAlwaysBeforeDeps(Pipe p, List<Class<?>> deps) {
         if (this == (AbstractPipe) p && deps.size() > 0) {
             errorMessage = "Unsatisfied AlwaysBefore dependencies for pipe " + ((AbstractPipe) p).getClass().getName() + " (";
@@ -288,7 +430,7 @@ public abstract class AbstractPipe implements Pipe {
 
         deps.remove(this.getClass());
 
-        if (deps.size() == 0) {
+        if (deps.isEmpty()) {
             return true;
         }
 
@@ -303,6 +445,7 @@ public abstract class AbstractPipe implements Pipe {
      * @return null if not sure about the fullfulling, true if the dependences
      * are satisfied, false if the dependences could not been satisfied
      */
+    @Override
     public boolean checkNotAfterDeps(Pipe p, BooleanBean foundP) {
         if (this == (AbstractPipe) p) {
             return true;
@@ -317,6 +460,7 @@ public abstract class AbstractPipe implements Pipe {
      * @param p The pipe to search
      * @return true if this pipe contains p false otherwise
      */
+    @Override
     public boolean containsPipe(Pipe p) {
         return this == (AbstractPipe) p;
     }
@@ -326,21 +470,15 @@ public abstract class AbstractPipe implements Pipe {
      *
      * @return true if the dependencies are satisfied, false otherwise
      */
+    @Override
     public boolean checkDependencies() {
         return this.alwaysBeforeDeps.length == 0;
     }
 
     // TODO this javaDoc
+    @Override
     public Integer countPipes(PipeType c) {
         return (this.getClass().getAnnotationsByType(c.typeClass()).length != 0) ? 1 : 0;
-    }
-
-    public boolean isDebug() {
-        return isDebug;
-    }
-
-    public void setDebug(boolean debug) {
-        isDebug = debug;
     }
 
     /**

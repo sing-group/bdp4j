@@ -107,16 +107,6 @@ public final class Configurator {
     public static final String DEFAULT_RESUMABLE_MODE = "no";
 
     /**
-     * Default debug index property key.
-     */
-    public static final String DEBUG_INDEX = "debugIndex";
-
-    /**
-     * Default debug index property value.
-     */
-    public static final String DEFAULT_DEBUG_INDEX = "0";
-
-    /**
      * For logging purposes
      */
     private static final Logger logger = LogManager.getLogger(Configurator.class);
@@ -162,7 +152,6 @@ public final class Configurator {
         this.setProp(TEMP_FOLDER, DEFAULT_TEMP_FOLDER);
         this.setProp(DEBUG_MODE, DEFAULT_DEBUG_MODE);
         this.setProp(RESUMABLE_MODE, DEFAULT_RESUMABLE_MODE);
-        this.setProp(DEBUG_INDEX, DEFAULT_DEBUG_INDEX);
     }
 
     /**
@@ -390,7 +379,7 @@ public final class Configurator {
             }
         }
 
-        if (pipeIsDebug) pipe.setDebug(true);
+        if (pipeIsDebug) pipe.setDebugging(true);
 
         return pipe;
     }
