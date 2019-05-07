@@ -118,9 +118,9 @@ public class ResumableSerialPipes extends SerialPipes {
             } else {
                 output.writeObject(carriers);
             }
-            output.close();
+            output.flush();
         } catch (Exception ex) {
-            java.util.logging.Logger.getLogger(ResumableSerialPipes.class.getName()).log(Level.SEVERE, null, ex);
+            logger.error("[WRITE TO DISK] " + ex.getMessage());
         }
     }
 
@@ -138,7 +138,7 @@ public class ResumableSerialPipes extends SerialPipes {
             return input.readObject();
 
         } catch (Exception ex) {
-            java.util.logging.Logger.getLogger(ResumableSerialPipes.class.getName()).log(Level.SEVERE, null, ex);
+            logger.error("[READ FROM DISK] " + ex.getMessage());
         }
         return null;
     }
@@ -154,50 +154,65 @@ public class ResumableSerialPipes extends SerialPipes {
     @Override
     public Collection<Instance> pipeAll(Collection<Instance> carriers) {
         int step = 0;
+
         boolean resumableMode = EBoolean.getBoolean(configurator.getProp(Configurator.RESUMABLE_MODE));
         if (resumableMode) {
+
             // Calculate pipe to continue execution
             AbstractPipe[] pipeList = super.getPipes();
+            for (step = 0; step < pipeList.length; step++) {
+                AbstractPipe currentPipe = pipeList[step];
 
-            String md5PipeName = generateMD5(this.toString());
-            File sourcePath = new File(configurator.getProp(Configurator.TEMP_FOLDER) + "/" + md5PipeName);
-            // Get all files but txt with the serialized instances
-            FileFilter filter = (File pathname) -> {
-                if (pathname.getPath().endsWith(md5PipeName + ".txt")) {
-                    return false;
+                if (currentPipe != null && currentPipe.isDebuggingPipe()) {
+                    return this.pipeAll(carriers, step);
                 }
-                return true;
-            };
-            // Saved file list
-            File[] listFiles = sourcePath.listFiles(filter);
 
-            if (sourcePath.exists() && sourcePath.isDirectory() && listFiles.length > 0) {
-                // If exists check if file with instances matches with md5PipeName.txt
-                Arrays.sort(sourcePath.listFiles(), (File f1, File f2) -> Long.valueOf(f1.lastModified()).compareTo(f2.lastModified()));
+                if (currentPipe instanceof SerialPipes || currentPipe instanceof ParallelPipes) {
+                    currentPipe.pipeAll(carriers);
+                }
 
-                File lastModifiedFile = listFiles[0];
-                String filename = lastModifiedFile.getName();
-                for (step = 0; step < pipeList.length; step++) {
-                    AbstractPipe p = pipeList[step];
-                    // Generates filename from current pipe
-                    String pipefilename = sourcePath + "/" + step + "_" + p.toString() + ".ser";
-                    // Check if are there saved data to this pipe, so check if filenames matches
-                    if ((sourcePath + "/" + filename).equals(pipefilename)) {
-                        // Generate MD5 to carriers
+                File sourcePath = new File(getStorePath());
+                // Get all .ser files
+                FileFilter filter = (File pathname) -> {
+                    if (pathname.getPath().endsWith(".ser")) {
+                        return true;
+                    }
+                    return false;
+                };
+                // Get saved list of files
+                File[] listFiles = sourcePath.listFiles(filter);
+                if (sourcePath.exists() && sourcePath.isDirectory() && listFiles.length > 0) {
+                    Arrays.sort(sourcePath.listFiles(), (File f1, File f2) -> Long.valueOf(f1.lastModified()).compareTo(f2.lastModified()));
+
+                    String pipeFilename = currentPipe.getStorePath();
+                    String lastModifiedFile = listFiles[listFiles.length - 1].getPath();
+                    int lastModifiedFileStep = Integer.parseInt(listFiles[listFiles.length - 1].getName().split("_")[0]);
+
+                    if (lastModifiedFile.equals(pipeFilename) && lastModifiedFileStep == step) {
+                        // Check if instances(carriers) matches
                         StringBuilder md5Carriers = new StringBuilder();
                         carriers.stream().map((carrier) -> generateMD5(carrier.toString())).forEachOrdered((md5Carrier) -> {
                             md5Carriers.append(md5Carrier);
                         });
+                        String instancesFileName = getStorePath() + sourcePath.getName() + ".txt";
+                        File instancesFile = new File(instancesFileName);
+                        if (sourcePath.exists() && sourcePath.isDirectory()) {
+                            if (instancesFile.exists()) {
+                                String deserializedCarriers = (String) readFromDisk(getStorePath() + sourcePath.getName() + ".txt");
 
-                        String deserializedCarriers = (String) readFromDisk(sourcePath + "/" + md5PipeName + ".txt");
-                        // If instances match, the pipe and instances are the same, so, this is the first step
-                        if (deserializedCarriers.equals(md5Carriers.toString())) {
-                            String[] pipeIndex = filename.split("_");
-                            step = Integer.parseInt(pipeIndex[0]) + 1;
-                            Collection<Instance> instances = (Collection<Instance>) readFromDisk(sourcePath + "/" + filename);
-                            return this.pipeAll(instances, step);
+                                // If instances match, the pipe and instances are the same, so, this is the first step
+                                if (!deserializedCarriers.equals(md5Carriers.toString())) {
+                                    return this.pipeAll(carriers, step);
+                                }
+                            } else {
+                                return this.pipeAll(carriers, 0);
+                            }
                         }
+                    } else if (lastModifiedFileStep < step && !lastModifiedFile.equals(pipeFilename)) {
+                        this.pipeAll(carriers, step);
                     }
+                } else {
+                    return this.pipeAll(carriers, 0);
                 }
             }
         }
@@ -219,18 +234,10 @@ public class ResumableSerialPipes extends SerialPipes {
             AbstractPipe[] pipeList = super.getPipes();
             boolean resumableMode = EBoolean.getBoolean(configurator.getProp(Configurator.RESUMABLE_MODE));
             boolean debugMode = EBoolean.getBoolean(configurator.getProp(Configurator.DEBUG_MODE));
-            //int debugIndex = Integer.parseInt(configurator.getProp(Configurator.DEBUG_INDEX));
-            String temp_folder = configurator.getProp(Configurator.TEMP_FOLDER);
-
-            //if (resumableMode && debugIndex > 0 && step < debugIndex) {
-            if (resumableMode) {
-                File sourcePath = new File(temp_folder);
-                if (!sourcePath.exists()) {
-                    sourcePath.mkdir();
-                }
-
-                // Generate MD5
-                String md5PipeName = generateMD5(this.toString());
+            String instancesFilePath = "";
+            File instancesFile = null;
+            if (resumableMode && !isDebuggingPipe() && step < pipeList.length) {
+                String md5PipeName = getStorePath();
                 if (!md5PipeName.equals("")) {
                     // Generate MD5 to carriers
                     StringBuilder md5Carriers = new StringBuilder();
@@ -238,36 +245,44 @@ public class ResumableSerialPipes extends SerialPipes {
                         md5Carriers.append(md5Carrier);
                     });
 
-                    File path = new File(temp_folder + "/" + md5PipeName + "/");
-                    if (!path.exists()) {
-                        path.mkdir();
+                    if (!isDebuggingPipe()) {
+                        File instancesFileName = new File(getStorePath());
+                        if (instancesFileName.exists() && instancesFileName.isDirectory()) {
+                            instancesFilePath = getStorePath() + instancesFileName.getName() + ".txt";
+                            instancesFile = new File(instancesFilePath);
+                            if (!instancesFile.exists()) {
+                                writeToDisk(instancesFile.getPath(), md5Carriers.toString());
+                            }
+                        }
                     }
-
-                    // Create file with md5Carrier
-                    if (sourcePath.exists() && sourcePath.isDirectory()) {
-                        File instancesFile = new File(path.getPath() + "/" + md5PipeName + ".txt");
-                        writeToDisk(instancesFile.getPath(), md5Carriers.toString());
-                    }
-
                     for (i = step; i < pipeList.length; i++) {
                         p = pipeList[i];
-                        if (sourcePath.exists() && sourcePath.isDirectory()) {
-                            if (p == null) {
-                                logger.fatal("AbstractPipe " + i + " is null");
-                                System.exit(-1);
-                            } else {
-                                p.pipeAll(carriers);
-                            }
+
+                        if (p == null) {
+                            logger.fatal("AbstractPipe " + i + " is null");
+                            System.exit(-1);
+                        } else {
+                            p.pipeAll(carriers);
                         }
 
                         // Save instances
-                        String filename = path + "/" + i + "_" + p.toString() + ".ser";
-                        if (debugMode) {
-                            writeToDisk(filename, carriers);
-                        } else {
-                            if (i == pipeList.length - 1) {
+                        if (!p.isDebuggingPipe()) {
+
+                            String filename = p.getStorePath();
+                            if (debugMode) {
                                 writeToDisk(filename, carriers);
+                            } else {
+                                if (i == pipeList.length - 1) {
+                                    writeToDisk(filename, carriers);
+                                }
                             }
+                        }
+                        File f = new File(md5PipeName);
+                        if (f.exists() && f.listFiles().length == 1 && f.listFiles()[0].getPath().equals(instancesFilePath)) {
+                            if (instancesFile != null && instancesFile.exists()) {
+                                instancesFile.delete();
+                            }
+                            f.delete();
                         }
                     }
                 } else {
@@ -286,7 +301,8 @@ public class ResumableSerialPipes extends SerialPipes {
             }
 
         } catch (Exception ex) {
-            java.util.logging.Logger.getLogger(ResumableSerialPipes.class.getName()).log(Level.SEVERE, null, ex);
+            logger.warn(" [ " + ResumableSerialPipes.class.getName() + " ] " + ex.getMessage());
+            ex.printStackTrace();
         }
         return carriers;
     }
