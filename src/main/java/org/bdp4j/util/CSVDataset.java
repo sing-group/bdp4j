@@ -304,8 +304,10 @@ public class CSVDataset {
             if (bw==null)
                 bw = new BufferedWriter(new OutputStreamWriter(new FileOutputStream(csvDataset, true)));
 
-            for (Object o:values){
-                bw.append(escapeCSV(o.toString())).append(getCSVSep());
+            for (int j=0;j<values.length;j++){
+                Object o=values[j];
+                bw.append(escapeCSV(o.toString()));
+                if (j<values.length-1) bw.append(getCSVSep());
             }
             bw.append(lineSep);
         } catch (FileNotFoundException e) {
@@ -348,7 +350,7 @@ public class CSVDataset {
         if (sourceFile.length()==0){
             try {
                 bw = new BufferedWriter(new OutputStreamWriter(new FileOutputStream(sourceFile)));
-                bw.write(columnName/*+lineSep*/);
+                bw.write(columnName+lineSep);
                 bw.close();
                 bw=null;
                 this.columnCount=1;
@@ -417,7 +419,7 @@ public class CSVDataset {
                     columns += columnNames[k] ;
                     columns += (k!=columnNames.length-1)?getCSVSep():"";
                 }
-                bw.write(columns/*+lineSep*/);
+                bw.write(columns+lineSep);
                 bw.close();
                 bw=null;
                 this.columnCount=columnNames.length;
@@ -500,7 +502,7 @@ public class CSVDataset {
                         columns += ((i == 0) ? columnNames[k] : defaultValues[k]);
                         columns += (k!=columnNames.length-1)?getCSVSep():"";
                     }
-                    bw.write(beforeNewColumn + (whereToInsert!=0?getCSVSep():"") + columns + (afterNewColumn.trim().length()==0?"":(getCSVSep()+afterNewColumn)) + lineSep);
+                    bw.write(beforeNewColumn /*+ (whereToInsert!=0?getCSVSep():"")*/ + columns + (afterNewColumn.trim().length()==0?"":(getCSVSep()+afterNewColumn)) + lineSep);
                 }
             }
             
@@ -557,7 +559,7 @@ public class CSVDataset {
                     String beforeNewColumn = line.substring(0, whereToInsert);
                     String afterNewColumn = line.substring(whereToInsert + 1);
                     String column=((i == 0) ? columnName : defaultValue.toString());
-                    bw.write(beforeNewColumn + (whereToInsert!=0?getCSVSep():"") + column + (afterNewColumn.trim().length()==0?"":(getCSVSep())) + afterNewColumn + lineSep);
+                    bw.write(beforeNewColumn + /*(whereToInsert!=0?getCSVSep():"") +*/ column + (afterNewColumn.trim().length()==0?"":(getCSVSep())) + afterNewColumn + lineSep);
                 }
             }
             
