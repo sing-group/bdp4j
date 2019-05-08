@@ -295,7 +295,11 @@ public class CSVDataset {
     public boolean addRow(Object[] values) {
         final String lineSep = System.getProperty("line.separator");
 
-        if (values.length != this.getColumnCount()) return false;
+        //
+        if (values.length != this.getColumnCount()){ 
+            logger.error("Adding row with "+values.length+" columns when the dataset has "+getColumnCount());
+            return false;
+        }
 
         if (br != null) flushAndClose();
 
@@ -422,7 +426,8 @@ public class CSVDataset {
                 bw.write(columns+lineSep);
                 bw.close();
                 bw=null;
-                this.columnCount=columnNames.length;
+                //this.columnCount=null;
+                columnCount+=columnNames.length;
                 return true;
             } catch (FileNotFoundException e) {
                 logger.error("Unable to add column" + e.getMessage());
@@ -471,11 +476,14 @@ public class CSVDataset {
      */
     public boolean insertColumnsAt(String columnNames[], Object defaultValues[], int position) {
         if (columnNames.length!=defaultValues.length) return false;
+        if (columnNames.length==0) return true;
 
         flushAndClose();
         if (columnCount==null){
             getColumnCount();
         }
+
+        //System.out.println("Adding "+columnNames.length+" current size: "+getColumnCount()+" first "+columnNames[0]+" last: "+columnNames[columnNames.length-1]);
 
         if (position>getColumnCount()-1) return false;
 
@@ -492,7 +500,7 @@ public class CSVDataset {
 
                 int whereToInsert = 0;
                 if (position == getColumnCount()-1) whereToInsert = line.length()-1;
-                else for (int k=0;k<position;k++) whereToInsert=line.indexOf(getCSVSep(),whereToInsert+1);
+                else for (int k=0;k<=position;k++) whereToInsert=line.indexOf(getCSVSep(),whereToInsert+1);
 
                 if (whereToInsert > 0) {
                     String beforeNewColumn = line.substring(0, whereToInsert);
@@ -502,7 +510,7 @@ public class CSVDataset {
                         columns += ((i == 0) ? columnNames[k] : defaultValues[k]);
                         columns += (k!=columnNames.length-1)?getCSVSep():"";
                     }
-                    bw.write(beforeNewColumn /*+ (whereToInsert!=0?getCSVSep():"")*/ + columns + (afterNewColumn.trim().length()==0?"":(getCSVSep()+afterNewColumn)) + lineSep);
+                    bw.write(beforeNewColumn + (whereToInsert!=0?getCSVSep():"") + columns + (afterNewColumn.trim().length()==0?"":(getCSVSep()+afterNewColumn)) + lineSep);
                 }
             }
             
@@ -514,6 +522,7 @@ public class CSVDataset {
 
             sourceFile.delete();
             destinationFile.renameTo(sourceFile);
+            //columnCount=null;
             columnCount+=columnNames.length;
         } catch (Exception e) {
             logger.error("The column could not be inserted "+e.getMessage());
@@ -553,13 +562,13 @@ public class CSVDataset {
             for (String line = br.readLine(); line != null; line = br.readLine(), i++) {
                 int whereToInsert = 0;
                 if (position == getColumnCount()-1) whereToInsert = line.length()-1;
-                else for (int k=0;k<position;k++) whereToInsert=line.indexOf(getCSVSep(),whereToInsert+1);
+                else for (int k=0;k<=position;k++) whereToInsert=line.indexOf(getCSVSep(),whereToInsert+1);
 
                 if (whereToInsert > 0) {
                     String beforeNewColumn = line.substring(0, whereToInsert);
                     String afterNewColumn = line.substring(whereToInsert + 1);
                     String column=((i == 0) ? columnName : defaultValue.toString());
-                    bw.write(beforeNewColumn + /*(whereToInsert!=0?getCSVSep():"") +*/ column + (afterNewColumn.trim().length()==0?"":(getCSVSep())) + afterNewColumn + lineSep);
+                    bw.write(beforeNewColumn + (whereToInsert!=0?getCSVSep():"") + column + (afterNewColumn.trim().length()==0?"":(getCSVSep())) + afterNewColumn + lineSep);
                 }
             }
             
