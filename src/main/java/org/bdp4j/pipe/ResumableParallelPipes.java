@@ -19,9 +19,17 @@
  * You should have received a copy of the GNU General Public License
  * along with this program.  If not, see <https://www.gnu.org/licenses/>.
  */
-
 package org.bdp4j.pipe;
 
+import java.io.BufferedInputStream;
+import java.io.BufferedOutputStream;
+import java.io.File;
+import java.io.FileInputStream;
+import java.io.FileOutputStream;
+import java.io.ObjectInputStream;
+import java.io.ObjectOutputStream;
+import java.security.MessageDigest;
+import java.security.NoSuchAlgorithmException;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.bdp4j.types.Instance;
@@ -30,20 +38,29 @@ import org.bdp4j.util.BooleanBean;
 
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Base64;
 import java.util.Collection;
 import java.util.List;
-
+import java.util.logging.Level;
+import org.bdp4j.util.Configurator;
+import org.bdp4j.util.EBoolean;
 
 /**
  * A class implementing parallel processing of instances
  *
  * @author Yeray Lage
  */
-public class ResumableParallelPipes extends AbstractPipe{
+public class ResumableParallelPipes extends AbstractPipe {
+
     /**
      * For logging purposes
      */
     private static final Logger logger = LogManager.getLogger(ResumableParallelPipes.class);
+
+    /**
+     * Default configuration
+     */
+    private Configurator configurator = Configurator.getLastUsed();
 
     /**
      * The input type
@@ -75,21 +92,26 @@ public class ResumableParallelPipes extends AbstractPipe{
      */
     public ResumableParallelPipes(AbstractPipe[] pipeList) {
         super(new Class<?>[0], new Class<?>[0]);
-        this.pipes = new ArrayList<AbstractPipe>(pipeList.length);
+        this.pipes = new ArrayList<>(pipeList.length);
 
-        for (AbstractPipe p : pipeList) this.add(p);
+        for (AbstractPipe p : pipeList) {
+            this.add(p);
+        }
     }
 
     /**
      * Constructor that initializes the parallelPipes array and add pipes to it.
      *
-     * @param pipeList The ArrayList of pipes to be included in the parallelPipe.
+     * @param pipeList The ArrayList of pipes to be included in the
+     * parallelPipe.
      */
     public ResumableParallelPipes(ArrayList<AbstractPipe> pipeList) {
         super(new Class<?>[0], new Class<?>[0]);
-        this.pipes = new ArrayList<AbstractPipe>(pipeList.size());
+        this.pipes = new ArrayList<>(pipeList.size());
 
-        for (AbstractPipe p : pipeList) this.add(p);
+        for (AbstractPipe p : pipeList) {
+            this.add(p);
+        }
     }
 
     /**
@@ -113,6 +135,90 @@ public class ResumableParallelPipes extends AbstractPipe{
                 }
         );
 
+        return carriers;
+    }
+
+    /**
+     * AbstractPipe a collection of instances through the whole process, from de
+     * defined step and save this, depending of the configuration.
+     *
+     * @param step The index of instance to start processing
+     * @param carriers The instances to be processed
+     * @return the instances after processing them.
+     */
+    public Collection<Instance> pipeAll(Collection<Instance> carriers, int step) {
+        try {
+            boolean resumableMode = EBoolean.getBoolean(configurator.getProp(Configurator.RESUMABLE_MODE));
+            boolean debugMode = EBoolean.getBoolean(configurator.getProp(Configurator.DEBUG_MODE));
+            String instancesFilePath = "";
+            File instancesFile = null;
+            if (resumableMode && !isDebuggingPipe()) {
+                String md5PipeName = getStorePath();
+                if (!md5PipeName.equals("")) {
+                    // Generate MD5 to carriers
+                    StringBuilder md5Carriers = new StringBuilder();
+                    carriers.stream().map((carrier) -> generateMD5(carrier.toString())).forEachOrdered((md5Carrier) -> {
+                        md5Carriers.append(md5Carrier);
+                    });
+
+                    if (!isDebuggingPipe()) {
+                        File instancesFileName = new File(getStorePath());
+                        if (instancesFileName.exists() && instancesFileName.isDirectory()) {
+                            instancesFilePath = getStorePath() + instancesFileName.getName() + ".txt";
+                            instancesFile = new File(instancesFilePath);
+                            if (!instancesFile.exists()) {
+                                writeToDisk(instancesFile.getPath(), md5Carriers.toString());
+                            }
+                        }
+                    }
+                    pipes.stream().parallel().forEach(
+                            (p) -> {
+                                int i = this.findPosition(p);
+                                p.pipeAll(carriers);
+
+                                // Save instances
+                                if (!p.isDebuggingPipe()) {
+
+                                    String filename = p.getStorePath();
+                                    if (debugMode) {
+                                        writeToDisk(filename, carriers);
+                                    } else {
+                                        if (i == pipes.size() - 1) {
+                                            writeToDisk(filename, carriers);
+                                        }
+                                    }
+                                }
+                                File f = new File(md5PipeName);
+                                File instancesFN = new File(getStorePath());
+                                String instancesFP = getStorePath() + instancesFN.getName() + ".txt";
+                                File instancesF = new File(instancesFP);
+                                if (f.exists() && f.listFiles().length == 1 && f.listFiles()[0].getPath().equals(instancesFP)) {
+                                    if (instancesF.exists()) {
+                                        instancesF.delete();
+                                    }
+                                    f.delete();
+                                }
+                            }
+                    );
+                } else {
+                    logger.warn("Empty name of pipe " + this.toString() + ". It hasn't been be saved.");
+                }
+            } else {
+                pipes.stream().parallel().forEach(
+                        (p) -> {
+                            if (p == null) {
+                                logger.fatal("AbstractPipe is null");
+                                System.exit(-1);
+                            } else {
+                                p.pipeAll(carriers);
+                            }
+                        }
+                );
+            }
+
+        } catch (Exception ex) {
+            logger.warn(" [ " + ResumableSerialPipes.class.getName() + " ] " + ex.getMessage());
+        }
         return carriers;
     }
 
@@ -206,28 +312,33 @@ public class ResumableParallelPipes extends AbstractPipe{
     }
 
     /**
-     * Check if alwaysBeforeDeps are satisfied for pipe p. Initially deps contain
-     * all alwaysBefore dependences for p. These dependencies are deleted (marked as resolved)
-     * by recursivelly calling this method.
+     * Check if alwaysBeforeDeps are satisfied for pipe p. Initially deps
+     * contain all alwaysBefore dependences for p. These dependencies are
+     * deleted (marked as resolved) by recursivelly calling this method.
      *
-     * @param p    The pipe that is being checked
+     * @param p The pipe that is being checked
      * @param deps The dependences that are not confirmed in a certain moment
-     * @return null if not sure about the fullfulling, true if the dependences are satisfied,
-     * false if the dependences could not been satisfied
+     * @return null if not sure about the fullfulling, true if the dependences
+     * are satisfied, false if the dependences could not been satisfied
      */
     @Override
     public Boolean checkAlwaysBeforeDeps(Pipe p, List<Class<?>> deps) {
         if (!containsPipe(p)) {
             for (AbstractPipe p1 : this.pipes) {
                 Boolean retVal = p1.checkAlwaysBeforeDeps(p, deps);
-                if (retVal != null) return retVal;
+                if (retVal != null) {
+                    return retVal;
+                }
             }
         } else {
             for (AbstractPipe p1 : this.pipes) {
                 if (p1.containsPipe(p)) {
                     Boolean retVal = p1.checkAlwaysBeforeDeps(p, deps);
-                    if (retVal != null) return retVal;
-                    else return deps.size() == 0; //In this situation deps.size() should no be 0
+                    if (retVal != null) {
+                        return retVal;
+                    } else {
+                        return deps.size() == 0; //In this situation deps.size() should no be 0
+                    }
                 }
             }
         }
@@ -236,11 +347,12 @@ public class ResumableParallelPipes extends AbstractPipe{
     }
 
     /**
-     * Check if notBeforeDeps are satisfied for pipe p recursivelly. Note that p should be inserted.
+     * Check if notBeforeDeps are satisfied for pipe p recursivelly. Note that p
+     * should be inserted.
      *
      * @param p The pipe that is being checked
-     * @return null if not sure about the fullfulling, true if the dependences are satisfied,
-     * false if the dependences could not been satisfied
+     * @return null if not sure about the fullfulling, true if the dependences
+     * are satisfied, false if the dependences could not been satisfied
      */
     @Override
     public boolean checkNotAfterDeps(Pipe p, BooleanBean foundP) {
@@ -248,10 +360,12 @@ public class ResumableParallelPipes extends AbstractPipe{
 
         if (!containsPipe(p)) {
             for (Pipe p1 : this.pipes) {
-                if (p1 instanceof SerialPipes || p1 instanceof ParallelPipes)
+                if (p1 instanceof SerialPipes || p1 instanceof ParallelPipes) {
                     retVal = retVal && p1.checkNotAfterDeps(p, foundP);
-                else {
-                    if (foundP.getValue()) retVal = retVal && !(Arrays.asList(p.getNotAfterDeps()).contains(p1.getClass()));
+                } else {
+                    if (foundP.getValue()) {
+                        retVal = retVal && !(Arrays.asList(p.getNotAfterDeps()).contains(p1.getClass()));
+                    }
                     if (!retVal) {
                         errorMessage = "Unsatisfied NotAfter dependency for pipe " + p.getClass().getName() + " (" + p1.getClass().getName() + ")";
                         return retVal;
@@ -267,9 +381,9 @@ public class ResumableParallelPipes extends AbstractPipe{
             pipeThatContainsP = pipes.get(i);
 
             if (pipeThatContainsP != null) { //Should be true
-                if (pipeThatContainsP instanceof SerialPipes || pipeThatContainsP instanceof ParallelPipes)
+                if (pipeThatContainsP instanceof SerialPipes || pipeThatContainsP instanceof ParallelPipes) {
                     retVal = retVal && pipeThatContainsP.checkNotAfterDeps(p, foundP);
-                else {
+                } else {
                     if (foundP.getValue()) {
                         retVal = retVal && !(Arrays.asList(p.getNotAfterDeps()).contains(pipeThatContainsP.getClass()));
                         if (!retVal) {
@@ -283,9 +397,9 @@ public class ResumableParallelPipes extends AbstractPipe{
 
             for (AbstractPipe p1 : this.pipes) {
                 if (p1 != pipeThatContainsP) {
-                    if (p1 instanceof SerialPipes || p1 instanceof ParallelPipes)
+                    if (p1 instanceof SerialPipes || p1 instanceof ParallelPipes) {
                         retVal = retVal && p1.checkNotAfterDeps(p, foundP);
-                    else {
+                    } else {
                         if (foundP.getValue()) {
                             retVal = retVal && !(Arrays.asList(p.getNotAfterDeps()).contains(p1.getClass()));
                             if (!retVal) {
@@ -312,7 +426,9 @@ public class ResumableParallelPipes extends AbstractPipe{
     @Override
     public boolean containsPipe(Pipe p) {
         for (Pipe p1 : this.pipes) {
-            if (p1.containsPipe(p)) return true;
+            if (p1.containsPipe(p)) {
+                return true;
+            }
         }
         return false;
     }
@@ -342,7 +458,9 @@ public class ResumableParallelPipes extends AbstractPipe{
     public Integer countPipes(PipeType pipeType) {
         int result = 0;
 
-        for (AbstractPipe p : pipes) result += p.countPipes(pipeType);
+        for (AbstractPipe p : pipes) {
+            result += p.countPipes(pipeType);
+        }
 
         return result;
     }
@@ -357,10 +475,76 @@ public class ResumableParallelPipes extends AbstractPipe{
         StringBuilder sb = new StringBuilder();
         sb.append("[PP](");
 
-        for (AbstractPipe p : pipes) sb.append(p).append(" | ");
+        for (AbstractPipe p : pipes) {
+            sb.append(p).append(" | ");
+        }
 
         sb.delete(sb.length() - 3, sb.length());
         sb.append(")");
         return sb.toString();
     }
+
+    /**
+     * Generate a md5 from a String
+     *
+     * @param name String name to generate a md5
+     * @return a md5 from String
+     */
+    private String generateMD5(String name) {
+        try {
+            MessageDigest md = MessageDigest.getInstance("MD5");
+            byte[] base64Name = Base64.getEncoder().encode(name.getBytes());
+            md.update(base64Name);
+
+            StringBuilder md5Name = new StringBuilder();
+            for (byte b : md.digest()) {
+                md5Name.append(String.format("%02x", b & 0xff));
+            }
+            return md5Name.toString();
+        } catch (NoSuchAlgorithmException ex) {
+            java.util.logging.Logger.getLogger(ResumableSerialPipes.class.getName()).log(Level.SEVERE, null, ex);
+        }
+        return "";
+    }
+
+    /**
+     * Saved data in a file
+     *
+     * @param filename File name where the data is saved
+     * @param carriers Data to save
+     */
+    public void writeToDisk(String filename, Object carriers) {
+        try (FileOutputStream outputFile = new FileOutputStream(filename);
+                BufferedOutputStream buffer = new BufferedOutputStream(outputFile);
+                ObjectOutputStream output = new ObjectOutputStream(buffer);) {
+            if (carriers instanceof String) {
+                output.writeObject(carriers.toString());
+            } else {
+                output.writeObject(carriers);
+            }
+            output.flush();
+        } catch (Exception ex) {
+            logger.error("[WRITE TO DISK] " + ex.getMessage());
+        }
+    }
+
+    /**
+     * Retrieve data from file
+     *
+     * @param filename File name to retrieve data
+     * @return an Object with the deserialized retrieve data
+     */
+    public Object readFromDisk(String filename) {
+        File file = new File(filename);
+        try (BufferedInputStream buffer = new BufferedInputStream(new FileInputStream(file))) {
+            ObjectInputStream input = new ObjectInputStream(buffer);
+
+            return input.readObject();
+
+        } catch (Exception ex) {
+            logger.error("[READ FROM DISK] " + ex.getMessage());
+        }
+        return null;
+    }
+
 }

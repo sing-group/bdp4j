@@ -169,22 +169,22 @@ public class ResumableSerialPipes extends SerialPipes {
 
                 if (currentPipe instanceof SerialPipes || currentPipe instanceof ParallelPipes) {
                     currentPipe.pipeAll(carriers);
+                    step = this.findPosition(currentPipe)+1;
+                    break;
                 }
 
                 File sourcePath = new File(getStorePath());
                 // Get all .ser files
-                FileFilter filter = (File pathname) -> {
-                    if (pathname.getPath().endsWith(".ser")) {
-                        return true;
-                    }
-                    return false;
+                FileFilter filter;
+                filter = (File pathname) -> {
+                    return pathname.getPath().endsWith(".ser");
                 };
                 // Get saved list of files
                 File[] listFiles = sourcePath.listFiles(filter);
                 if (sourcePath.exists() && sourcePath.isDirectory() && listFiles.length > 0) {
                     Arrays.sort(sourcePath.listFiles(), (File f1, File f2) -> Long.valueOf(f1.lastModified()).compareTo(f2.lastModified()));
 
-                    String pipeFilename = currentPipe.getStorePath();
+                    String pipeFilename = ((currentPipe != null) ? currentPipe.getStorePath() : "");
                     String lastModifiedFile = listFiles[listFiles.length - 1].getPath();
                     int lastModifiedFileStep = Integer.parseInt(listFiles[listFiles.length - 1].getName().split("_")[0]);
 
@@ -202,20 +202,23 @@ public class ResumableSerialPipes extends SerialPipes {
 
                                 // If instances match, the pipe and instances are the same, so, this is the first step
                                 if (!deserializedCarriers.equals(md5Carriers.toString())) {
+
                                     return this.pipeAll(carriers, step);
+                                } else {
+                                    carriers = (Collection<Instance>) readFromDisk(pipeFilename);
                                 }
                             } else {
                                 return this.pipeAll(carriers, 0);
                             }
-                        }
+                        } 
                     } else if (lastModifiedFileStep < step && !lastModifiedFile.equals(pipeFilename)) {
-                        this.pipeAll(carriers, step);
+                        return this.pipeAll(carriers, step);
                     }
                 } else {
                     return this.pipeAll(carriers, 0);
                 }
             }
-        }
+        } 
         return this.pipeAll(carriers, step);
     }
 
@@ -302,7 +305,6 @@ public class ResumableSerialPipes extends SerialPipes {
 
         } catch (Exception ex) {
             logger.warn(" [ " + ResumableSerialPipes.class.getName() + " ] " + ex.getMessage());
-            ex.printStackTrace();
         }
         return carriers;
     }
