@@ -16,6 +16,7 @@ import java.io.File;
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
 import java.util.Base64;
+import java.util.Arrays;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.bdp4j.types.Instance;
@@ -138,12 +139,11 @@ public abstract class AbstractPipe implements Pipe {
         }
 
         try {
-            //AbstractPipe all instances except the last one
+            //Pipe all instances except the last one
             isLast = false;
 
-            /*
             // This is the thread-way
-            Arrays.stream(carriersAsArray).parallel().forEach(
+            /* Arrays.stream(carriersAsArray).parallel().forEach(
                     (c) -> {
                         if (c.isValid()) {
                             pipe(c);
@@ -155,16 +155,21 @@ public abstract class AbstractPipe implements Pipe {
              */
             // This is the serial-way
             for (int i = 0; i < lastValidInstanceIdx; i++) {
-
-                int numberOfPropertiesBefore = carriersAsArray[i].getPropertyList().size();
-                int numberOfPropertiesAfter = 0;
-                boolean propertyComputingPipe = (this.countPipes(PipeType.PROPERTY_COMPUTING_PIPE) > 0);
-
                 if (carriersAsArray[i].isValid()) {
+                    int numberOfPropertiesBefore = carriersAsArray[i].getPropertyList().size();
+                    int numberOfPropertiesAfter = 0;
+                    boolean propertyComputingPipe = (getClass().getAnnotation(PropertyComputingPipe.class) != null);
+                    //boolean propertyComputingPipe = (this.countPipes(PipeType.PROPERTY_COMPUTING_PIPE) > 0);
+
                     pipe(carriersAsArray[i]);
                     if (propertyComputingPipe) {
                         numberOfPropertiesAfter = carriersAsArray[i].getPropertyList().size();
+
                         if (numberOfPropertiesBefore >= numberOfPropertiesAfter) {
+                            System.out.println(numberOfPropertiesBefore + " >= " + numberOfPropertiesAfter);
+                            System.out.println("Pipe: " + this.getClass().getName());
+                            System.out.println("Props: " + carriersAsArray[i].getPropertyList());
+
                             logger.fatal("[PIPE ALL] Error adding properties in " + this.getClass().getSimpleName());
                             System.exit(-1);
                         }
@@ -226,6 +231,31 @@ public abstract class AbstractPipe implements Pipe {
         return this.debugging;
     }
 
+    private boolean hasBrotherDebuggingPipe() {
+        int position = this.getParent().findPosition(this);
+        AbstractPipe parent = this.getParent();
+        if (parent.isDebugging()) {
+            return true;
+        }
+        if (parent instanceof SerialPipes) {
+            for (int i = 0; i < position; i++) {
+                if (((SerialPipes) parent).getPipe(i).isDebugging()) {
+                    return true;
+                }
+            }
+        } else if (parent instanceof ParallelPipes) {
+//            for (int i=0; i<position;i++) {
+//                if ( ((ParallelPipes) parent).getPipe(i).isDebugging())
+//                    return true;
+//            }
+        } else {
+            if (parent.isDebugging()) {
+                return true;
+            }
+        }
+        return false;
+    }
+
     /**
      * Check if current pipe is marked to debug
      *
@@ -240,6 +270,8 @@ public abstract class AbstractPipe implements Pipe {
             return true;
         } else if (this.getParent() == null) {
             return false;
+        } else if (hasBrotherDebuggingPipe()) {
+            return true;
         } else {
             return this.getParent().isDebuggingPipe();
         }
