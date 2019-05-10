@@ -235,7 +235,7 @@ public final class Configurator {
      * @return Configured pipe with the available ones and the defined
      * structure.
      */
-    public AbstractPipe configurePipe(HashMap<String, PipeInfo> availablePipes) {
+    public AbstractPipe configurePipeline(HashMap<String, PipeInfo> availablePipes) {
         pipes = availablePipes;
         AbstractPipe configuredPipe = null;
 

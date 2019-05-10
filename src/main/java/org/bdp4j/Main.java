@@ -69,7 +69,7 @@ public class Main {
             p = new JGraphX(pipes).start();
         } else {
             /* Configure pipe */
-            p = configurator.configurePipe(pipes);
+            p = configurator.configurePipeline(pipes);
         }
 
         logger.info("Pipe structure:\n\t" + p.toString() + "\n");
