@@ -25,11 +25,11 @@ import org.apache.logging.log4j.Logger;
  * @author María Novo
  * @author José Ramón Méndez
  */
-public class CSVDataset {
+public class CSVDatasetWriter {
     /**
      * For logging purposes
      */
-    private static final Logger logger = LogManager.getLogger(CSVDataset.class);
+    private static final Logger logger = LogManager.getLogger(CSVDatasetWriter.class);
 
     /**
      * The default CSV filed separator
@@ -131,14 +131,14 @@ public class CSVDataset {
      *                           double quotes by default)
      * @param csvDataset         The file where the dataset is stored
      */
-    public CSVDataset(String CSVSep, String strQuote, String strQuoteEscapeChar, String csvVoidField, Boolean escapeCR,
+    public CSVDatasetWriter(String CSVSep, String strQuote, String strQuoteEscapeChar, String csvVoidField, Boolean escapeCR,
             String charsToScape, File csvDataset) {
-        CSVDataset.CSVSep = CSVSep;
-        CSVDataset.strQuote = strQuote;
-        CSVDataset.strQuoteEscapeChar = strQuoteEscapeChar;
-        CSVDataset.csvVoidField = csvVoidField;
-        CSVDataset.escapeCR = escapeCR;
-        CSVDataset.charsToScape = charsToScape;
+        CSVDatasetWriter.CSVSep = CSVSep;
+        CSVDatasetWriter.strQuote = strQuote;
+        CSVDatasetWriter.strQuoteEscapeChar = strQuoteEscapeChar;
+        CSVDatasetWriter.csvVoidField = csvVoidField;
+        CSVDatasetWriter.escapeCR = escapeCR;
+        CSVDatasetWriter.charsToScape = charsToScape;
 
         this.csvDataset = csvDataset;
     }
@@ -160,7 +160,7 @@ public class CSVDataset {
      *                           double quotes by default)
      * @param csvDatasetPath     The file where the dataset is stored
      */
-    public CSVDataset(String CSVSep, String strQuote, String strQuoteEscapeChar, String csvVoidField, Boolean escapeCR,
+    public CSVDatasetWriter(String CSVSep, String strQuote, String strQuoteEscapeChar, String csvVoidField, Boolean escapeCR,
             String charsToScape, String csvDatasetPath) {
         this(DEFAULT_CSV_SEP, DEFAULT_STR_QUOTE, DEFAULT_STR_QUOTE_ESCAPE_CHAR, DEFAULT_CSV_VOID_FIELD,
                 DEFAULT_ESCAPE_CR, DEFAULT_CHARS_TO_SCAPE, new File(csvDatasetPath));
@@ -172,7 +172,7 @@ public class CSVDataset {
      * 
      * @param csvDataset The file where the dataset is stored
      */
-    public CSVDataset(File csvDataset) {
+    public CSVDatasetWriter(File csvDataset) {
         this(DEFAULT_CSV_SEP, DEFAULT_STR_QUOTE, DEFAULT_STR_QUOTE_ESCAPE_CHAR, DEFAULT_CSV_VOID_FIELD,
                 DEFAULT_ESCAPE_CR, DEFAULT_CHARS_TO_SCAPE, csvDataset);
     }
@@ -183,7 +183,7 @@ public class CSVDataset {
      * 
      * @param csvDatasetPath The file where the dataset is stored
      */
-    public CSVDataset(String csvDatasetPath) {
+    public CSVDatasetWriter(String csvDatasetPath) {
         this(DEFAULT_CSV_SEP, DEFAULT_STR_QUOTE, DEFAULT_STR_QUOTE_ESCAPE_CHAR, DEFAULT_CSV_VOID_FIELD,
                 DEFAULT_ESCAPE_CR, DEFAULT_CHARS_TO_SCAPE, new File(csvDatasetPath));
     }
@@ -194,16 +194,16 @@ public class CSVDataset {
      * @param CSVSep separator for CSV files
      */
     public static void setCSVSep(String CSVSep) {
-        CSVDataset.CSVSep = CSVSep;
+        CSVDatasetWriter.CSVSep = CSVSep;
     }
 
-    protected CSVDataset() {
-        CSVDataset.CSVSep = DEFAULT_CSV_SEP;
-        CSVDataset.strQuote = DEFAULT_STR_QUOTE;
-        CSVDataset.strQuoteEscapeChar = DEFAULT_STR_QUOTE_ESCAPE_CHAR;
-        CSVDataset.csvVoidField = DEFAULT_CSV_VOID_FIELD;
-        CSVDataset.escapeCR = DEFAULT_ESCAPE_CR;
-        CSVDataset.charsToScape = DEFAULT_CHARS_TO_SCAPE;   
+    protected CSVDatasetWriter() {
+        CSVDatasetWriter.CSVSep = DEFAULT_CSV_SEP;
+        CSVDatasetWriter.strQuote = DEFAULT_STR_QUOTE;
+        CSVDatasetWriter.strQuoteEscapeChar = DEFAULT_STR_QUOTE_ESCAPE_CHAR;
+        CSVDatasetWriter.csvVoidField = DEFAULT_CSV_VOID_FIELD;
+        CSVDatasetWriter.escapeCR = DEFAULT_ESCAPE_CR;
+        CSVDatasetWriter.charsToScape = DEFAULT_CHARS_TO_SCAPE;   
     }
 
     /**
