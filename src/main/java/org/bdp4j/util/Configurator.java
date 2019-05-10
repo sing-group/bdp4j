@@ -23,6 +23,7 @@ package org.bdp4j.util;
 
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
+import org.bdp4j.pipe.Pipe;
 import org.bdp4j.pipe.AbstractPipe;
 import org.bdp4j.pipe.ParallelPipes;
 import org.bdp4j.pipe.PipeParameter;
@@ -235,7 +236,7 @@ public final class Configurator {
      * @return Configured pipe with the available ones and the defined
      * structure.
      */
-    public AbstractPipe configurePipeline(HashMap<String, PipeInfo> availablePipes) {
+    public Pipe configurePipeline(HashMap<String, PipeInfo> availablePipes) {
         pipes = availablePipes;
         AbstractPipe configuredPipe = null;
 
