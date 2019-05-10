@@ -23,7 +23,7 @@ package org.bdp4j.util;
 
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
-import org.bdp4j.pipe.AbstractPipe;
+import org.bdp4j.pipe.Pipe;
 
 import java.io.File;
 import java.net.MalformedURLException;
@@ -40,7 +40,7 @@ import org.bdp4j.types.PipeType;
  */
 public class PipeProvider {
 
-    private ServiceLoader<AbstractPipe> loader;
+    private ServiceLoader<Pipe> loader;
     /**
      * For logging purposes
      */
@@ -69,7 +69,7 @@ public class PipeProvider {
 
         URLClassLoader urlClassLoader = new URLClassLoader(urls);
 
-        loader = ServiceLoader.load(AbstractPipe.class, urlClassLoader);
+        loader = ServiceLoader.load(Pipe.class, urlClassLoader);
     }
 
     /**
@@ -81,7 +81,7 @@ public class PipeProvider {
     public HashMap<String, PipeInfo> getPipes() {
         HashMap<String, PipeInfo> pipeList = new HashMap<>();
 
-        for (AbstractPipe pipe : loader) {
+        for (Pipe pipe : loader) {
 
             PipeInfo pipeInfo = new PipeInfo(pipe.getClass().getSimpleName(), pipe.getClass());
 
