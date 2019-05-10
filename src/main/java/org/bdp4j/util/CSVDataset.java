@@ -499,8 +499,8 @@ public class CSVDataset {
             for (String line = br.readLine(); line != null; line = br.readLine(), i++) {
 
                 int whereToInsert = 0;
-                if (position == getColumnCount()-1) whereToInsert = line.length()-1;
-                else for (int k=0;k<=position;k++) whereToInsert=line.indexOf(getCSVSep(),whereToInsert+1);
+                if (position == getColumnCount()) whereToInsert = line.length()-1;
+                else for (int k=0;k<position;k++) whereToInsert=line.indexOf(getCSVSep(),whereToInsert+1);
 
                 if (whereToInsert > 0) {
                     String beforeNewColumn = line.substring(0, whereToInsert);
@@ -561,8 +561,8 @@ public class CSVDataset {
             int i = 0;
             for (String line = br.readLine(); line != null; line = br.readLine(), i++) {
                 int whereToInsert = 0;
-                if (position == getColumnCount()-1) whereToInsert = line.length()-1;
-                else for (int k=0;k<=position;k++) whereToInsert=line.indexOf(getCSVSep(),whereToInsert+1);
+                if (position == getColumnCount()) whereToInsert = line.length()-1;
+                else for (int k=0;k<position;k++) whereToInsert=line.indexOf(getCSVSep(),whereToInsert+1);
 
                 if (whereToInsert > 0) {
                     String beforeNewColumn = line.substring(0, whereToInsert);
