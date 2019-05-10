@@ -28,7 +28,23 @@ import org.bdp4j.util.BooleanBean;
 import java.util.Collection;
 import java.util.List;
 
-interface Pipe {
+/**
+ * Pipe interface should be used only then you have to extend from a third class
+ * and you can not extend from AbstractPipe (only implementing an interface). Most of 
+ * BDP4J services are implemented in AbstractPipe class. In order to create a Pipe,
+ * if you extend from AbstractPipe class, only implementing pipe method is required.
+ * So, we really disadvice the usage of this interface to use BDP4J. Use this interface
+ * only in the case that there is no other option.
+ * 
+ * Pipe interface is the most difficult way to implement a Pipe. You have to implement 
+ * a large collection of methods to make them compatible with BDP4J. 
+ * 
+ * @since Java 1.8
+ * @author Jeray Lage
+ * @author María Novo
+ * @author José Ramón Méndez
+ */
+public interface Pipe {
 
     /**
      * Process an Instance. This method takes an input Instance, destructively
