@@ -24,8 +24,8 @@ package org.bdp4j;
 import gui.JGraphX;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
-import org.bdp4j.pipe.Pipe;
 import org.bdp4j.pipe.AbstractPipe;
+import org.bdp4j.pipe.Pipe;
 import org.bdp4j.types.Instance;
 import org.bdp4j.types.PipeType;
 import org.bdp4j.util.Configurator;
@@ -65,7 +65,7 @@ public class Main {
         HashMap<String, PipeInfo> pipes = pipeProvider.getPipes();
 
         Pipe p;
-        if (args[0].equals("gui")) {
+        if (args.length == 1 && args[0].equals("gui")) {
             /* GUI testing */
             p = new JGraphX(pipes).start();
         } else {
