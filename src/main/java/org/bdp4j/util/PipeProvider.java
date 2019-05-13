@@ -24,6 +24,7 @@ package org.bdp4j.util;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.bdp4j.pipe.Pipe;
+import org.bdp4j.pipe.TransformationPipe;
 
 import java.io.File;
 import java.net.MalformedURLException;
@@ -31,9 +32,6 @@ import java.net.URL;
 import java.net.URLClassLoader;
 import java.util.HashMap;
 import java.util.ServiceLoader;
-import org.bdp4j.pipe.PropertyComputingPipe;
-import org.bdp4j.pipe.TransformationPipe;
-import org.bdp4j.types.PipeType;
 
 /**
  * Class for loading jar with new Pipes dynamically
@@ -87,7 +85,7 @@ public class PipeProvider {
 
             PipeInfo pipeInfo = new PipeInfo(pipe.getClass().getSimpleName(), pipe.getClass());
 
-            boolean transformationPipe = (getClass().getAnnotation(TransformationPipe.class) != null);
+            boolean transformationPipe = (pipe.getClass().getAnnotation(TransformationPipe.class) != null);
             if (!transformationPipe) {
                 if (!pipe.getInputType().equals(pipe.getOutputType())) {
                     logger.fatal("[GET PIPES] Error checking types in pipe " + pipe.getClass().getSimpleName());
