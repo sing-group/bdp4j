@@ -31,6 +31,8 @@ import java.net.URL;
 import java.net.URLClassLoader;
 import java.util.HashMap;
 import java.util.ServiceLoader;
+import org.bdp4j.pipe.PropertyComputingPipe;
+import org.bdp4j.pipe.TransformationPipe;
 import org.bdp4j.types.PipeType;
 
 /**
@@ -85,12 +87,8 @@ public class PipeProvider {
 
             PipeInfo pipeInfo = new PipeInfo(pipe.getClass().getSimpleName(), pipe.getClass());
 
-            if (pipe.countPipes(PipeType.TRANSFORMATION_PIPE) > 0) {
-                if (pipe.getInputType().equals(pipe.getOutputType())) {
-                    logger.fatal("[GET PIPES] Error checking types in pipe " + pipe.getClass().getSimpleName());
-                    System.exit(-1);
-                }
-            } else {
+            boolean transformationPipe = (getClass().getAnnotation(TransformationPipe.class) != null);
+            if (!transformationPipe) {
                 if (!pipe.getInputType().equals(pipe.getOutputType())) {
                     logger.fatal("[GET PIPES] Error checking types in pipe " + pipe.getClass().getSimpleName());
                     System.exit(-1);

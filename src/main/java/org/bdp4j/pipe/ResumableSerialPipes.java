@@ -167,7 +167,7 @@ public class ResumableSerialPipes extends SerialPipes {
                     return this.pipeAll(carriers, step);
                 }
 
-                if (currentPipe instanceof SerialPipes || currentPipe instanceof ParallelPipes) {
+                if (currentPipe instanceof SerialPipes) {
                     currentPipe.pipeAll(carriers);
                     step = this.findPosition(currentPipe)+1;
                     break;
