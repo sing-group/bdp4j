@@ -170,7 +170,7 @@ public class Dataset implements Serializable, Cloneable {
      *
      * @return an Instances from dataset
      */
-    public Instances getWekaDataset() {
+    public weka.core.Instances getWekaDataset() {
         return new Instances(dataset);
     }
 
@@ -446,12 +446,12 @@ public class Dataset implements Serializable, Cloneable {
 
     /**
      *
-     * @param columnsToAdd List of columns to add. Each column is represented as
-     * &lt;columnName, position&gt; where columName stands for the name of the column
-     * and position is the position where the column is inserted
+     * @param columnNames List of columns to add where columNames stands for the name of the column
+     * @param defaultValues List of default values to each column
+     * 
      * @return true if the columns were sucessfully added, false otherwise
      */
-    public boolean addColumns(Map<String, Integer> columnsToAdd) {
+    public boolean addColumns(String columnNames[], Object defaultValues[]) {
         // TODO: implement it
         return false;
     }

@@ -232,22 +232,23 @@ public abstract class AbstractPipe implements Pipe {
     }
 
     private boolean hasBrotherDebuggingPipe() {
-        int position = this.getParent().findPosition(this);
-        AbstractPipe parent = this.getParent();
-        if (parent.isDebugging()) {
+        int position = 0;
+        AbstractPipe parentPipe = this.getParent();
+        if (parentPipe.isDebugging()) {
             return true;
         }
-        if (parent instanceof SerialPipes) {
+        if (parentPipe instanceof SerialPipes) {
+            position = this.getParent().findPosition(this);
             for (int i = 0; i < position; i++) {
-                if (((SerialPipes) parent).getPipe(i).isDebugging()) {
+                if (((SerialPipes) parentPipe).getPipe(i).isDebugging()) {
                     return true;
                 }
             }
-        } else if (parent instanceof ParallelPipes) {
-//            for (int i=0; i<position;i++) {
-//                if ( ((ParallelPipes) parent).getPipe(i).isDebugging())
-//                    return true;
-//            }
+        } else if (parentPipe instanceof ParallelPipes) {
+           /* for (int i=0; i<position;i++) {
+                if ( ((ParallelPipes) parent).getPipes()[i].isDebugging())
+                    return true;
+            }*/
         } else {
             if (parent.isDebugging()) {
                 return true;
@@ -522,4 +523,5 @@ public abstract class AbstractPipe implements Pipe {
     public String toString() {
         return getClass().getSimpleName();
     }
+
 }

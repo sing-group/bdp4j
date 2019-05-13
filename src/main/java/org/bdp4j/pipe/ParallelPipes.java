@@ -19,7 +19,6 @@
  * You should have received a copy of the GNU General Public License
  * along with this program.  If not, see <https://www.gnu.org/licenses/>.
  */
-
 package org.bdp4j.pipe;
 
 import org.apache.logging.log4j.LogManager;
@@ -33,13 +32,13 @@ import java.util.Arrays;
 import java.util.Collection;
 import java.util.List;
 
-
 /**
  * A class implementing parallel processing of instances
  *
  * @author Yeray Lage
  */
-public class ParallelPipes extends AbstractPipe{
+public class ParallelPipes extends AbstractPipe {
+
     /**
      * For logging purposes
      */
@@ -75,21 +74,26 @@ public class ParallelPipes extends AbstractPipe{
      */
     public ParallelPipes(AbstractPipe[] pipeList) {
         super(new Class<?>[0], new Class<?>[0]);
-        this.pipes = new ArrayList<AbstractPipe>(pipeList.length);
+        this.pipes = new ArrayList<>(pipeList.length);
 
-        for (AbstractPipe p : pipeList) this.add(p);
+        for (AbstractPipe p : pipeList) {
+            this.add(p);
+        }
     }
 
     /**
      * Constructor that initializes the parallelPipes array and add pipes to it.
      *
-     * @param pipeList The ArrayList of pipes to be included in the parallelPipe.
+     * @param pipeList The ArrayList of pipes to be included in the
+     * parallelPipe.
      */
     public ParallelPipes(ArrayList<AbstractPipe> pipeList) {
         super(new Class<?>[0], new Class<?>[0]);
-        this.pipes = new ArrayList<AbstractPipe>(pipeList.size());
+        this.pipes = new ArrayList<>(pipeList.size());
 
-        for (AbstractPipe p : pipeList) this.add(p);
+        for (AbstractPipe p : pipeList) {
+            this.add(p);
+        }
     }
 
     /**
@@ -163,9 +167,11 @@ public class ParallelPipes extends AbstractPipe{
      * @param pipe The new pipe added.
      */
     public void add(AbstractPipe pipe) {
+        System.out.println("pipe " + pipe.toString());
         if (pipes.isEmpty()) {
             // Is pipes arrayList is empty, this is the output AbstractPipe.
             // Then, inputType and outputType of parallelPipes is theirs.
+            pipe.setParent(this);
             pipes.add(pipe);
             inputType = pipe.getInputType();
             outputType = pipe.getOutputType();
@@ -178,7 +184,7 @@ public class ParallelPipes extends AbstractPipe{
                         .getSimpleName() + " | " + pipe.getClass().getSimpleName());
                 System.exit(-1);
             }
-
+            pipe.setParent(this);
             pipes.add(pipe);
             logger.info("[PIPE ADD] Good compatibility between Pipes: " + pipes.get(0).getClass()
                     .getSimpleName() + " | " + pipe.getClass().getSimpleName());
@@ -206,28 +212,58 @@ public class ParallelPipes extends AbstractPipe{
     }
 
     /**
-     * Check if alwaysBeforeDeps are satisfied for pipe p. Initially deps contain
-     * all alwaysBefore dependences for p. These dependencies are deleted (marked as resolved)
-     * by recursivelly calling this method.
+     * Find the position of a pipe
      *
-     * @param p    The pipe that is being checked
+     * @param p The pipe from which we want to get the position
+     * @return The position of the pipe
+     */
+    @Override
+    public int findPosition(Pipe p) {
+        return this.pipes.indexOf(p);
+    }
+
+    /**
+     * Return an array of pipes with the current pipe
+     *
+     * @return a AbstractPipe array containing the pipes that compound the
+     * serial pipes
+     */
+    public AbstractPipe[] getPipes() {
+        if (this.pipes == null) {
+            return new AbstractPipe[0];
+        }
+        AbstractPipe[] returnValue = new AbstractPipe[this.pipes.size()];
+        return this.pipes.toArray(returnValue);
+    }
+
+    /**
+     * Check if alwaysBeforeDeps are satisfied for pipe p. Initially deps
+     * contain all alwaysBefore dependences for p. These dependencies are
+     * deleted (marked as resolved) by recursivelly calling this method.
+     *
+     * @param p The pipe that is being checked
      * @param deps The dependences that are not confirmed in a certain moment
-     * @return null if not sure about the fullfulling, true if the dependences are satisfied,
-     * false if the dependences could not been satisfied
+     * @return null if not sure about the fullfulling, true if the dependences
+     * are satisfied, false if the dependences could not been satisfied
      */
     @Override
     public Boolean checkAlwaysBeforeDeps(Pipe p, List<Class<?>> deps) {
         if (!containsPipe(p)) {
             for (AbstractPipe p1 : this.pipes) {
                 Boolean retVal = p1.checkAlwaysBeforeDeps(p, deps);
-                if (retVal != null) return retVal;
+                if (retVal != null) {
+                    return retVal;
+                }
             }
         } else {
             for (AbstractPipe p1 : this.pipes) {
                 if (p1.containsPipe(p)) {
                     Boolean retVal = p1.checkAlwaysBeforeDeps(p, deps);
-                    if (retVal != null) return retVal;
-                    else return deps.size() == 0; //In this situation deps.size() should no be 0
+                    if (retVal != null) {
+                        return retVal;
+                    } else {
+                        return deps.size() == 0; //In this situation deps.size() should no be 0
+                    }
                 }
             }
         }
@@ -236,11 +272,12 @@ public class ParallelPipes extends AbstractPipe{
     }
 
     /**
-     * Check if notBeforeDeps are satisfied for pipe p recursivelly. Note that p should be inserted.
+     * Check if notBeforeDeps are satisfied for pipe p recursivelly. Note that p
+     * should be inserted.
      *
      * @param p The pipe that is being checked
-     * @return null if not sure about the fullfulling, true if the dependences are satisfied,
-     * false if the dependences could not been satisfied
+     * @return null if not sure about the fullfulling, true if the dependences
+     * are satisfied, false if the dependences could not been satisfied
      */
     @Override
     public boolean checkNotAfterDeps(Pipe p, BooleanBean foundP) {
@@ -248,10 +285,12 @@ public class ParallelPipes extends AbstractPipe{
 
         if (!containsPipe(p)) {
             for (Pipe p1 : this.pipes) {
-                if (p1 instanceof SerialPipes || p1 instanceof ParallelPipes)
+                if (p1 instanceof SerialPipes || p1 instanceof ParallelPipes) {
                     retVal = retVal && p1.checkNotAfterDeps(p, foundP);
-                else {
-                    if (foundP.getValue()) retVal = retVal && !(Arrays.asList(p.getNotAfterDeps()).contains(p1.getClass()));
+                } else {
+                    if (foundP.getValue()) {
+                        retVal = retVal && !(Arrays.asList(p.getNotAfterDeps()).contains(p1.getClass()));
+                    }
                     if (!retVal) {
                         errorMessage = "Unsatisfied NotAfter dependency for pipe " + p.getClass().getName() + " (" + p1.getClass().getName() + ")";
                         return retVal;
@@ -267,9 +306,9 @@ public class ParallelPipes extends AbstractPipe{
             pipeThatContainsP = pipes.get(i);
 
             if (pipeThatContainsP != null) { //Should be true
-                if (pipeThatContainsP instanceof SerialPipes || pipeThatContainsP instanceof ParallelPipes)
+                if (pipeThatContainsP instanceof SerialPipes || pipeThatContainsP instanceof ParallelPipes) {
                     retVal = retVal && pipeThatContainsP.checkNotAfterDeps(p, foundP);
-                else {
+                } else {
                     if (foundP.getValue()) {
                         retVal = retVal && !(Arrays.asList(p.getNotAfterDeps()).contains(pipeThatContainsP.getClass()));
                         if (!retVal) {
@@ -283,9 +322,9 @@ public class ParallelPipes extends AbstractPipe{
 
             for (AbstractPipe p1 : this.pipes) {
                 if (p1 != pipeThatContainsP) {
-                    if (p1 instanceof SerialPipes || p1 instanceof ParallelPipes)
+                    if (p1 instanceof SerialPipes || p1 instanceof ParallelPipes) {
                         retVal = retVal && p1.checkNotAfterDeps(p, foundP);
-                    else {
+                    } else {
                         if (foundP.getValue()) {
                             retVal = retVal && !(Arrays.asList(p.getNotAfterDeps()).contains(p1.getClass()));
                             if (!retVal) {
@@ -312,7 +351,9 @@ public class ParallelPipes extends AbstractPipe{
     @Override
     public boolean containsPipe(Pipe p) {
         for (Pipe p1 : this.pipes) {
-            if (p1.containsPipe(p)) return true;
+            if (p1.containsPipe(p)) {
+                return true;
+            }
         }
         return false;
     }
@@ -342,7 +383,9 @@ public class ParallelPipes extends AbstractPipe{
     public Integer countPipes(PipeType pipeType) {
         int result = 0;
 
-        for (AbstractPipe p : pipes) result += p.countPipes(pipeType);
+        for (AbstractPipe p : pipes) {
+            result += p.countPipes(pipeType);
+        }
 
         return result;
     }
@@ -357,7 +400,9 @@ public class ParallelPipes extends AbstractPipe{
         StringBuilder sb = new StringBuilder();
         sb.append("[PP](");
 
-        for (AbstractPipe p : pipes) sb.append(p).append(" | ");
+        for (AbstractPipe p : pipes) {
+            sb.append(p).append(" | ");
+        }
 
         sb.delete(sb.length() - 3, sb.length());
         sb.append(")");

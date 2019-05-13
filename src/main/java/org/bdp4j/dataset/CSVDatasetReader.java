@@ -47,12 +47,12 @@ import org.bdp4j.util.DateTimeIdentifier;
  *
  * @author María Novo
  */
-public class DatasetFromFile {
+public class CSVDatasetReader {
 
     /**
      * For logging purposes
      */
-    private static final Logger logger = LogManager.getLogger(DatasetFromFile.class);
+    private static final Logger logger = LogManager.getLogger(CSVDatasetReader.class);
 
     /**
      * The filepath/filename to load
@@ -70,7 +70,7 @@ public class DatasetFromFile {
      *
      * @param filePath: The file path
      */
-    public DatasetFromFile(String filePath) {
+    public CSVDatasetReader(String filePath) {
         this.filePath = filePath;
         this.transformersList = new HashMap<>();
     }
@@ -82,8 +82,8 @@ public class DatasetFromFile {
      * @param filePath The filepath/filename
      * @param transformersList The list of transformers.
      */
-    public DatasetFromFile(String filePath, Map<String, Transformer> transformersList) {
-        //public DatasetFromFile(String filePath, Map<String, Transformer> transformersList) {
+    public CSVDatasetReader(String filePath, Map<String, Transformer> transformersList) {
+        //public CSVDatasetReader(String filePath, Map<String, Transformer> transformersList) {
         this.filePath = filePath;
         this.transformersList = transformersList;
     }
