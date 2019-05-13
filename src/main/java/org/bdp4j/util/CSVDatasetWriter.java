@@ -326,6 +326,22 @@ public class CSVDatasetWriter {
     }
 
     /**
+     * Add several rows to the dataset
+     * 
+     * @param values The rows of values
+     * @return true if sucessfully added, false otherwise
+     */
+    public boolean addRows(Object[][] values) {
+        boolean retVal=true;
+        for (Object currentRow[]:values){
+            retVal=retVal & addRow(currentRow);
+            if (!retVal) return retVal;
+        }
+
+        return retVal;
+    }
+
+    /**
      * Add a column to the dataset
      * @param columnName The name of the column
      * @param defaultValue The default value for the rows included
@@ -426,7 +442,7 @@ public class CSVDatasetWriter {
                 bw.write(columns+lineSep);
                 bw.close();
                 bw=null;
-                //this.columnCount=null;
+                
                 columnCount+=columnNames.length;
                 return true;
             } catch (FileNotFoundException e) {
@@ -634,7 +650,8 @@ public class CSVDatasetWriter {
             try {
                 br.close();
             } catch (IOException e) {
-                //TODO: log and exit
+                logger.error("The Buffered Reader (br) is probably opened but it could not be flushed/closed for further operation");
+                System.exit(1);
             }
             br=null;
         }
@@ -644,7 +661,8 @@ public class CSVDatasetWriter {
                 bw.flush();
                 bw.close();
             } catch (IOException e) {
-                //TODO: log and exit
+                logger.error("The Buffered Writer (bw) is probably opened but it could not be flushed/closed for further operation");
+                System.exit(1);
             }
             bw=null;
         }
