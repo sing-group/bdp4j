@@ -33,6 +33,7 @@ import java.util.Collection;
 import java.util.List;
 import java.util.logging.Level;
 import org.bdp4j.util.Configurator;
+import org.bdp4j.util.PipeUtils;
 
 /**
  * The abstract superclass of all Pipes, which transform one data type to
@@ -99,7 +100,7 @@ public abstract class AbstractPipe implements Pipe {
      */
     public AbstractPipe(Class<?>[] alwaysBeforeDeps, Class<?>[] notAfterDeps) {
         this.notAfterDeps = notAfterDeps;
-        this.alwaysBeforeDeps = alwaysBeforeDeps;
+        this.alwaysBeforeDeps = alwaysBeforeDeps;        
     }
 
     /**
@@ -372,28 +373,7 @@ public abstract class AbstractPipe implements Pipe {
         return 0;
     }
 
-    /**
-     * Generate a md5 from a String
-     *
-     * @param name String name to generate a md5
-     * @return a md5 from String
-     */
-    protected String generateMD5(String name) {
-        try {
-            MessageDigest md = MessageDigest.getInstance("MD5");
-            byte[] base64Name = Base64.getEncoder().encode(name.getBytes());
-            md.update(base64Name);
 
-            StringBuilder md5Name = new StringBuilder();
-            for (byte b : md.digest()) {
-                md5Name.append(String.format("%02x", b & 0xff));
-            }
-            return md5Name.toString();
-        } catch (NoSuchAlgorithmException ex) {
-            java.util.logging.Logger.getLogger(ResumableSerialPipes.class.getName()).log(Level.SEVERE, null, ex);
-        }
-        return "";
-    }
 
     /**
      * Check if a path exists, and otherwise, creates that.
@@ -429,18 +409,18 @@ public abstract class AbstractPipe implements Pipe {
         }
         if (getParent() == null) {
             if (this instanceof SerialPipes || this instanceof ParallelPipes) {
-                storePath = getPath(temp_folder + generateMD5(this.toString()) + fileSeparator);
+                storePath = getPath(temp_folder + PipeUtils.generateMD5(this.toString()) + fileSeparator);
                 return storePath;
             } else {
-                return findPosition(this) + "_" + generateMD5(this.toString()) + ".ser";
+                return findPosition(this) + "_" + PipeUtils.generateMD5(this.toString()) + ".ser";
             }
         } else {
             if (this instanceof SerialPipes || this instanceof ParallelPipes) {
-                storePath = getParent().getStorePath() + this.getParent().findPosition(this) + "_" + generateMD5(this.toString()) + fileSeparator;
+                storePath = getParent().getStorePath() + this.getParent().findPosition(this) + "_" + PipeUtils.generateMD5(this.toString()) + fileSeparator;
                 return getPath(storePath);
 
             } else {
-                return getParent().getStorePath() + findPosition(this) + "_" + generateMD5(this.toString()) + ".ser";
+                return getParent().getStorePath() + findPosition(this) + "_" + PipeUtils.generateMD5(this.toString()) + ".ser";
             }
         }
     }
@@ -532,44 +512,4 @@ public abstract class AbstractPipe implements Pipe {
         return getClass().getSimpleName();
     }
 
- 
-    /**
-     * Retrieve data from file
-     *
-     * @param filename File name to retrieve data
-     * @return an Object with the deserialized retrieve data
-     */
-    protected Object readFromDisk(String filename) {
-        File file = new File(filename);
-        try (BufferedInputStream buffer = new BufferedInputStream(new FileInputStream(file))) {
-            ObjectInputStream input = new ObjectInputStream(buffer);
-
-            return input.readObject();
-
-        } catch (Exception ex) {
-            logger.error("[READ FROM DISK] " + ex.getMessage());
-        }
-        return null;
-    }
-
-    /**
-     * Saved data in a file
-     *
-     * @param filename File name where the data is saved
-     * @param carriers Data to save
-     */
-    protected void writeToDisk(String filename, Object carriers) {
-        try (FileOutputStream outputFile = new FileOutputStream(filename);
-                BufferedOutputStream buffer = new BufferedOutputStream(outputFile);
-                ObjectOutputStream output = new ObjectOutputStream(buffer);) {
-            if (carriers instanceof String) {
-                output.writeObject(carriers.toString());
-            } else {
-                output.writeObject(carriers);
-            }
-            output.flush();
-        } catch (Exception ex) {
-            logger.error("[WRITE TO DISK] " + ex.getMessage());
-        }
-    }
 }
