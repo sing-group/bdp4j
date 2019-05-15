@@ -32,6 +32,7 @@ import java.net.URL;
 import java.net.URLClassLoader;
 import java.util.HashMap;
 import java.util.ServiceLoader;
+import org.bdp4j.pipe.TransformationPipe;
 
 /**
  * Class for loading jar with new Pipes dynamically

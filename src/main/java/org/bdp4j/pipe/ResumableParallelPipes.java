@@ -21,25 +21,16 @@
  */
 package org.bdp4j.pipe;
 
-import java.io.BufferedInputStream;
-import java.io.BufferedOutputStream;
 import java.io.File;
 import java.io.FileFilter;
-import java.io.FileInputStream;
-import java.io.FileOutputStream;
-import java.io.ObjectInputStream;
-import java.io.ObjectOutputStream;
-import java.security.MessageDigest;
-import java.security.NoSuchAlgorithmException;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.bdp4j.types.Instance;
 
 import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.Base64;
 import java.util.Collection;
-import java.util.logging.Level;
+import java.util.Set;
 import org.bdp4j.util.Configurator;
 import org.bdp4j.util.EBoolean;
 
@@ -144,9 +135,9 @@ public class ResumableParallelPipes extends ParallelPipes {
                     Arrays.sort(sourcePath.listFiles(), (File f1, File f2) -> Long.valueOf(f1.lastModified()).compareTo(f2.lastModified()));
 
                     String pipeFilename = ((currentPipe != null) ? currentPipe.getStorePath() : "");
-                    String lastModifiedFile = listFiles[listFiles.length - 1].getPath();
-                    int lastModifiedFileStep = Integer.parseInt(listFiles[listFiles.length - 1].getName().split("_")[0]);
-
+                    File lastModified = listFiles[0];
+                    String lastModifiedFile = lastModified.getPath();
+                    int lastModifiedFileStep = Integer.parseInt(lastModified.getName().split("_")[0]);
                     if (lastModifiedFile.equals(pipeFilename) && lastModifiedFileStep == step) {
                         // Check if instances(carriers) matches
                         StringBuilder md5Carriers = new StringBuilder();
@@ -164,7 +155,15 @@ public class ResumableParallelPipes extends ParallelPipes {
 
                                     return this.pipeAll(carriers, step);
                                 } else {
-                                    carriers = (Collection<Instance>) readFromDisk(pipeFilename);
+                                    // Combine properties and target
+                                    if (currentPipe != null) {
+                                        AbstractPipe currentPipeParent = currentPipe.getParent();
+                                        if (currentPipeParent instanceof ParallelPipes) {
+                                            carriers = (Collection<Instance>) combineInstances(currentPipeParent.getStorePath());
+                                        } else {
+                                            carriers = (Collection<Instance>) readFromDisk(pipeFilename);
+                                        }
+                                    }
                                 }
                             } else {
                                 return this.pipeAll(carriers, 0);
@@ -182,6 +181,49 @@ public class ResumableParallelPipes extends ParallelPipes {
     }
 
     /**
+     * Combine properties from saved instances in the indicated path and also
+     * combine target.
+     *
+     * @param path Path name where instances to combine is saved
+     * @return A collection of instances with all properties combined
+     */
+    private Collection<Instance> combineInstances(String path) {
+        Collection<Instance> carriers = null;
+        Collection<Instance> currentPipeCarriers;
+        File directoryPath = new File(path);
+        FileFilter filter = (File pathname) -> {
+            return pathname.getPath().endsWith(".ser");
+        };
+        File[] listSavedPipes = directoryPath.listFiles(filter);
+        for (File pipeFilename : listSavedPipes) {
+            if (carriers == null) {
+                carriers = (Collection<Instance>) readFromDisk(pipeFilename.getPath());
+            } else {
+                currentPipeCarriers = (Collection<Instance>) readFromDisk(pipeFilename.getPath());
+                for (int i = 0; i < carriers.size(); i++) {
+                    Instance carrier = (Instance) carriers.toArray()[i];
+                    Instance currentPipeCarrier = (Instance) currentPipeCarriers.toArray()[i];
+                    Set<String> currentPipePropertyList = currentPipeCarrier.getPropertyList();
+                    if (!carrier.getTarget().equals(currentPipeCarrier.getTarget())) {
+                        logger.fatal("[COMBINE INSTANCES] Target instances doesn't match.");
+                    }
+                    for (String property : currentPipePropertyList) {
+                        if (!carrier.hasProperty(property)) {
+                            carrier.setProperty(property, (String) carrier.getProperty(property));
+                        } else {
+                            if (!carrier.getProperty(property).equals(currentPipeCarrier.getProperty(property))) {
+                                logger.warn("[COMBINE INSTANCES] Property " + property + " has different values for the same instance.");
+                            }
+                        }
+
+                    }
+                }
+            }
+        }
+        return carriers;
+    }
+
+    /**
      * AbstractPipe a collection of instances through the whole process, from de
      * defined step and save this, depending of the configuration.
      *
@@ -191,13 +233,9 @@ public class ResumableParallelPipes extends ParallelPipes {
      */
     public Collection<Instance> pipeAll(Collection<Instance> carriers, int step) {
         try {
-            int i = 0;
-
             boolean resumableMode = EBoolean.getBoolean(configurator.getProp(Configurator.RESUMABLE_MODE));
-            boolean debugMode = EBoolean.getBoolean(configurator.getProp(Configurator.DEBUG_MODE));
             String instancesFilePath = "";
             File instancesFile = null;
-            System.out.println("pipe " + this.toString());
             if (resumableMode && !isDebuggingPipe() && step < pipes.size()) {
                 String md5PipeName = getStorePath();
                 if (!md5PipeName.equals("")) {
@@ -220,29 +258,24 @@ public class ResumableParallelPipes extends ParallelPipes {
 
                     pipes.stream().parallel().forEach(
                             (p) -> {
-                                p.pipeAll(carriers);
+                                if (pipes.indexOf(p) >= step) {
+                                    p.pipeAll(carriers);
 
-                                // Save instances
-                                if (!p.isDebuggingPipe()) {
-
-                                    String filename = p.getStorePath();
-                                    if (debugMode) {
+                                    // Save instances
+                                    if (!p.isDebuggingPipe()) {
+                                        String filename = p.getStorePath();
                                         writeToDisk(filename, carriers);
-                                    } else {
-                                        if (i == pipes.size() - 1) {
-                                            writeToDisk(filename, carriers);
+                                    }
+                                    File f = new File(md5PipeName);
+                                    File fGetStorePath = new File(getStorePath());
+                                    String iFilePath = getStorePath() + fGetStorePath.getName() + ".txt";
+                                    File iFile = new File(iFilePath);
+                                    if (f.exists() && f.listFiles().length == 1 && f.listFiles()[0].getPath().equals(iFilePath)) {
+                                        if (iFile.exists()) {
+                                            iFile.delete();
                                         }
+                                        f.delete();
                                     }
-                                }
-                                File f = new File(md5PipeName);
-                                File fGetStorePath = new File(getStorePath());
-                                String iFilePath = getStorePath() + fGetStorePath.getName() + ".txt";
-                                File iFile = new File(iFilePath);
-                                if (f.exists() && f.listFiles().length == 1 && f.listFiles()[0].getPath().equals(iFilePath)) {
-                                    if (iFile.exists()) {
-                                        iFile.delete();
-                                    }
-                                    f.delete();
                                 }
                             }
                     );
@@ -256,7 +289,9 @@ public class ResumableParallelPipes extends ParallelPipes {
                                 logger.fatal("AbstractPipe is null");
                                 System.exit(-1);
                             } else {
-                                p.pipeAll(carriers);
+                                if (pipes.indexOf(p) >= step) {
+                                    p.pipeAll(carriers);
+                                }
                             }
                         }
                 );
@@ -266,70 +301,5 @@ public class ResumableParallelPipes extends ParallelPipes {
             logger.warn(" [ " + ResumableSerialPipes.class.getName() + " ] " + ex.getMessage());
         }
         return carriers;
-
     }
-
-    /**
-     * Generate a md5 from a String
-     *
-     * @param name String name to generate a md5
-     * @return a md5 from String
-     */
-    private String generateMD5(String name) {
-        try {
-            MessageDigest md = MessageDigest.getInstance("MD5");
-            byte[] base64Name = Base64.getEncoder().encode(name.getBytes());
-            md.update(base64Name);
-
-            StringBuilder md5Name = new StringBuilder();
-            for (byte b : md.digest()) {
-                md5Name.append(String.format("%02x", b & 0xff));
-            }
-            return md5Name.toString();
-        } catch (NoSuchAlgorithmException ex) {
-            java.util.logging.Logger.getLogger(ResumableSerialPipes.class.getName()).log(Level.SEVERE, null, ex);
-        }
-        return "";
-    }
-
-    /**
-     * Saved data in a file
-     *
-     * @param filename File name where the data is saved
-     * @param carriers Data to save
-     */
-    public void writeToDisk(String filename, Object carriers) {
-        try (FileOutputStream outputFile = new FileOutputStream(filename);
-                BufferedOutputStream buffer = new BufferedOutputStream(outputFile);
-                ObjectOutputStream output = new ObjectOutputStream(buffer);) {
-            if (carriers instanceof String) {
-                output.writeObject(carriers.toString());
-            } else {
-                output.writeObject(carriers);
-            }
-            output.flush();
-        } catch (Exception ex) {
-            logger.error("[WRITE TO DISK] " + ex.getMessage());
-        }
-    }
-
-    /**
-     * Retrieve data from file
-     *
-     * @param filename File name to retrieve data
-     * @return an Object with the deserialized retrieve data
-     */
-    public Object readFromDisk(String filename) {
-        File file = new File(filename);
-        try (BufferedInputStream buffer = new BufferedInputStream(new FileInputStream(file))) {
-            ObjectInputStream input = new ObjectInputStream(buffer);
-
-            return input.readObject();
-
-        } catch (Exception ex) {
-            logger.error("[READ FROM DISK] " + ex.getMessage());
-        }
-        return null;
-    }
-
 }

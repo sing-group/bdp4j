@@ -12,7 +12,13 @@
    information, see the file `LICENSE' included with this distribution. */
 package org.bdp4j.pipe;
 
+import java.io.BufferedInputStream;
+import java.io.BufferedOutputStream;
 import java.io.File;
+import java.io.FileInputStream;
+import java.io.FileOutputStream;
+import java.io.ObjectInputStream;
+import java.io.ObjectOutputStream;
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
 import java.util.Base64;
@@ -159,17 +165,12 @@ public abstract class AbstractPipe implements Pipe {
                     int numberOfPropertiesBefore = carriersAsArray[i].getPropertyList().size();
                     int numberOfPropertiesAfter = 0;
                     boolean propertyComputingPipe = (getClass().getAnnotation(PropertyComputingPipe.class) != null);
-                    //boolean propertyComputingPipe = (this.countPipes(PipeType.PROPERTY_COMPUTING_PIPE) > 0);
 
                     pipe(carriersAsArray[i]);
                     if (propertyComputingPipe) {
                         numberOfPropertiesAfter = carriersAsArray[i].getPropertyList().size();
 
                         if (numberOfPropertiesBefore >= numberOfPropertiesAfter) {
-                            System.out.println(numberOfPropertiesBefore + " >= " + numberOfPropertiesAfter);
-                            System.out.println("Pipe: " + this.getClass().getName());
-                            System.out.println("Props: " + carriersAsArray[i].getPropertyList());
-
                             logger.fatal("[PIPE ALL] Error adding properties in " + this.getClass().getSimpleName());
                             System.exit(-1);
                         }
@@ -231,6 +232,12 @@ public abstract class AbstractPipe implements Pipe {
         return this.debugging;
     }
 
+    /**
+     * Check if current pipe has a brother(pipe at the same level) marked to
+     * debug
+     *
+     * @return True is current pipe has a brother marked to debug.
+     */
     private boolean hasBrotherDebuggingPipe() {
         int position = 0;
         AbstractPipe parentPipe = this.getParent();
@@ -245,10 +252,12 @@ public abstract class AbstractPipe implements Pipe {
                 }
             }
         } else if (parentPipe instanceof ParallelPipes) {
-           /* for (int i=0; i<position;i++) {
-                if ( ((ParallelPipes) parent).getPipes()[i].isDebugging())
+            position = this.getParent().findPosition(this);
+            for (int i = 0; i <= position; i++) {
+                if (((ParallelPipes) parent).getPipes()[i].isDebugging()) {
                     return true;
-            }*/
+                }
+            }
         } else {
             if (parent.isDebugging()) {
                 return true;
@@ -263,7 +272,6 @@ public abstract class AbstractPipe implements Pipe {
      * @return True is current pipe is marked to debug.
      */
     public boolean isDebuggingPipe() {
-
         if (this.isDebugging()) {
             if (this.getParent() != null) {
                 this.getParent().setDebugging(true);
@@ -370,7 +378,7 @@ public abstract class AbstractPipe implements Pipe {
      * @param name String name to generate a md5
      * @return a md5 from String
      */
-    private String generateMD5(String name) {
+    protected String generateMD5(String name) {
         try {
             MessageDigest md = MessageDigest.getInstance("MD5");
             byte[] base64Name = Base64.getEncoder().encode(name.getBytes());
@@ -524,4 +532,44 @@ public abstract class AbstractPipe implements Pipe {
         return getClass().getSimpleName();
     }
 
+ 
+    /**
+     * Retrieve data from file
+     *
+     * @param filename File name to retrieve data
+     * @return an Object with the deserialized retrieve data
+     */
+    protected Object readFromDisk(String filename) {
+        File file = new File(filename);
+        try (BufferedInputStream buffer = new BufferedInputStream(new FileInputStream(file))) {
+            ObjectInputStream input = new ObjectInputStream(buffer);
+
+            return input.readObject();
+
+        } catch (Exception ex) {
+            logger.error("[READ FROM DISK] " + ex.getMessage());
+        }
+        return null;
+    }
+
+    /**
+     * Saved data in a file
+     *
+     * @param filename File name where the data is saved
+     * @param carriers Data to save
+     */
+    protected void writeToDisk(String filename, Object carriers) {
+        try (FileOutputStream outputFile = new FileOutputStream(filename);
+                BufferedOutputStream buffer = new BufferedOutputStream(outputFile);
+                ObjectOutputStream output = new ObjectOutputStream(buffer);) {
+            if (carriers instanceof String) {
+                output.writeObject(carriers.toString());
+            } else {
+                output.writeObject(carriers);
+            }
+            output.flush();
+        } catch (Exception ex) {
+            logger.error("[WRITE TO DISK] " + ex.getMessage());
+        }
+    }
 }
