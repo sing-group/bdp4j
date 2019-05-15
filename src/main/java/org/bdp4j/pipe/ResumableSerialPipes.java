@@ -104,46 +104,6 @@ public class ResumableSerialPipes extends SerialPipes {
     }
 
     /**
-     * Saved data in a file
-     *
-     * @param filename File name where the data is saved
-     * @param carriers Data to save
-     */
-    public void writeToDisk(String filename, Object carriers) {
-        try (FileOutputStream outputFile = new FileOutputStream(filename);
-                BufferedOutputStream buffer = new BufferedOutputStream(outputFile);
-                ObjectOutputStream output = new ObjectOutputStream(buffer);) {
-            if (carriers instanceof String) {
-                output.writeObject(carriers.toString());
-            } else {
-                output.writeObject(carriers);
-            }
-            output.flush();
-        } catch (Exception ex) {
-            logger.error("[WRITE TO DISK] " + ex.getMessage());
-        }
-    }
-
-    /**
-     * Retrieve data from file
-     *
-     * @param filename File name to retrieve data
-     * @return an Object with the deserialized retrieve data
-     */
-    public Object readFromDisk(String filename) {
-        File file = new File(filename);
-        try (BufferedInputStream buffer = new BufferedInputStream(new FileInputStream(file))) {
-            ObjectInputStream input = new ObjectInputStream(buffer);
-
-            return input.readObject();
-
-        } catch (Exception ex) {
-            logger.error("[READ FROM DISK] " + ex.getMessage());
-        }
-        return null;
-    }
-
-    /**
      * AbstractPipe a collection of instances through the whole process. In
      * addiction, it calculates the step to continue execution, depending on the
      * configuration.
@@ -169,7 +129,7 @@ public class ResumableSerialPipes extends SerialPipes {
 
                 if (currentPipe instanceof SerialPipes) {
                     currentPipe.pipeAll(carriers);
-                    step = this.findPosition(currentPipe)+1;
+                    step = this.findPosition(currentPipe) + 1;
                     break;
                 }
 
@@ -210,7 +170,7 @@ public class ResumableSerialPipes extends SerialPipes {
                             } else {
                                 return this.pipeAll(carriers, 0);
                             }
-                        } 
+                        }
                     } else if (lastModifiedFileStep < step && !lastModifiedFile.equals(pipeFilename)) {
                         return this.pipeAll(carriers, step);
                     }
@@ -218,7 +178,7 @@ public class ResumableSerialPipes extends SerialPipes {
                     return this.pipeAll(carriers, 0);
                 }
             }
-        } 
+        }
         return this.pipeAll(carriers, step);
     }
 
@@ -273,9 +233,11 @@ public class ResumableSerialPipes extends SerialPipes {
 
                             String filename = p.getStorePath();
                             if (debugMode) {
+                                System.out.println("SP " + filename);
                                 writeToDisk(filename, carriers);
                             } else {
                                 if (i == pipeList.length - 1) {
+                                    System.out.println("SP debug=no " + filename);
                                     writeToDisk(filename, carriers);
                                 }
                             }
@@ -308,28 +270,4 @@ public class ResumableSerialPipes extends SerialPipes {
         }
         return carriers;
     }
-
-    /**
-     * Generate a md5 from a String
-     *
-     * @param name String name to generate a md5
-     * @return a md5 from String
-     */
-    private String generateMD5(String name) {
-        try {
-            MessageDigest md = MessageDigest.getInstance("MD5");
-            byte[] base64Name = Base64.getEncoder().encode(name.getBytes());
-            md.update(base64Name);
-
-            StringBuilder md5Name = new StringBuilder();
-            for (byte b : md.digest()) {
-                md5Name.append(String.format("%02x", b & 0xff));
-            }
-            return md5Name.toString();
-        } catch (NoSuchAlgorithmException ex) {
-            java.util.logging.Logger.getLogger(ResumableSerialPipes.class.getName()).log(Level.SEVERE, null, ex);
-        }
-        return "";
-    }
-
 }
