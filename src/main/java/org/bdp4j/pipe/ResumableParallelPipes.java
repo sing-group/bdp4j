@@ -31,6 +31,7 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.Set;
+import org.bdp4j.util.PipeUtils;
 import org.bdp4j.util.Configurator;
 import org.bdp4j.util.EBoolean;
 
@@ -141,14 +142,14 @@ public class ResumableParallelPipes extends ParallelPipes {
                     if (lastModifiedFile.equals(pipeFilename) && lastModifiedFileStep == step) {
                         // Check if instances(carriers) matches
                         StringBuilder md5Carriers = new StringBuilder();
-                        carriers.stream().map((carrier) -> generateMD5(carrier.toString())).forEachOrdered((md5Carrier) -> {
+                        carriers.stream().map((carrier) -> PipeUtils.generateMD5(carrier.toString())).forEachOrdered((md5Carrier) -> {
                             md5Carriers.append(md5Carrier);
                         });
                         String instancesFileName = getStorePath() + sourcePath.getName() + ".txt";
                         File instancesFile = new File(instancesFileName);
                         if (sourcePath.exists() && sourcePath.isDirectory()) {
                             if (instancesFile.exists()) {
-                                String deserializedCarriers = (String) readFromDisk(getStorePath() + sourcePath.getName() + ".txt");
+                                String deserializedCarriers = (String) PipeUtils.readFromDisk(getStorePath() + sourcePath.getName() + ".txt");
 
                                 // If instances match, the pipe and instances are the same, so, this is the first step
                                 if (!deserializedCarriers.equals(md5Carriers.toString())) {
@@ -161,7 +162,7 @@ public class ResumableParallelPipes extends ParallelPipes {
                                         if (currentPipeParent instanceof ParallelPipes) {
                                             carriers = (Collection<Instance>) combineInstances(currentPipeParent.getStorePath());
                                         } else {
-                                            carriers = (Collection<Instance>) readFromDisk(pipeFilename);
+                                            carriers = (Collection<Instance>) PipeUtils.readFromDisk(pipeFilename);
                                         }
                                     }
                                 }
@@ -197,9 +198,9 @@ public class ResumableParallelPipes extends ParallelPipes {
         File[] listSavedPipes = directoryPath.listFiles(filter);
         for (File pipeFilename : listSavedPipes) {
             if (carriers == null) {
-                carriers = (Collection<Instance>) readFromDisk(pipeFilename.getPath());
+                carriers = (Collection<Instance>) PipeUtils.readFromDisk(pipeFilename.getPath());
             } else {
-                currentPipeCarriers = (Collection<Instance>) readFromDisk(pipeFilename.getPath());
+                currentPipeCarriers = (Collection<Instance>) PipeUtils.readFromDisk(pipeFilename.getPath());
                 for (int i = 0; i < carriers.size(); i++) {
                     Instance carrier = (Instance) carriers.toArray()[i];
                     Instance currentPipeCarrier = (Instance) currentPipeCarriers.toArray()[i];
@@ -241,7 +242,7 @@ public class ResumableParallelPipes extends ParallelPipes {
                 if (!md5PipeName.equals("")) {
                     // Generate MD5 to carriers
                     StringBuilder md5Carriers = new StringBuilder();
-                    carriers.stream().map((carrier) -> generateMD5(carrier.toString())).forEachOrdered((md5Carrier) -> {
+                    carriers.stream().map((carrier) -> PipeUtils.generateMD5(carrier.toString())).forEachOrdered((md5Carrier) -> {
                         md5Carriers.append(md5Carrier);
                     });
 
@@ -251,7 +252,7 @@ public class ResumableParallelPipes extends ParallelPipes {
                             instancesFilePath = getStorePath() + instancesFileName.getName() + ".txt";
                             instancesFile = new File(instancesFilePath);
                             if (!instancesFile.exists()) {
-                                writeToDisk(instancesFile.getPath(), md5Carriers.toString());
+                                PipeUtils.writeToDisk(instancesFile.getPath(), md5Carriers.toString());
                             }
                         }
                     }
@@ -264,7 +265,7 @@ public class ResumableParallelPipes extends ParallelPipes {
                                     // Save instances
                                     if (!p.isDebuggingPipe()) {
                                         String filename = p.getStorePath();
-                                        writeToDisk(filename, carriers);
+                                        PipeUtils.writeToDisk(filename, carriers);
                                     }
                                     File f = new File(md5PipeName);
                                     File fGetStorePath = new File(getStorePath());

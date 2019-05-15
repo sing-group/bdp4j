@@ -40,6 +40,7 @@ import java.security.*;
 import java.util.Base64;
 import org.bdp4j.util.Configurator;
 import org.bdp4j.util.EBoolean;
+import org.bdp4j.util.PipeUtils;
 
 /**
  * Convert an instance through a sequence of pipes.
@@ -151,21 +152,21 @@ public class ResumableSerialPipes extends SerialPipes {
                     if (lastModifiedFile.equals(pipeFilename) && lastModifiedFileStep == step) {
                         // Check if instances(carriers) matches
                         StringBuilder md5Carriers = new StringBuilder();
-                        carriers.stream().map((carrier) -> generateMD5(carrier.toString())).forEachOrdered((md5Carrier) -> {
+                        carriers.stream().map((carrier) -> PipeUtils.generateMD5(carrier.toString())).forEachOrdered((md5Carrier) -> {
                             md5Carriers.append(md5Carrier);
                         });
                         String instancesFileName = getStorePath() + sourcePath.getName() + ".txt";
                         File instancesFile = new File(instancesFileName);
                         if (sourcePath.exists() && sourcePath.isDirectory()) {
                             if (instancesFile.exists()) {
-                                String deserializedCarriers = (String) readFromDisk(getStorePath() + sourcePath.getName() + ".txt");
+                                String deserializedCarriers = (String) PipeUtils.readFromDisk(getStorePath() + sourcePath.getName() + ".txt");
 
                                 // If instances match, the pipe and instances are the same, so, this is the first step
                                 if (!deserializedCarriers.equals(md5Carriers.toString())) {
 
                                     return this.pipeAll(carriers, step);
                                 } else {
-                                    carriers = (Collection<Instance>) readFromDisk(pipeFilename);
+                                    carriers = (Collection<Instance>) PipeUtils.readFromDisk(pipeFilename);
                                 }
                             } else {
                                 return this.pipeAll(carriers, 0);
@@ -204,7 +205,7 @@ public class ResumableSerialPipes extends SerialPipes {
                 if (!md5PipeName.equals("")) {
                     // Generate MD5 to carriers
                     StringBuilder md5Carriers = new StringBuilder();
-                    carriers.stream().map((carrier) -> generateMD5(carrier.toString())).forEachOrdered((md5Carrier) -> {
+                    carriers.stream().map((carrier) -> PipeUtils.generateMD5(carrier.toString())).forEachOrdered((md5Carrier) -> {
                         md5Carriers.append(md5Carrier);
                     });
 
@@ -214,7 +215,7 @@ public class ResumableSerialPipes extends SerialPipes {
                             instancesFilePath = getStorePath() + instancesFileName.getName() + ".txt";
                             instancesFile = new File(instancesFilePath);
                             if (!instancesFile.exists()) {
-                                writeToDisk(instancesFile.getPath(), md5Carriers.toString());
+                                PipeUtils.writeToDisk(instancesFile.getPath(), md5Carriers.toString());
                             }
                         }
                     }
@@ -234,11 +235,11 @@ public class ResumableSerialPipes extends SerialPipes {
                             String filename = p.getStorePath();
                             if (debugMode) {
                                 System.out.println("SP " + filename);
-                                writeToDisk(filename, carriers);
+                                PipeUtils.writeToDisk(filename, carriers);
                             } else {
                                 if (i == pipeList.length - 1) {
                                     System.out.println("SP debug=no " + filename);
-                                    writeToDisk(filename, carriers);
+                                    PipeUtils.writeToDisk(filename, carriers);
                                 }
                             }
                         }
