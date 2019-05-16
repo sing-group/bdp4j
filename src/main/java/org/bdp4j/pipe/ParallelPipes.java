@@ -27,6 +27,7 @@ import org.bdp4j.types.Instance;
 import org.bdp4j.types.PipeType;
 import org.bdp4j.util.BooleanBean;
 
+import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
@@ -84,8 +85,7 @@ public class ParallelPipes extends AbstractPipe {
     /**
      * Constructor that initializes the parallelPipes array and add pipes to it.
      *
-     * @param pipeList The ArrayList of pipes to be included in the
-     * parallelPipe.
+     * @param pipeList The ArrayList of pipes to be included in the parallelPipe.
      */
     public ParallelPipes(ArrayList<AbstractPipe> pipeList) {
         super(new Class<?>[0], new Class<?>[0]);
@@ -106,18 +106,39 @@ public class ParallelPipes extends AbstractPipe {
     public Collection<Instance> pipeAll(Collection<Instance> carriers) {
         // Call pipeAll for each pipe included in the parallelPipes
         // Using threads!
-        pipes.stream().parallel().forEach(
-                (p) -> {
-                    if (p == null) {
-                        logger.fatal("AbstractPipe is null");
-                        System.exit(-1);
-                    } else {
-                        p.pipeAll(carriers);
-                    }
-                }
-        );
+        Collection<Instance> clones = new ArrayList<Instance>();
+        for (Instance i : carriers) {
+            clones.add(new Instance(i));
+        }
 
-        return carriers;
+        Collection<Instance> ret = pipes.get(0).pipeAll(clones);
+
+        pipes.stream().parallel().forEach((p) -> {
+            if (p == null) {
+                logger.fatal("AbstractPipe is null");
+                System.exit(-1);
+            } else {
+                if (!p.equals(pipes.get(0))) {
+                    Collection<Instance> clones2 = new ArrayList<Instance>();
+                    for (Instance i : carriers)
+                        clones2.add(new Instance(i));
+                    clones2 = p.pipeAll(clones2);
+
+                    // IMplement here copyying the target if required
+                    if (((ArrayList<Instance>) clones2).get(0).getTarget() != null)
+                        for (int i = 0; i < clones2.size(); i++) {
+                            Serializable target = ((ArrayList<Instance>) clones2).get(i).getTarget();
+                            if (target==null) {
+                                logger.fatal("Instance with no target: "+((ArrayList<Instance>) clones2).get(i).getName());
+                                System.exit(0);
+                            }
+                            ((ArrayList<Instance>) ret).get(i).setTarget(target);
+                        }
+                }
+            }
+        });
+
+        return ret;
     }
 
     @Override
@@ -130,35 +151,38 @@ public class ParallelPipes extends AbstractPipe {
         Instance originalCopy = new Instance(original); // Copy instance of original for saving Data state.
 
         // First pipe is the output one, then we use the original one.
-        original = pipes.get(0).pipe(original);
+        final Instance ret = pipes.get(0).pipe(original);
 
         // We process the other pipes for getting their properties info.
-        pipes.stream().parallel().forEach(
-                (p) -> {
-                    logger.info("PARALLEL PIPE " + p.getClass().getName());
+        pipes.stream().parallel().forEach((p) -> {
+            logger.info("PARALLEL PIPE " + p.getClass().getName());
 
-                    try {
-                        if (!p.equals(pipes.get(0))) {
-                            // We use the original copy for process with the original data.
-                            Instance copy = new Instance(originalCopy); // One copy for each pipe of parallel.
+            try {
+                if (!p.equals(pipes.get(0))) {
+                    // We use the original copy for process with the original data.
+                    Instance copy = new Instance(originalCopy); // One copy for each pipe of parallel.
 
-                            if (copy.isValid()) {
-                                logger.info("INST " + copy.getName());
-                                p.pipe(copy); // Just process pipe for properties set.
-                            } else {
-                                logger.info("Skipping invalid instance " + copy.toString());
-                            }
+                    if (copy.isValid()) {
+                        logger.info("INST " + copy.getName());
+                        copy = p.pipe(copy); // Just process pipe for properties set.
+                        if (copy.getTarget()!=null){
+                            ret.setTarget(copy.getTarget());
                         }
-                    } catch (Exception e) {
-                        logger.fatal("Exception caught on pipe " + p.getClass().getName() + ". " + e.getMessage() + " while processing instance");
-                        e.printStackTrace(System.err);
-                        System.exit(-1);
+                    } else {
+                        logger.info("Skipping invalid instance " + copy.toString());
                     }
                 }
-        );
+            } catch (Exception e) {
+                logger.fatal("Exception caught on pipe " + p.getClass().getName() + ". " + e.getMessage()
+                        + " while processing instance");
+                e.printStackTrace(System.err);
+                System.exit(-1);
+            }
+        });
 
-        // We return the original AbstractPipe, processed the data with the first pipe and the properties with the others.
-        return original;
+        // We return the original AbstractPipe, processed the data with the first pipe
+        // and the properties with the others.
+        return ret;
     }
 
     /**
@@ -176,18 +200,19 @@ public class ParallelPipes extends AbstractPipe {
             inputType = pipe.getInputType();
             outputType = pipe.getOutputType();
         } else {
-            // In case that pipes arrayList is not empty, this is a property processing pipe.
+            // In case that pipes arrayList is not empty, this is a property processing
+            // pipe.
             // We have to check inputType and match it with actual one.
             if (inputType != pipe.getInputType()) {
                 // If inputType doesn't match with actual.
-                logger.fatal("[PIPE ADD] Bad compatibility between Pipes: " + pipes.get(0).getClass()
-                        .getSimpleName() + " | " + pipe.getClass().getSimpleName());
+                logger.fatal("[PIPE ADD] Bad compatibility between Pipes: " + pipes.get(0).getClass().getSimpleName()
+                        + " | " + pipe.getClass().getSimpleName());
                 System.exit(-1);
             }
             pipe.setParent(this);
             pipes.add(pipe);
-            logger.info("[PIPE ADD] Good compatibility between Pipes: " + pipes.get(0).getClass()
-                    .getSimpleName() + " | " + pipe.getClass().getSimpleName());
+            logger.info("[PIPE ADD] Good compatibility between Pipes: " + pipes.get(0).getClass().getSimpleName()
+                    + " | " + pipe.getClass().getSimpleName());
         }
     }
 
@@ -225,8 +250,8 @@ public class ParallelPipes extends AbstractPipe {
     /**
      * Return an array of pipes with the current pipe
      *
-     * @return a AbstractPipe array containing the pipes that compound the
-     * serial pipes
+     * @return a AbstractPipe array containing the pipes that compound the serial
+     *         pipes
      */
     public AbstractPipe[] getPipes() {
         if (this.pipes == null) {
@@ -237,14 +262,14 @@ public class ParallelPipes extends AbstractPipe {
     }
 
     /**
-     * Check if alwaysBeforeDeps are satisfied for pipe p. Initially deps
-     * contain all alwaysBefore dependences for p. These dependencies are
-     * deleted (marked as resolved) by recursivelly calling this method.
+     * Check if alwaysBeforeDeps are satisfied for pipe p. Initially deps contain
+     * all alwaysBefore dependences for p. These dependencies are deleted (marked as
+     * resolved) by recursivelly calling this method.
      *
-     * @param p The pipe that is being checked
+     * @param p    The pipe that is being checked
      * @param deps The dependences that are not confirmed in a certain moment
-     * @return null if not sure about the fullfulling, true if the dependences
-     * are satisfied, false if the dependences could not been satisfied
+     * @return null if not sure about the fullfulling, true if the dependences are
+     *         satisfied, false if the dependences could not been satisfied
      */
     @Override
     public Boolean checkAlwaysBeforeDeps(Pipe p, List<Class<?>> deps) {
@@ -262,7 +287,7 @@ public class ParallelPipes extends AbstractPipe {
                     if (retVal != null) {
                         return retVal;
                     } else {
-                        return deps.size() == 0; //In this situation deps.size() should no be 0
+                        return deps.size() == 0; // In this situation deps.size() should no be 0
                     }
                 }
             }
@@ -276,8 +301,8 @@ public class ParallelPipes extends AbstractPipe {
      * should be inserted.
      *
      * @param p The pipe that is being checked
-     * @return null if not sure about the fullfulling, true if the dependences
-     * are satisfied, false if the dependences could not been satisfied
+     * @return null if not sure about the fullfulling, true if the dependences are
+     *         satisfied, false if the dependences could not been satisfied
      */
     @Override
     public boolean checkNotAfterDeps(Pipe p, BooleanBean foundP) {
@@ -292,7 +317,8 @@ public class ParallelPipes extends AbstractPipe {
                         retVal = retVal && !(Arrays.asList(p.getNotAfterDeps()).contains(p1.getClass()));
                     }
                     if (!retVal) {
-                        errorMessage = "Unsatisfied NotAfter dependency for pipe " + p.getClass().getName() + " (" + p1.getClass().getName() + ")";
+                        errorMessage = "Unsatisfied NotAfter dependency for pipe " + p.getClass().getName() + " ("
+                                + p1.getClass().getName() + ")";
                         return retVal;
                     }
                     foundP.Or(p == p1);
@@ -302,17 +328,19 @@ public class ParallelPipes extends AbstractPipe {
             AbstractPipe pipeThatContainsP = null;
 
             int i = 0;
-            for (; i < pipes.size() - 1 && !pipes.get(i).containsPipe(p); i++) ;
+            for (; i < pipes.size() - 1 && !pipes.get(i).containsPipe(p); i++)
+                ;
             pipeThatContainsP = pipes.get(i);
 
-            if (pipeThatContainsP != null) { //Should be true
+            if (pipeThatContainsP != null) { // Should be true
                 if (pipeThatContainsP instanceof SerialPipes || pipeThatContainsP instanceof ParallelPipes) {
                     retVal = retVal && pipeThatContainsP.checkNotAfterDeps(p, foundP);
                 } else {
                     if (foundP.getValue()) {
                         retVal = retVal && !(Arrays.asList(p.getNotAfterDeps()).contains(pipeThatContainsP.getClass()));
                         if (!retVal) {
-                            errorMessage = "Unsatisfied NotAfter dependency for pipe " + p.getClass().getName() + " (" + pipeThatContainsP.getClass().getName() + ")";
+                            errorMessage = "Unsatisfied NotAfter dependency for pipe " + p.getClass().getName() + " ("
+                                    + pipeThatContainsP.getClass().getName() + ")";
                             return retVal;
                         }
                     }
@@ -328,7 +356,8 @@ public class ParallelPipes extends AbstractPipe {
                         if (foundP.getValue()) {
                             retVal = retVal && !(Arrays.asList(p.getNotAfterDeps()).contains(p1.getClass()));
                             if (!retVal) {
-                                errorMessage = "Unsatisfied NotAfter dependency for pipe " + p.getClass().getName() + " (" + p1.getClass().getName() + ")";
+                                errorMessage = "Unsatisfied NotAfter dependency for pipe " + p.getClass().getName()
+                                        + " (" + p1.getClass().getName() + ")";
                                 return retVal;
                             }
                         }
@@ -369,7 +398,8 @@ public class ParallelPipes extends AbstractPipe {
 
         for (AbstractPipe p1 : pipes) {
             if (!(p1 instanceof SerialPipes) && !(p1 instanceof ParallelPipes)) {
-                returnValue = returnValue & getParentRoot().checkAlwaysBeforeDeps(p1, new ArrayList<Class<?>>(Arrays.asList(p1.alwaysBeforeDeps)));
+                returnValue = returnValue & getParentRoot().checkAlwaysBeforeDeps(p1,
+                        new ArrayList<Class<?>>(Arrays.asList(p1.alwaysBeforeDeps)));
                 returnValue = returnValue & getParentRoot().checkNotAfterDeps(p1, new BooleanBean(false));
             } else {
                 returnValue = returnValue & p1.checkDependencies();

@@ -190,7 +190,7 @@ public class Instance implements Serializable {
      *
      * @return the target classification (label) of the instance
      */
-    public Object getTarget() {
+    public Serializable getTarget() {
         return target == null ? "NULL" : target;
     }
 
