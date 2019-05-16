@@ -35,7 +35,7 @@ public interface SharedDataProducer {
     /**
      * Save data in a filepath
      *
-     * @param filename File name/path where the data is saved
+     * @param dir Directory path where the data is saved
      */
-    void writeToDisk(String filename);
+    void writeToDisk(String dir);
 }

@@ -35,7 +35,7 @@ public interface SharedDataConsumer {
     /**
      * Read data from filepath
      *
-     * @param filename File name/path from read data
+     * @param dir Directory path to read data
      */
-    void readFromDisk(String filename);
+    void readFromDisk(String dir);
 }
