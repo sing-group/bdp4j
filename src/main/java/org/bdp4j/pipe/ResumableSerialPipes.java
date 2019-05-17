@@ -21,23 +21,14 @@
  */
 package org.bdp4j.pipe;
 
-import java.io.BufferedInputStream;
-import java.io.BufferedOutputStream;
-import java.io.FileOutputStream;
 import java.io.File;
 import java.io.FileFilter;
-import java.io.FileInputStream;
-import java.io.ObjectInputStream;
-import java.io.ObjectOutputStream;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
-import java.util.logging.Level;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.bdp4j.types.Instance;
-import java.security.*;
-import java.util.Base64;
 import org.bdp4j.util.Configurator;
 import org.bdp4j.util.EBoolean;
 import org.bdp4j.util.PipeUtils;
@@ -68,6 +59,8 @@ public class ResumableSerialPipes extends SerialPipes {
      * AbstractPipe list
      */
     private ArrayList<AbstractPipe> pipes;
+
+    private String sharedDataPath = configurator.getProp(Configurator.TEMP_FOLDER) + System.getProperty("file.separator") + "sharedData";
 
     /**
      * Build an empty SerialPipes
@@ -140,6 +133,7 @@ public class ResumableSerialPipes extends SerialPipes {
                 filter = (File pathname) -> {
                     return pathname.getPath().endsWith(".ser");
                 };
+
                 // Get saved list of files
                 File[] listFiles = sourcePath.listFiles(filter);
                 if (sourcePath.exists() && sourcePath.isDirectory() && listFiles.length > 0) {
@@ -160,12 +154,15 @@ public class ResumableSerialPipes extends SerialPipes {
                         if (sourcePath.exists() && sourcePath.isDirectory()) {
                             if (instancesFile.exists()) {
                                 String deserializedCarriers = (String) PipeUtils.readFromDisk(getStorePath() + sourcePath.getName() + ".txt");
-
                                 // If instances match, the pipe and instances are the same, so, this is the first step
                                 if (!deserializedCarriers.equals(md5Carriers.toString())) {
-
                                     return this.pipeAll(carriers, step);
                                 } else {
+                                    // Retrieve aditional data
+                                    if (currentPipe instanceof SharedDataConsumer) {
+                                        SharedDataConsumer currentDataConsumer = (SharedDataConsumer) currentPipe;
+                                        currentDataConsumer.readFromDisk(sharedDataPath);
+                                    }
                                     carriers = (Collection<Instance>) PipeUtils.readFromDisk(pipeFilename);
                                 }
                             } else {
@@ -234,12 +231,22 @@ public class ResumableSerialPipes extends SerialPipes {
 
                             String filename = p.getStorePath();
                             if (debugMode) {
-                                System.out.println("SP " + filename);
                                 PipeUtils.writeToDisk(filename, carriers);
+                                // Save aditional data
+                                if (p instanceof SharedDataProducer) {
+                                    
+                                    SharedDataProducer currentDataProducer = (SharedDataProducer) p;
+                                    currentDataProducer.writeToDisk(getPath(sharedDataPath));
+                                    System.out.println("writeToDisk " +currentDataProducer.getClass().getName() + " - " + sharedDataPath);
+                                }
                             } else {
                                 if (i == pipeList.length - 1) {
-                                    System.out.println("SP debug=no " + filename);
                                     PipeUtils.writeToDisk(filename, carriers);
+                                    // Save aditional data
+                                    if (p instanceof SharedDataProducer) {
+                                        SharedDataProducer currentDataProducer = (SharedDataProducer) p;
+                                        currentDataProducer.writeToDisk(sharedDataPath);
+                                    }
                                 }
                             }
                         }
