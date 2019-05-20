@@ -12,9 +12,14 @@
    information, see the file `LICENSE' included with this distribution. */
 package org.bdp4j.types;
 
+import java.io.ByteArrayInputStream;
+import java.io.ByteArrayOutputStream;
 import org.bdp4j.pipe.AbstractPipe;
 
 import java.io.File;
+import java.io.IOException;
+import java.io.ObjectInputStream;
+import java.io.ObjectOutputStream;
 import java.io.Serializable;
 import java.lang.reflect.Field;
 import java.lang.reflect.Modifier;
@@ -112,7 +117,7 @@ public class Instance implements Serializable {
      * @param i The instance to be used as source for creating the new one
      */
     public Instance(Instance i) {
-        this.data = (Serializable) cloneObject(i.data);
+        this.data = (Serializable) cloneObject2(i.data);
         this.target = i.target;
         this.name = i.name;
         this.source = i.source;
@@ -151,10 +156,26 @@ public class Instance implements Serializable {
             }
             return clone;
         } catch (Exception e) {
+            System.out.println("Clone failed");
             return null;
         }
         //return clone;
     }
+    
+    
+    public Serializable cloneObject2(Serializable obj) {
+		try {
+			ByteArrayOutputStream baos = new ByteArrayOutputStream();
+			ObjectOutputStream oos = new ObjectOutputStream(baos);
+			oos.writeObject(obj);
+
+			ByteArrayInputStream bais = new ByteArrayInputStream(baos.toByteArray());
+			ObjectInputStream ois = new ObjectInputStream(bais);
+			return (Serializable) ois.readObject();
+		} catch (IOException | ClassNotFoundException e) {
+			return null;
+		}
+	}
 
     /**
      * Clone the instance into a new type
@@ -162,7 +183,7 @@ public class Instance implements Serializable {
      * @return a new instance cloning the original one
      */
     public Instance clone() {
-        Instance returnValue = new Instance((Serializable) cloneObject(data), target, name, source);
+        Instance returnValue = new Instance((Serializable) cloneObject2(data), target, name, source);
         returnValue.properties = properties;
         return returnValue;
     }
