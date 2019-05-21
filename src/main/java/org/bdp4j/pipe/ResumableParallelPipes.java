@@ -23,6 +23,7 @@ package org.bdp4j.pipe;
 
 import java.io.File;
 import java.io.FileFilter;
+import java.io.Serializable;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.bdp4j.types.Instance;
@@ -162,6 +163,11 @@ public class ResumableParallelPipes extends ParallelPipes {
                                         if (currentPipeParent instanceof ParallelPipes) {
                                             carriers = (Collection<Instance>) combineInstances(currentPipeParent.getStorePath());
                                         } else {
+                                            // Retrieve aditional data
+                                            if (currentPipe instanceof SharedDataConsumer) {
+                                                SharedDataConsumer currentDataConsumer = (SharedDataConsumer) currentPipe;
+                                                currentDataConsumer.readFromDisk(PipeUtils.getSharedDataPath());
+                                            }
                                             carriers = (Collection<Instance>) PipeUtils.readFromDisk(pipeFilename);
                                         }
                                     }
@@ -195,18 +201,36 @@ public class ResumableParallelPipes extends ParallelPipes {
         FileFilter filter = (File pathname) -> {
             return pathname.getPath().endsWith(".ser");
         };
+
+        FileFilter filterFirst = (File pathname) -> {
+            return pathname.getPath().endsWith(".ser") && pathname.getName().startsWith("0_");
+        };
         File[] listSavedPipes = directoryPath.listFiles(filter);
+        File[] firstPipe = directoryPath.listFiles(filterFirst);
+
         for (File pipeFilename : listSavedPipes) {
             if (carriers == null) {
-                carriers = (Collection<Instance>) PipeUtils.readFromDisk(pipeFilename.getPath());
+                if (firstPipe.length > 0) {
+                    carriers = (Collection<Instance>) PipeUtils.readFromDisk(firstPipe[0].getPath());
+                } else {
+                    carriers = (Collection<Instance>) PipeUtils.readFromDisk(pipeFilename.getPath());
+                }
             } else {
                 currentPipeCarriers = (Collection<Instance>) PipeUtils.readFromDisk(pipeFilename.getPath());
+
                 for (int i = 0; i < carriers.size(); i++) {
                     Instance carrier = (Instance) carriers.toArray()[i];
                     Instance currentPipeCarrier = (Instance) currentPipeCarriers.toArray()[i];
+                    Serializable currentPipeTarget = currentPipeCarrier.getTarget();
+                    Serializable target = carrier.getTarget();
                     Set<String> currentPipePropertyList = currentPipeCarrier.getPropertyList();
-                    if (!carrier.getTarget().equals(currentPipeCarrier.getTarget())) {
-                        logger.fatal("[COMBINE INSTANCES] Target instances doesn't match.");
+                    // Retrieve target
+                    if (target == null && currentPipeTarget != null) {
+                        carrier.setTarget(currentPipeTarget);
+                    } else if (target != null && currentPipeTarget != null) {
+                        if (!carrier.getTarget().equals(currentPipeTarget)) {
+                            logger.fatal("[COMBINE INSTANCES] Target instances doesn't match.");
+                        }
                     }
                     for (String property : currentPipePropertyList) {
                         if (!carrier.hasProperty(property)) {
@@ -266,6 +290,11 @@ public class ResumableParallelPipes extends ParallelPipes {
                                     if (!p.isDebuggingPipe()) {
                                         String filename = p.getStorePath();
                                         PipeUtils.writeToDisk(filename, carriers);
+                                        // Save aditional data
+                                        if (p instanceof SharedDataProducer) {
+                                            SharedDataProducer currentDataProducer = (SharedDataProducer) p;
+                                            currentDataProducer.writeToDisk(getPath(PipeUtils.getSharedDataPath()));
+                                        }
                                     }
                                     File f = new File(md5PipeName);
                                     File fGetStorePath = new File(getStorePath());
@@ -284,14 +313,32 @@ public class ResumableParallelPipes extends ParallelPipes {
                     logger.warn("Empty name of pipe " + this.toString() + ". It hasn't been be saved.");
                 }
             } else {
+                // Call pipeAll for each pipe included in the parallelPipes
+                Collection<Instance> clones = new ArrayList<>();
+                carriers.forEach((i) -> {
+                    clones.add(new Instance(i));
+                });
+
+                Collection<Instance> ret = pipes.get(0).pipeAll(clones);
                 pipes.stream().parallel().forEach(
                         (p) -> {
-                            if (p == null) {
-                                logger.fatal("AbstractPipe is null");
-                                System.exit(-1);
-                            } else {
-                                if (pipes.indexOf(p) >= step) {
-                                    p.pipeAll(carriers);
+                            if (!p.equals(pipes.get(0))) {
+                                Collection<Instance> clones2 = new ArrayList<>();
+                                for (Instance i : carriers) {
+                                    clones2.add(new Instance(i));
+                                }
+                                clones2 = p.pipeAll(clones2);
+
+                                // Copy the target if required
+                                if (((ArrayList<Instance>) clones2).get(0).getTarget() != null) {
+                                    for (int i = 0; i < clones2.size(); i++) {
+                                        Serializable target = ((ArrayList<Instance>) clones2).get(i).getTarget();
+                                        if (target == null) {
+                                            logger.fatal("Instance with no target: " + ((ArrayList<Instance>) clones2).get(i).getName());
+                                            System.exit(0);
+                                        }
+                                        ((ArrayList<Instance>) ret).get(i).setTarget(target);
+                                    }
                                 }
                             }
                         }

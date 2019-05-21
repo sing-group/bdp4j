@@ -18,7 +18,6 @@ import java.util.Base64;
 import java.util.logging.Level;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
-import org.bdp4j.pipe.ResumableParallelPipes;
 import org.bdp4j.pipe.ResumableSerialPipes;
 
 /**
@@ -31,6 +30,24 @@ public class PipeUtils {
      * For logging purposes
      */
     private static final Logger logger = LogManager.getLogger(PipeUtils.class);
+    /**
+     * Default configuration
+     */
+    private static final Configurator configurator = Configurator.getLastUsed();
+
+    /**
+     * Path where aditional information is saved
+     */
+    private static final String sharedDataPath = configurator.getProp(Configurator.TEMP_FOLDER) + System.getProperty("file.separator") + "sharedData";
+
+     /**
+     * Get path where aditional information is saved
+     * 
+     * @return Shared data path
+     */
+    public static String getSharedDataPath() {
+        return sharedDataPath;
+    }
 
     /**
      * Generate a md5 from a String

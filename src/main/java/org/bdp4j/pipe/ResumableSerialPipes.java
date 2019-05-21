@@ -60,8 +60,6 @@ public class ResumableSerialPipes extends SerialPipes {
      */
     private ArrayList<AbstractPipe> pipes;
 
-    private String sharedDataPath = configurator.getProp(Configurator.TEMP_FOLDER) + System.getProperty("file.separator") + "sharedData";
-
     /**
      * Build an empty SerialPipes
      */
@@ -161,7 +159,7 @@ public class ResumableSerialPipes extends SerialPipes {
                                     // Retrieve aditional data
                                     if (currentPipe instanceof SharedDataConsumer) {
                                         SharedDataConsumer currentDataConsumer = (SharedDataConsumer) currentPipe;
-                                        currentDataConsumer.readFromDisk(sharedDataPath);
+                                        currentDataConsumer.readFromDisk(PipeUtils.getSharedDataPath());
                                     }
                                     carriers = (Collection<Instance>) PipeUtils.readFromDisk(pipeFilename);
                                 }
@@ -234,10 +232,8 @@ public class ResumableSerialPipes extends SerialPipes {
                                 PipeUtils.writeToDisk(filename, carriers);
                                 // Save aditional data
                                 if (p instanceof SharedDataProducer) {
-                                    
                                     SharedDataProducer currentDataProducer = (SharedDataProducer) p;
-                                    currentDataProducer.writeToDisk(getPath(sharedDataPath));
-                                    System.out.println("writeToDisk " +currentDataProducer.getClass().getName() + " - " + sharedDataPath);
+                                    currentDataProducer.writeToDisk(getPath(PipeUtils.getSharedDataPath()));
                                 }
                             } else {
                                 if (i == pipeList.length - 1) {
@@ -245,7 +241,7 @@ public class ResumableSerialPipes extends SerialPipes {
                                     // Save aditional data
                                     if (p instanceof SharedDataProducer) {
                                         SharedDataProducer currentDataProducer = (SharedDataProducer) p;
-                                        currentDataProducer.writeToDisk(sharedDataPath);
+                                        currentDataProducer.writeToDisk(PipeUtils.getSharedDataPath());
                                     }
                                 }
                             }
