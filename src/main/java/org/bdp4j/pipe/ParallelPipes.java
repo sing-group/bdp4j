@@ -106,10 +106,10 @@ public class ParallelPipes extends AbstractPipe {
     public Collection<Instance> pipeAll(Collection<Instance> carriers) {
         // Call pipeAll for each pipe included in the parallelPipes
         // Using threads!
-        Collection<Instance> clones = new ArrayList<Instance>();
-        for (Instance i : carriers) {
+        Collection<Instance> clones = new ArrayList<>();
+        carriers.forEach((i) -> {
             clones.add(new Instance(i));
-        }
+        });
 
         Collection<Instance> ret = pipes.get(0).pipeAll(clones);
 
@@ -119,12 +119,12 @@ public class ParallelPipes extends AbstractPipe {
                 System.exit(-1);
             } else {
                 if (!p.equals(pipes.get(0))) {
-                    Collection<Instance> clones2 = new ArrayList<Instance>();
+                    Collection<Instance> clones2 = new ArrayList<>();
                     for (Instance i : carriers)
                         clones2.add(new Instance(i));
                     clones2 = p.pipeAll(clones2);
 
-                    // IMplement here copyying the target if required
+                    // Copy the target if required
                     if (((ArrayList<Instance>) clones2).get(0).getTarget() != null)
                         for (int i = 0; i < clones2.size(); i++) {
                             Serializable target = ((ArrayList<Instance>) clones2).get(i).getTarget();

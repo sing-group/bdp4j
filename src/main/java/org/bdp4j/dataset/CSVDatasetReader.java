@@ -247,7 +247,7 @@ public class CSVDatasetReader {
                     final String header = next.getObj1();
 
                     if (header.equalsIgnoreCase("target") && !hasTargetAdd) {
-                        List<String> target_values = new ArrayList<String>();
+                        List<String> target_values = new ArrayList<>();
                         Transformer transformer = transformersList.get(header);
                         if (transformer != null) {
                             for (Object value : transformer.getListValues()) {
