@@ -208,6 +208,9 @@ public final class Configurator {
      * @return The last used configuration
      */
     public static Configurator getLastUsed() {
+        if (lastUsed==null){
+            lastUsed = new Configurator();
+        }
         return lastUsed;
     }
 

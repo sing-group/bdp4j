@@ -119,7 +119,7 @@ public class ResumableParallelPipes extends ParallelPipes {
                     return this.pipeAll(carriers, step);
                 }
 
-                if (currentPipe instanceof ParallelPipes) {
+                if (currentPipe instanceof ParallelPipes || currentPipe instanceof SerialPipes) {
                     currentPipe.pipeAll(carriers);
                     step = this.findPosition(currentPipe) + 1;
                     break;
@@ -137,10 +137,14 @@ public class ResumableParallelPipes extends ParallelPipes {
                     Arrays.sort(sourcePath.listFiles(), (File f1, File f2) -> Long.valueOf(f1.lastModified()).compareTo(f2.lastModified()));
 
                     String pipeFilename = ((currentPipe != null) ? currentPipe.getStorePath() : "");
-                    File lastModified = listFiles[0];
-                    String lastModifiedFile = lastModified.getPath();
-                    int lastModifiedFileStep = Integer.parseInt(lastModified.getName().split("_")[0]);
-                    if (lastModifiedFile.equals(pipeFilename) && lastModifiedFileStep == step) {
+                    boolean savedFile = false;
+                    for (File listFile : listFiles) {
+                        if (listFile.getPath().equals(pipeFilename)) {
+                            savedFile = true;
+                        }
+                    }
+
+                    if (savedFile) {
                         // Check if instances(carriers) matches
                         StringBuilder md5Carriers = new StringBuilder();
                         carriers.stream().map((carrier) -> PipeUtils.generateMD5(carrier.toString())).forEachOrdered((md5Carrier) -> {
@@ -160,15 +164,24 @@ public class ResumableParallelPipes extends ParallelPipes {
                                     // Combine properties and target
                                     if (currentPipe != null) {
                                         AbstractPipe currentPipeParent = currentPipe.getParent();
+                                        Collection<Instance> savedCarriers;
                                         if (currentPipeParent instanceof ParallelPipes) {
-                                            carriers = (Collection<Instance>) combineInstances(currentPipeParent.getStorePath());
+                                            savedCarriers = (Collection<Instance>) combineInstances(currentPipeParent.getStorePath());
                                         } else {
                                             // Retrieve aditional data
                                             if (currentPipe instanceof SharedDataConsumer) {
                                                 SharedDataConsumer currentDataConsumer = (SharedDataConsumer) currentPipe;
                                                 currentDataConsumer.readFromDisk(PipeUtils.getSharedDataPath());
                                             }
-                                            carriers = (Collection<Instance>) PipeUtils.readFromDisk(pipeFilename);
+                                            savedCarriers = (Collection<Instance>) PipeUtils.readFromDisk(pipeFilename);
+                                        }
+                                        // Retrieve carriers
+                                        if (carriers.size() == savedCarriers.size()) {
+                                            for (int x = 0; x < savedCarriers.size(); x++) {
+                                                ((Instance) carriers.toArray()[x]).setData(((Instance) savedCarriers.toArray()[x]).getData());
+                                            }
+                                        } else {
+                                            return this.pipeAll(carriers, step);
                                         }
                                     }
                                 }
@@ -176,7 +189,7 @@ public class ResumableParallelPipes extends ParallelPipes {
                                 return this.pipeAll(carriers, 0);
                             }
                         }
-                    } else if (lastModifiedFileStep < step && !lastModifiedFile.equals(pipeFilename)) {
+                    } else {
                         return this.pipeAll(carriers, step);
                     }
                 } else {
@@ -240,7 +253,6 @@ public class ResumableParallelPipes extends ParallelPipes {
                                 logger.warn("[COMBINE INSTANCES] Property " + property + " has different values for the same instance.");
                             }
                         }
-
                     }
                 }
             }
@@ -289,7 +301,9 @@ public class ResumableParallelPipes extends ParallelPipes {
                                     // Save instances
                                     if (!p.isDebuggingPipe()) {
                                         String filename = p.getStorePath();
-                                        PipeUtils.writeToDisk(filename, carriers);
+                                       if (p instanceof SerialPipes == false && p instanceof ParallelPipes == false) {
+                                            PipeUtils.writeToDisk(filename, carriers);
+                                        }
                                         // Save aditional data
                                         if (p instanceof SharedDataProducer) {
                                             SharedDataProducer currentDataProducer = (SharedDataProducer) p;
@@ -318,11 +332,15 @@ public class ResumableParallelPipes extends ParallelPipes {
                 carriers.forEach((i) -> {
                     clones.add(new Instance(i));
                 });
-
-                Collection<Instance> ret = pipes.get(0).pipeAll(clones);
+                Collection<Instance> ret;
+                if (!resumableMode) {
+                    ret = pipes.get(0).pipeAll(carriers);
+                } else {
+                    ret = clones;
+                }
                 pipes.stream().parallel().forEach(
                         (p) -> {
-                            if (!p.equals(pipes.get(0))) {
+                            if (!p.equals(pipes.get(0)) && pipes.indexOf(p) >= step) {
                                 Collection<Instance> clones2 = new ArrayList<>();
                                 for (Instance i : carriers) {
                                     clones2.add(new Instance(i));
@@ -343,10 +361,11 @@ public class ResumableParallelPipes extends ParallelPipes {
                             }
                         }
                 );
+                return ret;
             }
 
         } catch (Exception ex) {
-            logger.warn(" [ " + ResumableSerialPipes.class.getName() + " ] " + ex.getMessage());
+            logger.warn(" [ " + ResumableParallelPipes.class.getName() + " ] " + ex.getMessage());
         }
         return carriers;
     }
