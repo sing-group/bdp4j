@@ -40,9 +40,9 @@ public class PipeUtils {
      */
     private static final String sharedDataPath = configurator.getProp(Configurator.TEMP_FOLDER) + System.getProperty("file.separator") + "sharedData";
 
-     /**
+    /**
      * Get path where aditional information is saved
-     * 
+     *
      * @return Shared data path
      */
     public static String getSharedDataPath() {
@@ -101,6 +101,7 @@ public class PipeUtils {
         try (FileOutputStream outputFile = new FileOutputStream(filename);
                 BufferedOutputStream buffer = new BufferedOutputStream(outputFile);
                 ObjectOutputStream output = new ObjectOutputStream(buffer);) {
+
             if (carriers instanceof String) {
                 output.writeObject(carriers.toString());
             } else {

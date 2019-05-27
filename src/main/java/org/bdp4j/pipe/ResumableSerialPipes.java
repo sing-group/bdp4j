@@ -119,7 +119,7 @@ public class ResumableSerialPipes extends SerialPipes {
                     return this.pipeAll(carriers, step);
                 }
 
-                if (currentPipe instanceof SerialPipes) {
+                if (currentPipe instanceof SerialPipes || currentPipe instanceof ParallelPipes) {
                     currentPipe.pipeAll(carriers);
                     step = this.findPosition(currentPipe) + 1;
                     break;
@@ -134,12 +134,13 @@ public class ResumableSerialPipes extends SerialPipes {
 
                 // Get saved list of files
                 File[] listFiles = sourcePath.listFiles(filter);
+                File f = new File("x");
+
                 if (sourcePath.exists() && sourcePath.isDirectory() && listFiles.length > 0) {
                     Arrays.sort(sourcePath.listFiles(), (File f1, File f2) -> Long.valueOf(f1.lastModified()).compareTo(f2.lastModified()));
-
                     String pipeFilename = ((currentPipe != null) ? currentPipe.getStorePath() : "");
-                    String lastModifiedFile = listFiles[listFiles.length - 1].getPath();
-                    int lastModifiedFileStep = Integer.parseInt(listFiles[listFiles.length - 1].getName().split("_")[0]);
+                    String lastModifiedFile = listFiles[0].getPath();
+                    int lastModifiedFileStep = Integer.parseInt(listFiles[0].getName().split("_")[0]);
 
                     if (lastModifiedFile.equals(pipeFilename) && lastModifiedFileStep == step) {
                         // Check if instances(carriers) matches
@@ -154,6 +155,7 @@ public class ResumableSerialPipes extends SerialPipes {
                                 String deserializedCarriers = (String) PipeUtils.readFromDisk(getStorePath() + sourcePath.getName() + ".txt");
                                 // If instances match, the pipe and instances are the same, so, this is the first step
                                 if (!deserializedCarriers.equals(md5Carriers.toString())) {
+
                                     return this.pipeAll(carriers, step);
                                 } else {
                                     // Retrieve aditional data
@@ -161,7 +163,15 @@ public class ResumableSerialPipes extends SerialPipes {
                                         SharedDataConsumer currentDataConsumer = (SharedDataConsumer) currentPipe;
                                         currentDataConsumer.readFromDisk(PipeUtils.getSharedDataPath());
                                     }
-                                    carriers = (Collection<Instance>) PipeUtils.readFromDisk(pipeFilename);
+                                    // Retrieve carriers
+                                    Collection<Instance> savedCarriers = (Collection<Instance>) PipeUtils.readFromDisk(pipeFilename);
+                                    if (carriers.size() == savedCarriers.size()) {
+                                        for (int x = 0; x < savedCarriers.size(); x++) {
+                                            ((Instance) carriers.toArray()[x]).setData(((Instance) savedCarriers.toArray()[x]).getData());
+                                        }
+                                    } else {
+                                        return this.pipeAll(carriers, step);
+                                    }
                                 }
                             } else {
                                 return this.pipeAll(carriers, 0);
@@ -229,7 +239,9 @@ public class ResumableSerialPipes extends SerialPipes {
 
                             String filename = p.getStorePath();
                             if (debugMode) {
-                                PipeUtils.writeToDisk(filename, carriers);
+                                if (p instanceof SerialPipes == false && p instanceof ParallelPipes == false) {
+                                    PipeUtils.writeToDisk(filename, carriers);
+                                }
                                 // Save aditional data
                                 if (p instanceof SharedDataProducer) {
                                     SharedDataProducer currentDataProducer = (SharedDataProducer) p;
@@ -237,7 +249,9 @@ public class ResumableSerialPipes extends SerialPipes {
                                 }
                             } else {
                                 if (i == pipeList.length - 1) {
-                                    PipeUtils.writeToDisk(filename, carriers);
+                                    if (p instanceof SerialPipes == false && p instanceof ParallelPipes == false) {
+                                        PipeUtils.writeToDisk(filename, carriers);
+                                    }
                                     // Save aditional data
                                     if (p instanceof SharedDataProducer) {
                                         SharedDataProducer currentDataProducer = (SharedDataProducer) p;

@@ -42,11 +42,11 @@ import java.util.Set;
  * <p>
  * Each field has no predefined type, and may change type as the instance is
  * processed. For example, the data field may start off being a string that
- * represents a file name and then be processed by a {@link AbstractPipe}
- * into a CharSequence representing the contents of the file, and eventually to
- * a feature vector holding words found in the file. It is
- * up to each pipe which fields in the Instance it modifies; the most common
- * case is that the pipe modifies the data field.
+ * represents a file name and then be processed by a {@link AbstractPipe} into a
+ * CharSequence representing the contents of the file, and eventually to a
+ * feature vector holding words found in the file. It is up to each pipe which
+ * fields in the Instance it modifies; the most common case is that the pipe
+ * modifies the data field.
  *
  * @author Andrew McCallum
  * <a href="mailto:mccallum@cs.umass.edu">mccallum@cs.umass.edu</a>
@@ -56,6 +56,7 @@ import java.util.Set;
  * @see AbstractPipe
  */
 public class Instance implements Serializable {
+
     /**
      * Serial version UID
      */
@@ -97,11 +98,11 @@ public class Instance implements Serializable {
      * Build an Instance from the original attributes keeping properties of the
      * instance void
      *
-     * @param data   The data to be included in the instance
+     * @param data The data to be included in the instance
      * @param target The target (label) of the instance
-     * @param name   The name (id) of the instance
+     * @param name The name (id) of the instance
      * @param source The original form of the instance (often this is the same
-     *               as data)
+     * as data)
      */
     public Instance(Serializable data, Serializable target, Serializable name, Serializable source) {
         this.data = data;
@@ -117,7 +118,7 @@ public class Instance implements Serializable {
      * @param i The instance to be used as source for creating the new one
      */
     public Instance(Instance i) {
-        this.data = (Serializable) cloneObject2(i.data);
+        this.data = (Serializable) cloneObject(i.data);
         this.target = i.target;
         this.name = i.name;
         this.source = i.source;
@@ -131,51 +132,19 @@ public class Instance implements Serializable {
      * @param obj Object to clone
      * @return A new copy of the source object
      */
-    private static Object cloneObject(Object obj) {
-        Object clone = null;
-
+    public Serializable cloneObject(Serializable obj) {
         try {
-            clone = obj.getClass().newInstance();
-            for (Field field : obj.getClass().getDeclaredFields()) {
-                field.setAccessible(true);
-                if (field.get(obj) == null || Modifier.isFinal(field.getModifiers())) {
-                    continue;
-                }
-                if (field.getType().isPrimitive() || field.getType().equals(String.class)
-                        || field.getType().getSuperclass().equals(Number.class)
-                        || field.getType().equals(Boolean.class)) {
-                    field.set(clone, field.get(obj));
-                } else {
-                    Object childObj = field.get(obj);
-                    if (childObj == obj) {
-                        field.set(clone, clone);
-                    } else {
-                        field.set(clone, cloneObject(field.get(obj)));
-                    }
-                }
-            }
-            return clone;
-        } catch (Exception e) {
-            System.out.println("Clone failed");
+            ByteArrayOutputStream baos = new ByteArrayOutputStream();
+            ObjectOutputStream oos = new ObjectOutputStream(baos);
+            oos.writeObject(obj);
+
+            ByteArrayInputStream bais = new ByteArrayInputStream(baos.toByteArray());
+            ObjectInputStream ois = new ObjectInputStream(bais);
+            return (Serializable) ois.readObject();
+        } catch (IOException | ClassNotFoundException e) {
             return null;
         }
-        //return clone;
     }
-    
-    
-    public Serializable cloneObject2(Serializable obj) {
-		try {
-			ByteArrayOutputStream baos = new ByteArrayOutputStream();
-			ObjectOutputStream oos = new ObjectOutputStream(baos);
-			oos.writeObject(obj);
-
-			ByteArrayInputStream bais = new ByteArrayInputStream(baos.toByteArray());
-			ObjectInputStream ois = new ObjectInputStream(bais);
-			return (Serializable) ois.readObject();
-		} catch (IOException | ClassNotFoundException e) {
-			return null;
-		}
-	}
 
     /**
      * Clone the instance into a new type
@@ -183,7 +152,7 @@ public class Instance implements Serializable {
      * @return a new instance cloning the original one
      */
     public Instance clone() {
-        Instance returnValue = new Instance((Serializable) cloneObject2(data), target, name, source);
+        Instance returnValue = new Instance((Serializable) cloneObject(data), target, name, source);
         returnValue.properties = properties;
         return returnValue;
     }
@@ -283,7 +252,7 @@ public class Instance implements Serializable {
     /**
      * Changes (or add) a specific property for the instance
      *
-     * @param key   The key to be stored
+     * @param key The key to be stored
      * @param value The value for the key
      */
     public synchronized void setProperty(String key, Serializable value) {

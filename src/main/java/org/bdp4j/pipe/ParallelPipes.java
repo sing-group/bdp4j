@@ -191,7 +191,6 @@ public class ParallelPipes extends AbstractPipe {
      * @param pipe The new pipe added.
      */
     public void add(AbstractPipe pipe) {
-        System.out.println("pipe " + pipe.toString());
         if (pipes.isEmpty()) {
             // Is pipes arrayList is empty, this is the output AbstractPipe.
             // Then, inputType and outputType of parallelPipes is theirs.

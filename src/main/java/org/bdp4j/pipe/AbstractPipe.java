@@ -12,17 +12,7 @@
    information, see the file `LICENSE' included with this distribution. */
 package org.bdp4j.pipe;
 
-import java.io.BufferedInputStream;
-import java.io.BufferedOutputStream;
 import java.io.File;
-import java.io.FileInputStream;
-import java.io.FileOutputStream;
-import java.io.ObjectInputStream;
-import java.io.ObjectOutputStream;
-import java.security.MessageDigest;
-import java.security.NoSuchAlgorithmException;
-import java.util.Base64;
-import java.util.Arrays;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.bdp4j.types.Instance;
@@ -31,7 +21,6 @@ import org.bdp4j.util.BooleanBean;
 
 import java.util.Collection;
 import java.util.List;
-import java.util.logging.Level;
 import org.bdp4j.util.Configurator;
 import org.bdp4j.util.PipeUtils;
 
@@ -372,8 +361,6 @@ public abstract class AbstractPipe implements Pipe {
         }
         return 0;
     }
-
-
 
     /**
      * Check if a path exists, and otherwise, creates that.
