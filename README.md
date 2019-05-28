@@ -1,4 +1,4 @@
-# Big Data Preprocessing For Java (bdp4j)
+# Big Data Pipelining For Java (bdp4j)
 
 This project is a simple pipeline implementation derived from the pipeline of Mallet 
 (http://mallet.cs.umass.edu, some source has brought from there as you can find in comments) with 
