@@ -28,7 +28,6 @@ import org.apache.logging.log4j.Logger;
 import org.bdp4j.pipe.PipeParameter;
 import org.bdp4j.types.Dataset;
 import org.bdp4j.types.Transformer;
-import org.bdp4j.util.DateIdentifier;
 import org.bdp4j.util.Pair;
 import weka.core.Attribute;
 import weka.core.Instance;
@@ -132,17 +131,14 @@ public class CSVDatasetReader {
         try {
             Double.parseDouble(value);
             return "Double";
-        } catch (Exception ex) {
-            if (ex.getClass().getName().equals("java.lang.NumberFormatException")) {
-            }
-        }
-        // Check if the field is Date                            
-        try {
-            if (DateIdentifier.getDefault().checkDate(value) != null || DateTimeIdentifier.getDefault().checkDateTime(value) != null) {
-                return "Date";
-            }
-        } catch (Exception ex) {
-            if (ex.getClass().getName().equals("java.text.ParseException")) {
+        } catch (NumberFormatException e) {
+            // Check if the field is Date                            
+            try {
+                if (DateTimeIdentifier.getDefault().checkDateTime(value) != null) {
+                    return "Date";
+                }
+            } catch (Exception ex) {
+                return "String";
             }
         }
         return "String";
@@ -286,7 +282,7 @@ public class CSVDatasetReader {
                                                 instance.setValue(indInstance, t.transform(field));
                                             } catch (Exception ex) {
                                                 instance.setValue(indInstance, 0d);
-                                                logger.error("1" + ex.getMessage());
+                                                logger.warn("[LOAD FILE] The transformer can't be applied to field " + field + ". Field value set to 0. " + ex.getMessage());
                                             }
                                         } else {
                                             instance.setValue(indInstance, 0d);
@@ -297,9 +293,8 @@ public class CSVDatasetReader {
 
                                                 instance.setValue(indInstance, Float.parseFloat(field));
                                             } catch (NumberFormatException ex) {
-
                                                 instance.setValue(indInstance, 0d);
-                                                logger.error("2" + ex.getMessage());
+                                                logger.warn("[LOAD FILE] The value of " + field + " field can't convert to float. Field value set to 0." + ex.getMessage());
                                             }
                                         } else {
                                             instance.setValue(indInstance, 0d);
@@ -307,8 +302,7 @@ public class CSVDatasetReader {
                                     }
                                 }
                             } catch (Exception ex) {
-                                logger.error("3" + ex.getMessage());
-                                ex.printStackTrace();
+                                logger.error("[LOAD FILE] " + ex.getMessage());
                             }
                             indInstance++;
                         }
@@ -321,8 +315,7 @@ public class CSVDatasetReader {
             //---------------------------------------------------------------------------
             dataset.generateCSV();
         } catch (IOException e) {
-            logger.error(e.getMessage());
-            e.printStackTrace();
+            logger.error("[LOAD FILE] " + e.getMessage());
         }
         return dataset;
     }

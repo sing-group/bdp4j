@@ -25,8 +25,6 @@ package org.bdp4j.transformers;
 import java.time.LocalDateTime;
 import java.time.ZoneId;
 import org.bdp4j.types.Transformer;
-import org.bdp4j.util.DateIdentifier;
-
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
@@ -47,6 +45,7 @@ public class Date2MillisTransformer extends Transformer {
      * @param input A string to transform in Double
      * @return A double value that represents a Date
      */
+    @Override
     public double transform(Object input) {
            
         if (input != null && !input.equals("null")) {
@@ -70,7 +69,8 @@ public class Date2MillisTransformer extends Transformer {
     public String getTransformerListValues() {
         return transformerListValues;
     }
-
+    
+    @Override
     public Class<?> getInputType() {
         return Date.class;
     }
@@ -82,6 +82,6 @@ public class Date2MillisTransformer extends Transformer {
      */
     @Override
     public List<Integer> getListValues() {
-        return new ArrayList<Integer>();
+        return new ArrayList<>();
     }
 }
