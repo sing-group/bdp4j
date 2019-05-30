@@ -109,7 +109,6 @@ public class ResumableSerialPipes extends SerialPipes {
 
         boolean resumableMode = EBoolean.getBoolean(configurator.getProp(Configurator.RESUMABLE_MODE));
         if (resumableMode) {
-
             // Calculate pipe to continue execution
             AbstractPipe[] pipeList = super.getPipes();
             for (step = 0; step < pipeList.length; step++) {
@@ -134,10 +133,16 @@ public class ResumableSerialPipes extends SerialPipes {
 
                 // Get saved list of files
                 File[] listFiles = sourcePath.listFiles(filter);
-                File f = new File("x");
 
                 if (sourcePath.exists() && sourcePath.isDirectory() && listFiles.length > 0) {
-                    Arrays.sort(sourcePath.listFiles(), (File f1, File f2) -> Long.valueOf(f1.lastModified()).compareTo(f2.lastModified()));
+                    Arrays.sort(listFiles, (File f1, File f2) -> {
+                        int cmpLastModified = Long.compare(f2.lastModified(), f1.lastModified());
+                        if (cmpLastModified == 0) {
+                            return Integer.parseInt(f2.getName().split("_")[0]) - Integer.parseInt(f1.getName().split("_")[0]);
+                        } else {
+                            return cmpLastModified;
+                        }
+                    });
                     String pipeFilename = ((currentPipe != null) ? currentPipe.getStorePath() : "");
                     String lastModifiedFile = listFiles[0].getPath();
                     int lastModifiedFileStep = Integer.parseInt(listFiles[0].getName().split("_")[0]);
@@ -279,6 +284,7 @@ public class ResumableSerialPipes extends SerialPipes {
                         System.exit(-1);
                     } else {
                         p.pipeAll(carriers);
+
                     }
                 }
             }
