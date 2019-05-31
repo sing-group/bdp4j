@@ -128,7 +128,7 @@ public interface Pipe {
      *
      * @return the store path to save data
      */
-    String getStorePath();
+    String getStorePath(Collection<Instance> carriers);
 
     /**
      * Check if alwaysBeforeDeps are satisfied for pipe p (inserted). Initially
