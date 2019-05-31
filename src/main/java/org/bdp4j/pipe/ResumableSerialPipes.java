@@ -124,7 +124,7 @@ public class ResumableSerialPipes extends SerialPipes {
                     break;
                 }
 
-                File sourcePath = new File(getStorePath());
+                File sourcePath = new File(getStorePath(carriers));
                 // Get all .ser files
                 FileFilter filter;
                 filter = (File pathname) -> {
@@ -143,7 +143,7 @@ public class ResumableSerialPipes extends SerialPipes {
                             return cmpLastModified;
                         }
                     });
-                    String pipeFilename = ((currentPipe != null) ? currentPipe.getStorePath() : "");
+                    String pipeFilename = ((currentPipe != null) ? currentPipe.getStorePath(carriers) : "");
                     String lastModifiedFile = listFiles[0].getPath();
                     int lastModifiedFileStep = Integer.parseInt(listFiles[0].getName().split("_")[0]);
 
@@ -153,11 +153,11 @@ public class ResumableSerialPipes extends SerialPipes {
                         carriers.stream().map((carrier) -> PipeUtils.generateMD5(carrier.toString())).forEachOrdered((md5Carrier) -> {
                             md5Carriers.append(md5Carrier);
                         });
-                        String instancesFileName = getStorePath() + sourcePath.getName() + ".txt";
+                        String instancesFileName = getStorePath(carriers) + sourcePath.getName() + ".txt";
                         File instancesFile = new File(instancesFileName);
                         if (sourcePath.exists() && sourcePath.isDirectory()) {
                             if (instancesFile.exists()) {
-                                String deserializedCarriers = (String) PipeUtils.readFromDisk(getStorePath() + sourcePath.getName() + ".txt");
+                                String deserializedCarriers = (String) PipeUtils.readFromDisk(getStorePath(carriers) + sourcePath.getName() + ".txt");
                                 // If instances match, the pipe and instances are the same, so, this is the first step
                                 if (!deserializedCarriers.equals(md5Carriers.toString())) {
 
@@ -211,7 +211,7 @@ public class ResumableSerialPipes extends SerialPipes {
             String instancesFilePath = "";
             File instancesFile = null;
             if (resumableMode && !isDebuggingPipe() && step < pipeList.length) {
-                String md5PipeName = getStorePath();
+                String md5PipeName = getStorePath(carriers);
                 if (!md5PipeName.equals("")) {
                     // Generate MD5 to carriers
                     StringBuilder md5Carriers = new StringBuilder();
@@ -220,9 +220,9 @@ public class ResumableSerialPipes extends SerialPipes {
                     });
 
                     if (!isDebuggingPipe()) {
-                        File instancesFileName = new File(getStorePath());
+                        File instancesFileName = new File(getStorePath(carriers));
                         if (instancesFileName.exists() && instancesFileName.isDirectory()) {
-                            instancesFilePath = getStorePath() + instancesFileName.getName() + ".txt";
+                            instancesFilePath = getStorePath(carriers) + instancesFileName.getName() + ".txt";
                             instancesFile = new File(instancesFilePath);
                             if (!instancesFile.exists()) {
                                 PipeUtils.writeToDisk(instancesFile.getPath(), md5Carriers.toString());
@@ -242,7 +242,7 @@ public class ResumableSerialPipes extends SerialPipes {
                         // Save instances
                         if (!p.isDebuggingPipe()) {
 
-                            String filename = p.getStorePath();
+                            String filename = p.getStorePath(carriers);
                             if (debugMode) {
                                 if (p instanceof SerialPipes == false && p instanceof ParallelPipes == false) {
                                     PipeUtils.writeToDisk(filename, carriers);

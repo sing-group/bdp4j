@@ -384,7 +384,7 @@ public abstract class AbstractPipe implements Pipe {
      * @return the store path to save data
      */
     @Override
-    public String getStorePath() {
+    public String getStorePath(Collection<Instance> carriers) {
         String storePath = "";
         String fileSeparator = System.getProperty("file.separator");
         Configurator configurator = Configurator.getLastUsed();
@@ -396,18 +396,18 @@ public abstract class AbstractPipe implements Pipe {
         }
         if (getParent() == null) {
             if (this instanceof SerialPipes || this instanceof ParallelPipes) {
-                storePath = getPath(temp_folder + PipeUtils.generateMD5(this.toString()) + fileSeparator);
-                return storePath;
+                storePath = temp_folder + PipeUtils.generateMD5(this.toString() +  carriers)+ fileSeparator;
+                return getPath(storePath);
             } else {
                 return findPosition(this) + "_" + PipeUtils.generateMD5(this.toString()) + ".ser";
             }
         } else {
             if (this instanceof SerialPipes || this instanceof ParallelPipes) {
-                storePath = getParent().getStorePath() + this.getParent().findPosition(this) + "_" + PipeUtils.generateMD5(this.toString()) + fileSeparator;
+                storePath = getParent().getStorePath(carriers) + this.getParent().findPosition(this) + "_" + PipeUtils.generateMD5(this.toString()) + fileSeparator;
                 return getPath(storePath);
 
             } else {
-                return getParent().getStorePath() + findPosition(this) + "_" + PipeUtils.generateMD5(this.toString()) + ".ser";
+                return getParent().getStorePath(carriers) + findPosition(this) + "_" + PipeUtils.generateMD5(this.toString()) + ".ser";
             }
         }
     }
