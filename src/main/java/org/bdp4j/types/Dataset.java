@@ -508,6 +508,57 @@ public class Dataset implements Serializable, Cloneable {
     }
 
     /**
+     * Insert a column to the dataset (inserted before a certain position)
+     *
+     * @param column The column information
+     * @param position The index where the new column will be inserted (0 upto
+     * the number of columns - 1)
+     * @return true if sucessfull, false otherwise
+     */
+    public boolean insertColumnAt(ColumnDefinition column, int position) {
+        ArrayList<Attribute> attributes = new ArrayList<>();
+
+        try {
+            Enumeration<Attribute> attrEnum = this.dataset.enumerateAttributes();
+            while (attrEnum.hasMoreElements()) {
+                attributes.add(attrEnum.nextElement());
+            }
+
+            Attribute newAttribute = column.isStringType()
+                    ? new Attribute(column.getColumnName(), true)
+                    : new Attribute(column.getColumnName());
+            attributes.add(position, newAttribute);
+
+            Instances newDataset = new Instances("dataset", attributes, 0);
+
+            for (Instance instance : this.dataset) {
+                newDataset.add(new DenseInstance(attributes.size()));
+                Instance newInstance = newDataset.lastInstance();
+
+                int indexOffset = 0;
+                for (Attribute attribute : attributes) {
+                    if (attribute == newAttribute) {
+                        indexOffset = 1;
+                        if (column.isStringType()) {
+                            newInstance.setValue(attribute, (String) column.getDefaultValue());
+                        } else {
+                            newInstance.setValue(attribute, ((Number) column.getDefaultValue()).doubleValue());
+                        }
+                    } else {
+                        newInstance.setValue(attribute, instance.value(attribute.index() - indexOffset));
+                    }
+                }
+            }
+            this.dataset = newDataset;
+            return true;
+        } catch (Exception ex) {
+            logger.error("[INSERT COLUMN AT] " + ex.getMessage());
+            return false;
+        }
+
+    }
+
+    /**
      * Insert columns to the dataset (inserted before a certain position)
      *
      * @param columnNames The name of the columns
@@ -531,6 +582,25 @@ public class Dataset implements Serializable, Cloneable {
     }
 
     /**
+     * Insert columns to the dataset (inserted before a certain position)
+     *
+     * @param column The information for the columns included
+     * @param position The index where the new columns will start to be inserted
+     * (0 upto the number of columns - 1)
+     * @return true if sucessfull, false otherwise
+     */
+    public boolean insertColumnsAt(ColumnDefinition[] column, int position) {
+        System.err.println("column lenght " + column.length);
+        for (int i = 0; i < column.length; i++) {
+            System.out.println("column " + column[i].getColumnName() + " - position: " + position + " - i: " + i);
+            if (!insertColumnAt(column[i], position + i)) {
+                return false;
+            }
+        }
+        return true;
+    }
+
+    /**
      * Add a column to the end of a Dataset
      *
      * @param columnName Column to add where columName stands for the name of
@@ -545,6 +615,18 @@ public class Dataset implements Serializable, Cloneable {
     }
 
     /**
+     * Add a column to the end of a Dataset
+     *
+     * @param column Column to add where columName stands for the name of the
+     * column. Column add at the end.
+     *
+     * @return true if the column were sucessfully added, false otherwise
+     */
+    public boolean addColumn(ColumnDefinition column) {
+        return insertColumnAt(column, this.numAttributes());
+    }
+
+    /**
      * Add columns to the end of a Dataset
      *
      * @param columnNames List of columns to add where columNames stands for the
@@ -555,10 +637,9 @@ public class Dataset implements Serializable, Cloneable {
      * @return true if the columns were sucessfully added, false otherwise
      */
     public boolean addColumns(String columnNames[], Class<?>[] columnTypes, Object[] defaultValues) {
-        int position = this.numAttributes();
         if (columnNames.length == columnTypes.length && columnTypes.length == defaultValues.length) {
             for (int i = 0; i < columnNames.length; i++) {
-                if (!insertColumnAt(columnNames[i], columnTypes[i], defaultValues[i], position)) {
+                if (!addColumn(columnNames[i], columnTypes[i], defaultValues[i])) {
                     return false;
                 }
             }
@@ -567,96 +648,24 @@ public class Dataset implements Serializable, Cloneable {
             return false;
         }
     }
-/*
-    public static class ColumnDefinition {
 
-        private String columnName;
-        private Class<?> columnType;
-        private Object defaultValue;
-
-        public static ColumnDefinition stringColumn(String columnName, String value) {
-            return new ColumnDefinition(columnName, value);
-        }
-
-        public static ColumnDefinition doubleColumn(String columnName, Double value) {
-            return new ColumnDefinition(columnName, value);
-        }
-
-        public ColumnDefinition(String columnName, Object defaultValue) {
-            this(columnName, defaultValue.getClass(), defaultValue);
-        }
-
-        public ColumnDefinition(String columnName, Class<?> columnType, Object defaultValue) {
-            boolean isStringType = this.isStringType();
-
-            if (!isStringType && !Number.class.isAssignableFrom(columnType)) {
-                throw new IllegalArgumentException("Column type must be a String or a Number type");
-            } else if (isStringType && defaultValue != null && !(defaultValue instanceof String)) {
-                throw new IllegalArgumentException("Default value must have the column's type");
-            } else if (!isStringType && !(defaultValue instanceof Number)) {
-                throw new IllegalArgumentException("Default value must have the column's type");
-            }
-
-            this.columnName = columnName;
-            this.columnType = columnType;
-            this.defaultValue = defaultValue;
-        }
-
-        public boolean isStringType() {
-            return String.class.equals(columnType);
-        }
-
-        public String getColumnName() {
-            return columnName;
-        }
-
-        public Class<?> getColumnType() {
-            return columnType;
-        }
-
-        public Object getDefaultValue() {
-            return defaultValue;
-        }
-    }
-        public boolean insertColumnAt(ColumnDefinition column, int position) {
-        ArrayList<Attribute> attributes = new ArrayList<>();
-
-        Enumeration<Attribute> attrEnum = this.dataset.enumerateAttributes();
-        while (attrEnum.hasMoreElements()) {
-            attributes.add(attrEnum.nextElement());
-        }
-
-        Attribute newAttribute = column.isStringType()
-            ? new Attribute(column.getColumnName(), true)
-            : new Attribute(column.getColumnName());
-        attributes.add(position, newAttribute);
-
-        Instances newDataset = new Instances("dataset", attributes, 0);
-
-        for (Instance instance : this.dataset) {
-            newDataset.add(new DenseInstance(attributes.size()));
-            Instance newInstance = newDataset.lastInstance();
-
-            int indexOffset = 0;
-            for (Attribute attribute : attributes) {
-                if (attribute == newAttribute) {
-                    indexOffset = 1;
-                    if (column.isStringType()) {
-                        newInstance.setValue(attribute, (String) column.getDefaultValue());
-                    } else {
-                        newInstance.setValue(attribute, ((Number) column.getDefaultValue()).doubleValue());
-                    }
-                } else {
-                    newInstance.setValue(attribute, instance.value(attribute.index() - indexOffset));
-                }
+    /**
+     * Add columns to the end of a Dataset
+     *
+     * @param column List of columns to add where columNames stands for the name
+     * of the column. Columns add at the end.
+     *
+     * @return true if the columns were sucessfully added, false otherwise
+     */
+    public boolean addColumns(ColumnDefinition[] column) {
+        for (int i = 0; i < column.length; i++) {
+            if (!addColumn(column[i])) {
+                return false;
             }
         }
-        this.dataset = newDataset;
-        
-        return false;
+        return true;
     }
 
-*/
     public boolean addRow(Object[] values) {
         try {
             if (this.getAttributes().size() == values.length) {
@@ -678,6 +687,7 @@ public class Dataset implements Serializable, Cloneable {
             return false;
         }
     }
+
     /**
      * Add rows to the dataset
      *
@@ -698,7 +708,6 @@ public class Dataset implements Serializable, Cloneable {
         return false;
     }
 
-    
     @Override
     public Dataset clone() {
         return new Dataset(this);
