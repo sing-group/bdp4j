@@ -62,12 +62,11 @@ public class CSVDatasetReader {
      * non double value in double value.
      */
     Map<String, Transformer> transformersList;
-    //Map<String, Transformer> transformersList;
 
     /**
      * Create a CSVDatasetFromFile object from a file path
      *
-     * @param filePath: The file path
+     * @param filePath The file path
      */
     public CSVDatasetReader(String filePath) {
         this.filePath = filePath;
