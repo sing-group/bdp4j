@@ -504,7 +504,6 @@ public class Dataset implements Serializable, Cloneable {
             logger.error("[INSERT COLUMN AT] " + ex.getMessage());
             return false;
         }
-
     }
 
     /**
@@ -584,16 +583,14 @@ public class Dataset implements Serializable, Cloneable {
     /**
      * Insert columns to the dataset (inserted before a certain position)
      *
-     * @param column The information for the columns included
+     * @param columns The information for the columns included
      * @param position The index where the new columns will start to be inserted
      * (0 upto the number of columns - 1)
      * @return true if sucessfull, false otherwise
      */
-    public boolean insertColumnsAt(ColumnDefinition[] column, int position) {
-        System.err.println("column lenght " + column.length);
-        for (int i = 0; i < column.length; i++) {
-            System.out.println("column " + column[i].getColumnName() + " - position: " + position + " - i: " + i);
-            if (!insertColumnAt(column[i], position + i)) {
+    public boolean insertColumnsAt(ColumnDefinition[] columns, int position) {
+        for (int i = 0; i < columns.length; i++) {
+            if (!insertColumnAt(columns[i], position + i)) {
                 return false;
             }
         }
@@ -652,20 +649,26 @@ public class Dataset implements Serializable, Cloneable {
     /**
      * Add columns to the end of a Dataset
      *
-     * @param column List of columns to add where columNames stands for the name
-     * of the column. Columns add at the end.
+     * @param columns List of columns to add where columNames stands for the
+     * name of the column. Columns add at the end.
      *
      * @return true if the columns were sucessfully added, false otherwise
      */
-    public boolean addColumns(ColumnDefinition[] column) {
-        for (int i = 0; i < column.length; i++) {
-            if (!addColumn(column[i])) {
+    public boolean addColumns(ColumnDefinition[] columns) {
+        for (ColumnDefinition column : columns) {
+            if (!addColumn(column)) {
                 return false;
             }
         }
         return true;
     }
 
+    /**
+     * Add row to the dataset
+     *
+     * @param values List of values of the row
+     * @return true if the row could be added; false otherwise
+     */
     public boolean addRow(Object[] values) {
         try {
             if (this.getAttributes().size() == values.length) {
