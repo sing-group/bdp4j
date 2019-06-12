@@ -51,8 +51,13 @@ public class CSVDatasetWriter {
     /**
      * The default value to a representation of a CSV VOID FIELD
      */
-    private static final String DEFAULT_CSV_VOID_FIELD = "<space>";
+    private static final String DEFAULT_CSV_VOID_FIELD = " ";
 
+    /**
+     * The default value to a representation of a CSV VOID FIELD
+     */
+    public static final String DEFAULT_CSV_FILE = "out.csv";    
+    
     /**
      * Represents default value to indicate if non printable characters should
      * be escaped
@@ -67,37 +72,37 @@ public class CSVDatasetWriter {
     /**
      * The configured CSV Separator
      */
-    private static String CSVSep = DEFAULT_CSV_SEP;
+    protected String CSVSep = DEFAULT_CSV_SEP;
 
     /**
      * The String Quote delimiter
      */
-    private static String strQuote = DEFAULT_STR_QUOTE;
+    protected String strQuote = DEFAULT_STR_QUOTE;
 
     /**
      * The Char to Escape String Quote delimiters
      */
-    private static String strQuoteEscapeChar = DEFAULT_STR_QUOTE_ESCAPE_CHAR;
+    protected String strQuoteEscapeChar = DEFAULT_STR_QUOTE_ESCAPE_CHAR;
 
     /**
      * The representation of a CSV VOID FIELD
      */
-    private static String csvVoidField = DEFAULT_CSV_VOID_FIELD;
+    protected String csvVoidField = DEFAULT_CSV_VOID_FIELD;
 
     /**
      * Represents if \n \r and other non printable characters should be escaped
      */
-    private static Boolean escapeCR = DEFAULT_ESCAPE_CR;
+    protected Boolean escapeCR = DEFAULT_ESCAPE_CR;
 
     /**
      * Chars that should be scapped
      */
-    private static String charsToScape = DEFAULT_CHARS_TO_SCAPE;
+    protected String charsToScape = DEFAULT_CHARS_TO_SCAPE;
 
     /**
      * The file where the dataset is stored
      */
-    File csvDataset;
+    protected File csvDataset;
 
     /**
      * Buffered reader to operate with the file
@@ -114,7 +119,10 @@ public class CSVDatasetWriter {
      */
     private Integer columnCount = null;
 
-    private static final Pattern quoteRequiredPattern = Pattern.compile("[" + getCSVSep() + getCharsToScape() + "\\n\\r\u0085'\u2028\u2029]");
+    /**
+     * Pattern to determine if quotation is required
+     */
+    private Pattern quoteRequiredPattern = Pattern.compile("[" + getCSVSep() + getCharsToScape() + "\\n\\r\u0085'\u2028\u2029]");
 
     /**
      * Build a CSV file configuring the CSV file
@@ -135,12 +143,12 @@ public class CSVDatasetWriter {
      */
     public CSVDatasetWriter(String CSVSep, String strQuote, String strQuoteEscapeChar, String csvVoidField, Boolean escapeCR,
             String charsToScape, File csvDataset) {
-        CSVDatasetWriter.CSVSep = CSVSep;
-        CSVDatasetWriter.strQuote = strQuote;
-        CSVDatasetWriter.strQuoteEscapeChar = strQuoteEscapeChar;
-        CSVDatasetWriter.csvVoidField = csvVoidField;
-        CSVDatasetWriter.escapeCR = escapeCR;
-        CSVDatasetWriter.charsToScape = charsToScape;
+        this.CSVSep = CSVSep;
+        this.strQuote = strQuote;
+        this.strQuoteEscapeChar = strQuoteEscapeChar;
+        this.csvVoidField = csvVoidField;
+        this.escapeCR = escapeCR;
+        this.charsToScape = charsToScape;
 
         this.csvDataset = csvDataset;
     }
@@ -193,21 +201,9 @@ public class CSVDatasetWriter {
     }
 
     /**
-     * Set the CSV separator configured
-     *
-     * @param CSVSep separator for CSV files
+     * Disable the access to default constructor with no parameters
      */
-    public static void setCSVSep(String CSVSep) {
-        CSVDatasetWriter.CSVSep = CSVSep;
-    }
-
     protected CSVDatasetWriter() {
-        CSVDatasetWriter.CSVSep = DEFAULT_CSV_SEP;
-        CSVDatasetWriter.strQuote = DEFAULT_STR_QUOTE;
-        CSVDatasetWriter.strQuoteEscapeChar = DEFAULT_STR_QUOTE_ESCAPE_CHAR;
-        CSVDatasetWriter.csvVoidField = DEFAULT_CSV_VOID_FIELD;
-        CSVDatasetWriter.escapeCR = DEFAULT_ESCAPE_CR;
-        CSVDatasetWriter.charsToScape = DEFAULT_CHARS_TO_SCAPE;
     }
 
     /**
@@ -215,34 +211,52 @@ public class CSVDatasetWriter {
      *
      * @return the configured field separator for CSV files
      */
-    public static String getCSVSep() {
+    public String getCSVSep() {
         return CSVSep;
     }
 
-    public static String getStrVoidField() {
+    /**
+     * Retrieve the string to represent a void field
+     * @return The configured value to represent a void field
+     */
+    public String getStrVoidField() {
         return csvVoidField;
     }
 
-    public static String getStrQuote() {
+    /**
+     * Retrieve the character for quoting strings
+     * @return the character for quoting strings
+     */
+    public String getStrQuote() {
         return strQuote;
     }
 
-    public static boolean shouldEscapeCRChars() {
+    /**
+     * Determine whether carriage returns charaters should be scaped or not
+     * @return true if carrage returns (\n \r) should be scaped
+     */
+    public boolean shouldEscapeCRChars() {
         return escapeCR;
     }
 
-    public static String getCharsToScape() {
+    /**
+     * Retrieve the list of additional characters that should be scaped
+     * @return the list of additional characters that should be scaped
+     */
+    public String getCharsToScape() {
         return charsToScape;
     }
 
-    public static String getStrQuoteEscapeChar() {
+    public String getStrQuoteEscapeChar() {
         return strQuoteEscapeChar;
     }
 
     /**
-     * Escapes CR characters (if required) and quotes
+     * Auxiliary method for scapping strings (really perform scapping)
+     * @param in the string to be scaped
+     * @return the scaped string
      */
-    private static String escapeAll(String in) {
+    private String escapeAll(String in) {
         StringBuilder strb = new StringBuilder();
 
         for (int i = 0; i < in.length(); i++) {
@@ -266,12 +280,11 @@ public class CSVDatasetWriter {
     }
 
     /**
-     * Escape a CSV String to allow including texts into cells
-     *
-     * @param str The string to scape
+     * Escapes a string according configuration
+     * @param str the string to be scaped
      * @return the scaped string
      */
-    private static String escapeCSV(String str) {
+    private String escapeCSV(String str) {
         StringBuilder str_scape = new StringBuilder();
 
         if (str == null || str.length() == 0) {
@@ -355,7 +368,7 @@ public class CSVDatasetWriter {
     /**
      * Add a col to the dataset
      *
-     * @param columnName The name of the col
+     * @param columnName The name of the column
      * @param defaultValue The default value for the rows included
      * @return true if sucessfull, false otherwise
      */
