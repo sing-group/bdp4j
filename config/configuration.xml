@@ -4,8 +4,8 @@
     <general>
         <samplesFolder>./samples</samplesFolder>
         <pluginsFolder>./plugins</pluginsFolder>
-        <outputDir>./output</outputDir>
-        <tempDir>./temp</tempDir>
+        <outputFolder>./output</outputFolder>
+        <tempFolder>./temp</tempFolder>
     </general>
 
     <!-- AbstractPipe structure that is going to be used -->
