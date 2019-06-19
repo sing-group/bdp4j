@@ -19,6 +19,20 @@
         <maven.compiler.target>1.8</maven.compiler.target>
     </properties>
 
+    <distributionManagement>
+        <repository>
+             <id>sing-maven-releases</id>
+             <name>SING Maven Releases</name>
+             <url>https://maven.sing-group.org/repository/maven-releases/</url>
+        </repository>
+
+        <snapshotRepository>
+             <id>sing-maven-snapshots</id>
+             <name>SING Maven Snapshots</name>
+             <url>https://maven.sing-group.org/repository/maven-snapshots/</url>
+        </snapshotRepository>
+    </distributionManagement>
+
     <repositories>
         <repository>
             <id>icm</id>
