@@ -477,28 +477,31 @@ public class Dataset implements Serializable, Cloneable {
             }
 
             Attribute newAttribute = isStringType ? new Attribute(columnName, true) : new Attribute(columnName);
-            attributes.add(position, newAttribute);
-            Instances newDataset = new Instances("dataset", attributes, 0);
+            if (!attributes.contains(newAttribute)) {
+                attributes.add(position, newAttribute);
+                Instances newDataset = new Instances("dataset", attributes, 0);
 
-            this.dataset.forEach((instance) -> {
-                newDataset.add(new DenseInstance(attributes.size()));
-                Instance newInstance = newDataset.lastInstance();
+                this.dataset.forEach((instance) -> {
+                    newDataset.add(new DenseInstance(attributes.size()));
+                    Instance newInstance = newDataset.lastInstance();
 
-                int indexOffset = 0;
-                for (Attribute attribute : attributes) {
-                    if (attribute == newAttribute) {
-                        indexOffset = 1;
-                        if (isStringType) {
-                            newInstance.setValue(attribute, (String) defaultValue);
+                    int indexOffset = 0;
+                    for (Attribute attribute : attributes) {
+                        if (attribute == newAttribute) {
+                            indexOffset = 1;
+                            if (isStringType) {
+                                newInstance.setValue(attribute, (String) defaultValue);
+                            } else {
+                                newInstance.setValue(attribute, ((Number) defaultValue).doubleValue());
+                            }
                         } else {
-                            newInstance.setValue(attribute, ((Number) defaultValue).doubleValue());
+                            newInstance.setValue(attribute, instance.value(attribute.index() - indexOffset));
                         }
-                    } else {
-                        newInstance.setValue(attribute, instance.value(attribute.index() - indexOffset));
                     }
-                }
-            });
-            this.dataset = newDataset;
+                });
+
+                this.dataset = newDataset;
+            }
             return true;
         } catch (Exception ex) {
             logger.error("[INSERT COLUMN AT] " + ex.getMessage());
