@@ -14,10 +14,12 @@ import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStreamReader;
 import java.io.OutputStreamWriter;
+import java.util.logging.Level;
 import java.util.regex.Pattern;
 
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
+import org.apache.logging.log4j.core.util.FileUtils;
 import org.bdp4j.types.ColumnDefinition;
 
 /**
@@ -56,8 +58,8 @@ public class CSVDatasetWriter {
     /**
      * The default value to a representation of a CSV VOID FIELD
      */
-    public static final String DEFAULT_CSV_FILE = "out.csv";    
-    
+    public static final String DEFAULT_CSV_FILE = "out.csv";
+
     /**
      * Represents default value to indicate if non printable characters should
      * be escaped
@@ -151,6 +153,12 @@ public class CSVDatasetWriter {
         this.charsToScape = charsToScape;
 
         this.csvDataset = csvDataset;
+        try {
+            FileUtils.makeParentDirs(csvDataset);
+            logger.info("The file was created in " + csvDataset);
+        } catch (IOException ex) {
+            logger.warn(CSVDatasetWriter.class.getName() + ex.getMessage());
+        }
     }
 
     /**
@@ -217,6 +225,7 @@ public class CSVDatasetWriter {
 
     /**
      * Retrieve the string to represent a void field
+     *
      * @return The configured value to represent a void field
      */
     public String getStrVoidField() {
@@ -225,6 +234,7 @@ public class CSVDatasetWriter {
 
     /**
      * Retrieve the character for quoting strings
+     *
      * @return the character for quoting strings
      */
     public String getStrQuote() {
@@ -233,6 +243,7 @@ public class CSVDatasetWriter {
 
     /**
      * Determine whether carriage returns charaters should be scaped or not
+     *
      * @return true if carrage returns (\n \r) should be scaped
      */
     public boolean shouldEscapeCRChars() {
@@ -241,6 +252,7 @@ public class CSVDatasetWriter {
 
     /**
      * Retrieve the list of additional characters that should be scaped
+     *
      * @return the list of additional characters that should be scaped
      */
     public String getCharsToScape() {
@@ -253,6 +265,7 @@ public class CSVDatasetWriter {
 
     /**
      * Auxiliary method for scapping strings (really perform scapping)
+     *
      * @param in the string to be scaped
      * @return the scaped string
      */
@@ -281,6 +294,7 @@ public class CSVDatasetWriter {
 
     /**
      * Escapes a string according configuration
+     *
      * @param str the string to be scaped
      * @return the scaped string
      */
