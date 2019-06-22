@@ -5,6 +5,7 @@ import com.mxgraph.view.mxGraph;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.bdp4j.pipe.AbstractPipe;
+import org.bdp4j.pipe.ParallelPipes;
 import org.bdp4j.pipe.SerialPipes;
 import org.bdp4j.util.PipeInfo;
 import org.w3c.dom.Attr;
@@ -33,6 +34,9 @@ public class JGraphX extends JFrame {
 
     private final mxGraph graph;
     private Object parent;
+    private Object pipeline;
+    private Object parallelButton;
+    private Object serialButton;
 
     private int pipeLineY;
 
@@ -40,7 +44,7 @@ public class JGraphX extends JFrame {
     private HashMap<String, String> generalConfiguration;
 
     private String globalStyle = "fontSize=20;fontColor=black;verticalAlign=middle;editable=0;bendable=0;" +
-            "movable=0;resizable=0;foldable=0;deletable=0;rotable=0;cloneable=0;verticalLabelPosition=middle;" +
+            "movable=0;resizable=0;foldable=0;rotable=0;cloneable=0;verticalLabelPosition=middle;" +
             "labelPosition=center;rounded=1;";
 
     private boolean start = false;
@@ -80,41 +84,60 @@ public class JGraphX extends JFrame {
             // Generate xml button
             graph.insertVertex(parent, null, "Generate xml", 200, 50, 270, 60, globalStyle + "fontSize=30;fillColor=#ff8a65;");
 
-            String fieldStyle = "editable=1;fillColor=#e3f2fd;textOpacity=70;";
-
-            Object options = graph.insertVertex(parent, null, null, 600, 150, 440, 280, globalStyle + "opacity=30;rounded=0;");
-
-            // Samples folder
-            Object samples1 = graph.insertVertex(options, null, "Samples folder", 20, 20, 150, 40, globalStyle);
-            Object samples2 = graph.insertVertex(options, null, "./samples", 220, 20, 200, 40, globalStyle + fieldStyle);
-            graph.insertEdge(options, null, null, samples1, samples2);
-
-            // Plugins folder
-            Object plugins1 = graph.insertVertex(options, null, "Plugins folder", 20, 70, 150, 40, globalStyle);
-            Object plugins2 = graph.insertVertex(options, null, "./plugins", 220, 70, 200, 40, globalStyle + fieldStyle);
-            graph.insertEdge(options, null, null, plugins1, plugins2);
-
-            // Output dir
-            Object outputDir1 = graph.insertVertex(options, null, "Output dir", 20, 120, 150, 40, globalStyle);
-            Object outputDir2 = graph.insertVertex(options, null, "./output", 220, 120, 200, 40, globalStyle + fieldStyle);
-            graph.insertEdge(options, null, null, outputDir1, outputDir2);
-
-            // Temp dir
-            Object tempDir1 = graph.insertVertex(options, null, "Temp dir", 20, 170, 150, 40, globalStyle);
-            Object tempDir2 = graph.insertVertex(options, null, "./temp", 220, 170, 200, 40, globalStyle + fieldStyle);
-            graph.insertEdge(options, null, null, tempDir1, tempDir2);
-
-            // Debug
-            Object debug1 = graph.insertVertex(options, null, "Debug", 20, 220, 150, 40, globalStyle);
-            Object debug2 = graph.insertVertex(options, null, "yes", 220, 220, 200, 40, globalStyle + fieldStyle);
-            graph.insertEdge(options, null, null, debug1, debug2);
-
             // Pipes buttons
             int y = 100;
             for (String p : pipes.keySet()) {
                 graph.insertVertex(parent, null, p, 20, y += 50, 450, 40, globalStyle + "fillColor=#80cbc4");
             }
             pipeLineY = y;
+
+            String fieldStyle = "editable=1;fillColor=#e3f2fd;textOpacity=70;";
+
+            Object options = graph.insertVertex(parent, null, null, 20, pipeLineY + 50, 450, 330, globalStyle + "opacity=30;rounded=0;");
+
+            // Samples folder
+            System.out.println("Is on: 40-" + (pipeLineY + 50 + 20));
+            Object samples1 = graph.insertVertex(options, null, "Samples folder", 20, 20, 150, 40, globalStyle);
+            Object samples2 = graph.insertVertex(options, null, "./samples", 220, 20, 210, 40, globalStyle + fieldStyle);
+            graph.insertEdge(options, null, null, samples1, samples2);
+
+            // Plugins folder
+            Object plugins1 = graph.insertVertex(options, null, "Plugins folder", 20, 70, 150, 40, globalStyle);
+            Object plugins2 = graph.insertVertex(options, null, "./plugins", 220, 70, 210, 40, globalStyle + fieldStyle);
+            graph.insertEdge(options, null, null, plugins1, plugins2);
+
+            // Output dir
+            Object outputDir1 = graph.insertVertex(options, null, "Output dir", 20, 120, 150, 40, globalStyle);
+            Object outputDir2 = graph.insertVertex(options, null, "./output", 220, 120, 210, 40, globalStyle + fieldStyle);
+            graph.insertEdge(options, null, null, outputDir1, outputDir2);
+
+            // Temp dir
+            Object tempDir1 = graph.insertVertex(options, null, "Temp dir", 20, 170, 150, 40, globalStyle);
+            Object tempDir2 = graph.insertVertex(options, null, "./temp", 220, 170, 210, 40, globalStyle + fieldStyle);
+            graph.insertEdge(options, null, null, tempDir1, tempDir2);
+
+            // Debug
+            Object debug1 = graph.insertVertex(options, null, "Debug", 20, 220, 150, 40, globalStyle);
+            Object debug2 = graph.insertVertex(options, null, "yes", 220, 220, 210, 40, globalStyle + fieldStyle);
+            graph.insertEdge(options, null, null, debug1, debug2);
+
+            // Resumable
+            Object resumable1 = graph.insertVertex(options, null, "Resumable", 20, 270, 150, 40, globalStyle);
+            Object resumable2 = graph.insertVertex(options, null, "yes", 220, 270, 210, 40, globalStyle + fieldStyle);
+            graph.insertEdge(options, null, null, debug1, debug2);
+
+            // Add serialPipes
+            serialButton = graph.insertVertex(parent, null, null, 20, pipeLineY + 90 + 300, 200, 40, globalStyle + "opacity=0;deletable=0;");
+            graph.insertVertex(serialButton, null, "Add SerialPipes", 0, 0, 200, 40, globalStyle + "fillColor=#aab6fe;deletable=0;");
+            // Add parallelPipes
+            parallelButton = graph.insertVertex(parent, null, null, 270, pipeLineY + 90 + 300, 200, 40, globalStyle + "opacity=0;deletable=0;");
+            graph.insertVertex(parallelButton, null, "Add ParallelPipes", 0, 0, 200, 40, globalStyle + "fillColor=#aab6fe;deletable=0;");
+
+            // Clear
+            graph.insertVertex(parent, null, "Clear all", 20, pipeLineY + 50 + 340 + 50 + 50, 450, 40, globalStyle + "fillColor=#ffccbc;rounded=1;");
+
+            //Pipeline
+            pipeline = graph.insertVertex(parent, null, null, 500, 10, getWidth(), getHeight(), globalStyle + "opacity=0;");
         } finally {
             graph.getModel().endUpdate();
         }
@@ -124,22 +147,98 @@ public class JGraphX extends JFrame {
 
         graphComponent.getGraphControl().addMouseListener(
                 new MouseAdapter() {
-                    Object last = null;
+                    // Initial serialPipes
+                    Object firstSerial = graph.insertVertex(parent, null, "SerialPipes", 520, getHeight() / 2, 270, 40, globalStyle + "fillColor=#b0bec5;");
+                    Object last = firstSerial;
+
                     Class lastType;
-                    private int lastPipeX = 20;
+                    private int lastPipeX = 350;
+                    private int lastPipeY = 20;
+
+                    private SerialPipes auxSerial = null;
+                    private ParallelPipes auxParallel = null;
+
+                    private Object auxObject = null;
+                    private int auxObjectY;
 
                     public void mouseClicked(MouseEvent e) {
                         Object cell = graphComponent.getCellAt(e.getX(), e.getY());
 
                         if (cell != null) {
-                            if (graph.getLabel(cell).equals("Start")) {
+                            if (graph.getLabel(cell).equals("Clear all")) {
+                                // Clean interface
+                                graph.removeCells(graph.getChildCells(pipeline));
+
+                                // Clean serialPipes
+                                int size = serialPipes.getPipes().length;
+                                for (int i = 0; i < size; i++) serialPipes.removePipe(0);
+
+                                last = firstSerial;
+                                lastPipeX = 350;
+                                lastPipeY = 20;
+
+                                graph.removeCells(graph.getChildCells(serialButton));
+                                graph.removeCells(graph.getChildCells(parallelButton));
+                            } else if (graph.getLabel(cell).equals("Start")) {
                                 logger.info("[GUI] Sending pipeline...");
                                 start = true;
                             } else if (graph.getLabel(cell).equals("Generate xml")) {
                                 logger.info("[GUI] Generating XML...");
                                 xml = true;
 
+                            } else if (graph.getLabel(cell).equals("Add SerialPipes")) {
+                                // Close parallelPipes
+                                graph.insertVertex(serialButton, null, "Close SerialPipes", 0, 50, 200, 40, globalStyle + "fillColor=#c5cae9;");
+                                auxSerial = new SerialPipes();
+
+                                auxObject = graph.insertVertex(pipeline, null, "SerialPipes", lastPipeX, lastPipeY + 100, 450, 40, globalStyle + "fillColor=#b0bec5");
+                                auxObjectY = lastPipeY + 100;
+                                lastPipeY += 100;
+
+                                graph.insertEdge(pipeline, null, null, last, auxObject);
+
+                                last = auxObject;
+
+                                logger.info("[GUI] SerialPipes successfully added.");
+                            } else if (graph.getLabel(cell).equals("Add ParallelPipes")) {
+                                // Close serialPipes
+                                graph.insertVertex(parallelButton, null, "Close ParallelPipes", 0, 50, 200, 40, globalStyle + "fillColor=#c5cae9;");
+
+                                auxParallel = new ParallelPipes();
+
+                                auxObject = graph.insertVertex(pipeline, null, "ParallelPipes", lastPipeX, lastPipeY + 100, 450, 40, globalStyle + "fillColor=#b0bec5");
+                                auxObjectY = lastPipeY + 100;
+                                lastPipeY += 100;
+
+                                graph.insertEdge(pipeline, null, null, last, auxObject);
+
+                                last = auxObject;
+                                logger.info("[GUI] ParallelPipes successfully added.");
+                            } else if (graph.getLabel(cell).equals("Close SerialPipes")) {
+                                graph.removeCells(graph.getChildCells(serialButton));
+                                serialPipes.add(auxSerial);
+                                lastPipeY = auxObjectY;
+
+                                auxSerial = null;
+
+                                graph.insertEdge(pipeline, null, null, last, auxObject);
+
+                                last = auxObject;
+                                logger.info("[GUI] SerialPipes successfully closed.");
+                            } else if (graph.getLabel(cell).equals("Close ParallelPipes")) {
+                                graph.removeCells(graph.getChildCells(parallelButton));
+                                serialPipes.add(auxParallel);
+                                lastType = auxParallel.getOutputType();
+                                lastPipeY = auxObjectY;
+
+                                auxParallel = null;
+
+                                graph.insertEdge(pipeline, null, null, last, auxObject);
+
+                                last = auxObject;
+                                logger.info("[GUI] ParallelPipes successfully closed.");
                             } else if (e.getX() < 460 && e.getY() < pipeLineY + 40) {
+                                // If add custom task clicked
                                 AbstractPipe newPipe = null;
                                 boolean error = false;
 
@@ -150,14 +249,20 @@ public class JGraphX extends JFrame {
                                     e1.printStackTrace();
                                 }
 
-                                if (last == null) {
+                                if (last == firstSerial) {
                                     try {
                                         Class inputType = ((AbstractPipe) pipes.get(graph.getLabel(cell)).
                                                 getPipeClass().newInstance()).getInputType();
 
                                         if (inputType != File.class) {
+                                            JOptionPane.showMessageDialog(graphComponent, "Error: First pipe" +
+                                                            " input type must be java.io.File and was " +
+                                                            inputType.getName(), "Not valid first Pipe",
+                                                    JOptionPane.ERROR_MESSAGE);
+
                                             logger.warn("[GUI] First pipe input type must be File and was " +
                                                     inputType.getName());
+
                                             error = true;
                                         }
                                     } catch (InstantiationException | IllegalAccessException e1) {
@@ -165,6 +270,10 @@ public class JGraphX extends JFrame {
                                     }
                                 } else {
                                     if (lastType != newPipe.getInputType()) {
+                                        JOptionPane.showMessageDialog(graphComponent, "Error: Pipe types " +
+                                                lastType.getName() + " and " + newPipe.getInputType().getName() +
+                                                " are not compatible.", "Types error", JOptionPane.ERROR_MESSAGE);
+
                                         logger.warn("[GUI] " + lastType.getName() + " and " +
                                                 newPipe.getInputType().getName() + " are not compatible.");
 
@@ -173,22 +282,31 @@ public class JGraphX extends JFrame {
                                 }
 
                                 if (!error) {
-                                    serialPipes.add(newPipe);
+                                    Object added;
 
-                                    if (lastPipeX + 450 >= 1900) {
-                                        pipeLineY += 100;
-                                        lastPipeX = 20;
+                                    if (auxParallel != null || auxSerial != null) {
+                                        if (auxParallel != null) {
+                                            auxParallel.add(newPipe);
+                                            lastType = auxParallel.getInputType();
+                                        } else {
+                                            auxSerial.add(newPipe);
+                                            lastType = newPipe.getOutputType();
+                                        }
+
+                                        added = graph.insertVertex(pipeline, null, graph.getLabel(cell), lastPipeX + 500, lastPipeY - 100, 450, 40, globalStyle + "fillColor=#b0bec5");
+                                    } else {
+                                        serialPipes.add(newPipe);
+                                        added = graph.insertVertex(pipeline, null, graph.getLabel(cell), lastPipeX, lastPipeY + 100, 450, 40, globalStyle + "fillColor=#b0bec5");
+                                        lastType = newPipe.getOutputType();
                                     }
 
-                                    Object added = graph.insertVertex(parent, null, graph.getLabel(cell), lastPipeX, pipeLineY + 100, 450, 40, globalStyle + "fillColor=#b0bec5");
-                                    lastPipeX += 550;
 
-                                    if (last != null) {
-                                        graph.insertEdge(parent, null, null, last, added);
-                                    }
+                                    lastPipeY += 100;
+
+                                    graph.insertEdge(pipeline, null, null, last, added);
 
                                     last = added;
-                                    lastType = newPipe.getOutputType();
+
 
                                     logger.info("[GUI] " + graph.getLabel(cell) + " successfully added.");
                                 }
@@ -214,10 +332,13 @@ public class JGraphX extends JFrame {
         this.setVisible(false);
 
         // Save configurations
-        String[] configurations = {"samplesFolder", "pluginsFolder", "outputDir", "tempDir", "debugMode"};
-        int y = 120;
+        String[] configurations = {"samplesFolder", "pluginsFolder", "outputDir", "tempDir", "debugMode", "resumable"};
+        int y = pipeLineY + 20;
+
+        System.out.println("Searched on: " + y);
+
         for (String key : configurations) {
-            Object cell = graphComponent.getCellAt(820, y += 50);
+            Object cell = graphComponent.getCellAt(240, y += 50);
             String value = graph.getLabel(cell);
             generalConfiguration.put(key, value);
         }
@@ -268,7 +389,7 @@ public class JGraphX extends JFrame {
 
             // Pipeline attributes
             Attr resumable = document.createAttribute("resumable");
-            resumable.setValue("yes");
+            resumable.setValue(generalConfiguration.get("resumable"));
             Attr debug = document.createAttribute("debug");
             debug.setValue(generalConfiguration.get("debugMode"));
             pipeline.setAttributeNode(resumable);
@@ -280,11 +401,38 @@ public class JGraphX extends JFrame {
 
             // Pipes in serialPipes
             for (AbstractPipe p : pipesList.getPipes()) {
-                Element pipe = document.createElement("pipe");
-                Element name = document.createElement("name");
-                name.appendChild(document.createTextNode(p.getClass().getSimpleName()));
-                pipe.appendChild(name);
-                serialPipes.appendChild(pipe);
+                if (p.getClass().getSimpleName().equals("SerialPipes")) {
+                    // Serial Pipe
+                    Element sp = document.createElement("serialPipes");
+                    Element pipe = null;
+                    for (AbstractPipe subP : ((SerialPipes) p).getPipes()) {
+                        pipe = document.createElement("pipe");
+                        Element name = document.createElement("name");
+                        name.appendChild(document.createTextNode(subP.getClass().getSimpleName()));
+                        pipe.appendChild(name);
+                    }
+                    sp.appendChild(pipe);
+                    serialPipes.appendChild(sp);
+                } else if (p.getClass().getSimpleName().equals("ParallelPipes")) {
+                    // Parallel Pipe
+                    Element pp = document.createElement("parallelPipes");
+                    Element pipe = null;
+                    for (AbstractPipe subP : ((ParallelPipes) p).getPipes()) {
+                        pipe = document.createElement("pipe");
+                        Element name = document.createElement("name");
+                        name.appendChild(document.createTextNode(subP.getClass().getSimpleName()));
+                        pipe.appendChild(name);
+                    }
+                    pp.appendChild(pipe);
+                    serialPipes.appendChild(pp);
+                } else {
+                    // Normal Pipe
+                    Element pipe = document.createElement("pipe");
+                    Element name = document.createElement("name");
+                    name.appendChild(document.createTextNode(p.getClass().getSimpleName()));
+                    pipe.appendChild(name);
+                    serialPipes.appendChild(pipe);
+                }
             }
 
             TransformerFactory transformerFactory = TransformerFactory.newInstance();

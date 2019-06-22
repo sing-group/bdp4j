@@ -23,7 +23,7 @@
 package org.bdp4j.types;
 
 /**
- * Represents a list of dataset 
+ * Represents types of columns of a dataset
  *
  * @author María Novo
  */
@@ -42,7 +42,7 @@ public enum DatasetType {
      *
      * @param desc The full description of the constant
      */
-    private DatasetType(final String desc) {
+    DatasetType(final String desc) {
         this.desc = desc;
     }
 
