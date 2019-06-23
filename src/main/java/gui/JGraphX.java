@@ -96,7 +96,6 @@ public class JGraphX extends JFrame {
             Object options = graph.insertVertex(parent, null, null, 20, pipeLineY + 50, 450, 330, globalStyle + "opacity=30;rounded=0;");
 
             // Samples folder
-            System.out.println("Is on: 40-" + (pipeLineY + 50 + 20));
             Object samples1 = graph.insertVertex(options, null, "Samples folder", 20, 20, 150, 40, globalStyle);
             Object samples2 = graph.insertVertex(options, null, "./samples", 220, 20, 210, 40, globalStyle + fieldStyle);
             graph.insertEdge(options, null, null, samples1, samples2);
@@ -124,7 +123,7 @@ public class JGraphX extends JFrame {
             // Resumable
             Object resumable1 = graph.insertVertex(options, null, "Resumable", 20, 270, 150, 40, globalStyle);
             Object resumable2 = graph.insertVertex(options, null, "yes", 220, 270, 210, 40, globalStyle + fieldStyle);
-            graph.insertEdge(options, null, null, debug1, debug2);
+            graph.insertEdge(options, null, null, resumable1, resumable2);
 
             // Add serialPipes
             serialButton = graph.insertVertex(parent, null, null, 20, pipeLineY + 90 + 300, 200, 40, globalStyle + "opacity=0;deletable=0;");
@@ -151,7 +150,7 @@ public class JGraphX extends JFrame {
                     Object firstSerial = graph.insertVertex(parent, null, "SerialPipes", 520, getHeight() / 2, 270, 40, globalStyle + "fillColor=#b0bec5;");
                     Object last = firstSerial;
 
-                    Class lastType;
+                    Class lastType = File.class;
                     private int lastPipeX = 350;
                     private int lastPipeY = 20;
 
@@ -176,6 +175,10 @@ public class JGraphX extends JFrame {
                                 last = firstSerial;
                                 lastPipeX = 350;
                                 lastPipeY = 20;
+                                auxSerial = null;
+                                auxParallel = null;
+                                auxObject = null;
+                                lastType = File.class;
 
                                 graph.removeCells(graph.getChildCells(serialButton));
                                 graph.removeCells(graph.getChildCells(parallelButton));
@@ -185,7 +188,6 @@ public class JGraphX extends JFrame {
                             } else if (graph.getLabel(cell).equals("Generate xml")) {
                                 logger.info("[GUI] Generating XML...");
                                 xml = true;
-
                             } else if (graph.getLabel(cell).equals("Add SerialPipes")) {
                                 // Close parallelPipes
                                 graph.insertVertex(serialButton, null, "Close SerialPipes", 0, 50, 200, 40, globalStyle + "fillColor=#c5cae9;");
@@ -335,8 +337,6 @@ public class JGraphX extends JFrame {
         String[] configurations = {"samplesFolder", "pluginsFolder", "outputDir", "tempDir", "debugMode", "resumable"};
         int y = pipeLineY + 20;
 
-        System.out.println("Searched on: " + y);
-
         for (String key : configurations) {
             Object cell = graphComponent.getCellAt(240, y += 50);
             String value = graph.getLabel(cell);
@@ -354,6 +354,7 @@ public class JGraphX extends JFrame {
 
     private void generateXml(SerialPipes pipesList, HashMap<String, String> generalConfiguration) {
         String xmlFilePath = "./generated/configuration.xml";
+        System.out.println(pipesList);
 
         try {
             DocumentBuilderFactory documentFactory = DocumentBuilderFactory.newInstance();
@@ -396,42 +397,44 @@ public class JGraphX extends JFrame {
             pipeline.setAttributeNode(debug);
 
             // Pipeline global serial pipe
-            Element serialPipes = document.createElement("serialPipes");
-            pipeline.appendChild(serialPipes);
+            Element globalSerialPipes = document.createElement("serialPipes");
+            pipeline.appendChild(globalSerialPipes);
 
             // Pipes in serialPipes
             for (AbstractPipe p : pipesList.getPipes()) {
                 if (p.getClass().getSimpleName().equals("SerialPipes")) {
                     // Serial Pipe
                     Element sp = document.createElement("serialPipes");
-                    Element pipe = null;
+
                     for (AbstractPipe subP : ((SerialPipes) p).getPipes()) {
-                        pipe = document.createElement("pipe");
+                        Element pipe = document.createElement("pipe");
                         Element name = document.createElement("name");
                         name.appendChild(document.createTextNode(subP.getClass().getSimpleName()));
                         pipe.appendChild(name);
+                        sp.appendChild(pipe);
                     }
-                    sp.appendChild(pipe);
-                    serialPipes.appendChild(sp);
+
+                    globalSerialPipes.appendChild(sp);
                 } else if (p.getClass().getSimpleName().equals("ParallelPipes")) {
                     // Parallel Pipe
                     Element pp = document.createElement("parallelPipes");
-                    Element pipe = null;
+
                     for (AbstractPipe subP : ((ParallelPipes) p).getPipes()) {
-                        pipe = document.createElement("pipe");
+                        Element pipe = document.createElement("pipe");
                         Element name = document.createElement("name");
                         name.appendChild(document.createTextNode(subP.getClass().getSimpleName()));
                         pipe.appendChild(name);
+                        pp.appendChild(pipe);
                     }
-                    pp.appendChild(pipe);
-                    serialPipes.appendChild(pp);
+
+                    globalSerialPipes.appendChild(pp);
                 } else {
                     // Normal Pipe
                     Element pipe = document.createElement("pipe");
                     Element name = document.createElement("name");
                     name.appendChild(document.createTextNode(p.getClass().getSimpleName()));
                     pipe.appendChild(name);
-                    serialPipes.appendChild(pipe);
+                    globalSerialPipes.appendChild(pipe);
                 }
             }
 
