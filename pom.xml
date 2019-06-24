@@ -13,9 +13,9 @@
     <inceptionYear>2018</inceptionYear>
     <url>https://github.com/sing-group/bdp4j</url>
     <description>
-        BDP4J implements a pipeline framework to allow definining
+        BDP4J implements a pipeline framework to allow defining
         project pipelines from XML. The main goal of the pipelines of this
-        application is to transform imput data received from multiple sources
+        application is to transform input data received from multiple sources
         into fully qualified datasets to be used with Machine Learning.
     </description>
 

@@ -30,6 +30,48 @@ In the repository https://github.com/sing-group/bdp4j_sample an example of use c
 http://www.esp.uem.es/jmgomez/smsspamcorpus/ a make a simple Weka 10-fold crosvalidation experiment. It is very simple 
 but you can find in the example several pipes of different pipes working together. 
 
+## Using BDP4J
+Add the following repositories to your POM file:
+
+```
+    <repositories>
+        <repository>
+            <id>sing-maven-releases</id>
+            <name>SING Maven Releases</name>
+            <url>https://maven.sing-group.org/repository/maven-releases/</url>
+            <releases>
+                <enabled>true</enabled>
+            </releases>
+            <snapshots>
+                <enabled>false</enabled>
+            </snapshots>
+        </repository>
+        <repository>
+            <id>sing-maven-snapshots</id>
+            <name>SING Maven Snapshots</name>
+            <url>https://maven.sing-group.org/repository/maven-snapshots/</url>
+            <releases>
+                <enabled>false</enabled>
+            </releases>
+            <snapshots>
+                <enabled>true</enabled>
+            </snapshots>
+        </repository>
+     </repositories>
+```
+    
+Add the following dependency to your project:
+
+```
+    <dependencies>
+        <dependency>
+            <groupId>org.bdp4j</groupId>
+            <artifactId>bdp4j</artifactId>
+            <version>1.0.1</version>
+        </dependency>
+    <dependencies>
+```
+
 ## References
 McCallum, Andrew Kachites.  "MALLET: A Machine Learning for Language Toolkit." http://mallet.cs.umass.edu. 2002.
 
