@@ -1,15 +1,26 @@
-/* Copyright (C) 2002 Univ. of Vigo, SING Group
-   This file has been modified from the original one belonging to "MALLET"
-   (MAchine Learning for LanguagE Toolkit) project. Consequently this file
-   and the rest of the project is publised under the Common Plublic License, 
-   version 1.0, as published by http://www.opensource.org. For further information
-   see, seee the file 'LICENSE' included in this distribution. */
- /* Copyright (C) 2002 Univ. of Massachusetts Amherst, Computer Science Dept.
-   This file is part of "MALLET" (MAchine Learning for LanguagE Toolkit).
-   http://www.cs.umass.edu/~mccallum/mallet
-   This software is provided under the terms of the Common Public License,
-   version 1.0, as published by http://www.opensource.org.  For further
-   information, see the file `LICENSE' included with this distribution. */
+/*-
+ * #%L
+ * BDP4J
+ * %%
+ * Copyright (C) 2018 - 2019 SING Group (University of Vigo)
+ * %%
+ * This program is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as
+ * published by the Free Software Foundation, either version 3 of the
+ * License, or (at your option) any later version.
+ * 
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ * 
+ * You should have received a copy of the GNU General Public
+ * License along with this program.  If not, see
+ * <http://www.gnu.org/licenses/gpl-3.0.html>.
+ * #L%
+ */
+
+
 package org.bdp4j.pipe;
 
 import java.io.File;
@@ -24,32 +35,8 @@ import java.util.List;
 import org.bdp4j.util.Configurator;
 import org.bdp4j.util.PipeUtils;
 
-/**
- * The abstract superclass of all Pipes, which transform one data type to
- * another. Pipes are most often used for feature extraction.
- * <p>
- * A pipe operates on an {@link org.bdp4j.types.Instance}, which is a carrier of
- * data. A pipe reads from and writes to fields in the Instance when it is
- * requested to process the instance. It is up to the pipe which fields in the
- * Instance it reads from and writes to, but usually a pipe will read its input
- * from and write its output to the "data" field of an instance.
- * <p>
- * Pipes can be hierachically composed. In a typical usage, a SerialPipe is
- * created which holds instances of other pipes in an ordered list. Piping in
- * instance through a SerialPipe means piping the instance through the child
- * pipes in sequence.
- *
- * @author Andrew McCallum
- * <a href="mailto:mccallum@cs.umass.edu">mccallum@cs.umass.edu</a>
- * @author Jose Ramon Mendez
- * @author Maria Novo
- * @author Yeray Lage
- */
 public abstract class AbstractPipe implements Pipe {
 
-    /**
-     * For logging purposes
-     */
     private static final Logger logger = LogManager.getLogger(AbstractPipe.class);
     /**
      * Error message for dependencies

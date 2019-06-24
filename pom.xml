@@ -9,15 +9,35 @@
     <artifactId>bdp4j</artifactId>
     <version>1.0.0-SNAPSHOT</version>
 
-    <name>bdp4j</name>
-    <!-- FIXME change it to the project's website -->
-    <url>http://www.example.com</url>
+    <name>BDP4J</name>
+    <inceptionYear>2018</inceptionYear>
+    <url>https://github.com/sing-group/bdp4j</url>
+    <description>
+        BDP4J implements a pipeline framework to allow definining
+        project pipelines from XML. The main goal of the pipelines of this
+        application is to transform imput data received from multiple sources
+        into fully qualified datasets to be used with Machine Learning.
+    </description>
 
     <properties>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
         <maven.compiler.source>1.8</maven.compiler.source>
         <maven.compiler.target>1.8</maven.compiler.target>
+        
+        <!-- license-maven-plugin configuration -->
+        <license.licenseName>gpl_v3</license.licenseName>
+        <license.copyrightOwners>SING Group (University of Vigo)</license.copyrightOwners>
+        <license.organizationName>SING Group (University of Vigo)</license.organizationName>
+        <license.addJavaLicenseAfterPackage>false</license.addJavaLicenseAfterPackage>
     </properties>
+    
+    <licenses>
+            <license>
+                    <name>GNU GENERAL PUBLIC LICENSE, Version 3</name>
+                    <url>http://www.gnu.org/licenses/gpl.html</url>
+                    <distribution>repo</distribution>
+            </license>
+    </licenses>
 
     <distributionManagement>
         <repository>
@@ -128,6 +148,11 @@
         <pluginManagement><!-- lock down plugins versions to avoid using Maven defaults (may be moved to parent pom) -->
             <plugins>
                 <plugin>
+                    <groupId>org.codehaus.mojo</groupId>
+                    <artifactId>license-maven-plugin</artifactId>
+                    <version>1.14</version>
+                </plugin>
+                <plugin>
                     <artifactId>maven-clean-plugin</artifactId>
                     <version>3.0.0</version>
                 </plugin>
@@ -164,6 +189,19 @@
             </plugins>
         </pluginManagement>
         <plugins>
+            <plugin>
+                <groupId>org.codehaus.mojo</groupId>
+                <artifactId>license-maven-plugin</artifactId>
+                <executions>
+                    <execution>
+                        <id>first</id>
+                        <goals>
+                            <goal>update-file-header</goal>
+                        </goals>
+                        <phase>process-sources</phase>
+                    </execution>
+                </executions>
+            </plugin>
             <plugin>
                 <artifactId>maven-jar-plugin</artifactId>
                 <configuration>
