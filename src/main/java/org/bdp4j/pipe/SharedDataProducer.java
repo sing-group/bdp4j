@@ -23,7 +23,21 @@
 
 package org.bdp4j.pipe;
 
+/**
+ * This interface is used in case of resume execution from a particular pipe to
+ * save data.
+ *
+ * If you need to save aditional data, for example, a Singleton class, you have
+ * to implement this interface, to specify how to save data.
+ *
+ * @author María Novo
+ */
 public interface SharedDataProducer {
 
-    void writeToDisk(String dir);
+    /**
+     * Save data in a filepath
+     *
+     * @param dir Directory path where the data is saved
+     */
+    public void writeToDisk(String dir);
 }

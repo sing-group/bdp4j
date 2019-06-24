@@ -23,7 +23,21 @@
 
 package org.bdp4j.pipe;
 
-public interface SharedDataConsumer {
 
-    void readFromDisk(String dir);
+/**
+ * This interface is used in case of resume execution from a particular pipe to
+ * retrieve data.
+ *
+ * If you need to read aditional data, for example, a Singleton class, you have
+ * to implement this interface, to specify how to read this data.
+ *
+ * @author María Novo
+ */
+public interface SharedDataConsumer {
+    /**
+     * Read data from filepath
+     *
+     * @param dir Directory path to read data
+     */
+    public void readFromDisk(String dir);
 }

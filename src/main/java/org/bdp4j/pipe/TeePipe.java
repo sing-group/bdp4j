@@ -32,5 +32,11 @@ import java.lang.annotation.Target;
 @Target(ElementType.TYPE)
 @Retention(RetentionPolicy.RUNTIME)
 
+/**
+ * This annotation is used to indicate which pipes are able to store instances
+ * to disk (maybe in CSV or ARFF formats). They acts in a similar form to 
+ * the tee command in Unix Systems.
+ * @author Yeray Lage
+ */
 public @interface TeePipe {
 }

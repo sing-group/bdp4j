@@ -29,10 +29,21 @@ import org.bdp4j.types.Transformer;
 import java.util.ArrayList;
 import java.util.List;
 
+/**
+ * Trasform an input from String, that represents a Data to Double
+ *
+ * @author María Novo
+ */
 public class Double2BinaryTransformer extends Transformer {
 
     private String transformerListValues;
 
+    /**
+     * Transform an input, that represents a Date to Double
+     *
+     * @param input A Double to transform in binary
+     * @return A Double value that represents a binary value
+     */
     @Override
     public double transform(Object input) {
         if (input != null && !input.equals("null")) {

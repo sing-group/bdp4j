@@ -32,15 +32,50 @@ import java.io.IOException;
 import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
 import java.io.Serializable;
-import java.lang.reflect.Field;
-import java.lang.reflect.Modifier;
 import java.util.Collection;
 import java.util.LinkedHashMap;
 import java.util.Map;
 import java.util.Set;
 
+ /* Copyright (C) 2002 Univ. of Massachusetts Amherst, Computer Science Dept.
+   This file is part of "MALLET" (MAchine Learning for LanguagE Toolkit).
+   http://www.cs.umass.edu/~mccallum/mallet
+   This software is provided under the terms of the Common Public License,
+   version 1.0, as published by http://www.opensource.org.  For further
+   information, see the file `LICENSE' included with this distribution. */
+
+/**
+ * A machine learning "example" to be used in training, testing or performance
+ * of various machine learning algorithms.
+ *
+ * <p>
+ * An instance contains four generic fields of predefined name: "data",
+ * "target", "name", and "source". "Data" holds the data represented `by the
+ * instance, "target" is often a label associated with the instance, "name" is a
+ * short identifying name for the instance (such as a filename), and "source" is
+ * human-readable sourceinformation, (such as the original text).
+ *
+ * <p>
+ * Each field has no predefined type, and may change type as the instance is
+ * processed. For example, the data field may start off being a string that
+ * represents a file name and then be processed by a {@link AbstractPipe} into a
+ * CharSequence representing the contents of the file, and eventually to a
+ * feature vector holding words found in the file. It is up to each pipe which
+ * fields in the Instance it modifies; the most common case is that the pipe
+ * modifies the data field.
+ *
+ * @author Andrew McCallum
+ * <a href="mailto:mccallum@cs.umass.edu">mccallum@cs.umass.edu</a>
+ * @author José Ramón Méndez Reboredo
+ * @author Yeray Lage
+ * @author Maria Novo
+ * @see AbstractPipe
+ */
 public class Instance implements Serializable {
 
+    /**
+     * Serial version UID
+     */
     private static final long serialVersionUID = -8139659995227189017L;
 
     /**

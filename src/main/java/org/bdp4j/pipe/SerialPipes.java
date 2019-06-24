@@ -34,13 +34,26 @@ import java.util.Arrays;
 import java.util.Collection;
 import java.util.List;
 
+/**
+ * Convert an instance through a sequence of pipes.
+ *
+ * @author Andrew McCallum
+ * <a href="mailto:mccallum@cs.umass.edu">mccallum@cs.umass.edu</a>
+ * @author Yeray Lage
+ * @author Maria Novo Loures
+ * @author José Ramón Méndez
+ */
 public class SerialPipes extends AbstractPipe {
-
+    /**
+     * For logging purposes
+     */
     private static final Logger logger = LogManager.getLogger(SerialPipes.class);
+
     /**
      * The input type for the serial pipes
      */
     private Class<?> inputType = null;
+    
     /**
      * The output type for the serial pipes
      */

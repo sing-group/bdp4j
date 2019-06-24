@@ -32,7 +32,6 @@ import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStreamReader;
 import java.io.OutputStreamWriter;
-import java.util.logging.Level;
 import java.util.regex.Pattern;
 
 import org.apache.logging.log4j.LogManager;
@@ -40,10 +39,22 @@ import org.apache.logging.log4j.Logger;
 import org.apache.logging.log4j.core.util.FileUtils;
 import org.bdp4j.types.ColumnDefinition;
 
+/**
+ * Generate Dataset from file. This dataset will contain only columns with a
+ * float value. This class allows to use transformers to convert a non float
+ * value in float value.
+ *
+ * @author María Novo
+ */
 public class CSVDatasetWriter {
-
+    /**
+     * For logging purposes
+     */
     private static final Logger logger = LogManager.getLogger(CSVDatasetWriter.class);
 
+    /**
+     * The default CSV filed separator
+     */    
     private static final String DEFAULT_CSV_SEP = ";";
 
     /**

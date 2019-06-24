@@ -41,10 +41,21 @@ import java.io.File;
 import java.lang.reflect.Method;
 import java.util.HashMap;
 
+/**
+ * Singleton configurator class for configuring the app and pipe from de
+ * configuration file.
+ *
+ * @author Yeray Lage
+ */
 public final class Configurator {
-
+    /**
+     * Default samples folder property key.
+     */
     public static final String SAMPLES_FOLDER = "samplesFolder";
 
+    /**
+     * Default samples folder property value.
+     */    
     public static final String DEFAULT_SAMPLES_FOLDER = "./samples";
 
     /**

@@ -41,10 +41,22 @@ import java.util.*;
 import java.util.function.Predicate;
 import org.bdp4j.util.DateTimeIdentifier;
 
+/**
+ * Generate Dataset from file. This dataset will contain only columns with a
+ * float value. This class allows to use transformers to convert a non float
+ * value in float value.
+ *
+ * @author María Novo
+ */
 public class CSVDatasetReader {
-
+    /**
+     * For logging purposes
+     */
     private static final Logger logger = LogManager.getLogger(CSVDatasetReader.class);
 
+    /**
+     * The filepath/filename to load
+     */
     String filePath;
     /**
      * The list of transformers. A transformer is a class used to transform a

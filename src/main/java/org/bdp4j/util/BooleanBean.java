@@ -24,25 +24,60 @@
 
 package org.bdp4j.util;
 
+/**
+ * An mutable object representation of a boolean
+ * @author José Ramón Méndez
+ */
 public class BooleanBean {
+    /**
+     * The value that is stored
+     */
     private boolean value;
 
+    /**
+     * Programming 
+     * @param value The value to be stored
+     */
+    private BooleanBean() {
+        
+    }
+
+    /**
+     * The constructor with a value
+     * @param value The value to be stored
+     */
     public BooleanBean(boolean value) {
         this.value = value;
     }
 
+    /**
+     * Returns the stored value
+     * @return The stored value
+     */
     public boolean getValue() {
         return value;
     }
 
+    /**
+     * Changes the inner boolean value
+     * @param value the value to be stored
+     */
     public void setValue(boolean value) {
         this.value = value;
     }
 
+    /**
+     * Makes an OR between the parameter and the stored value
+     * @param value The value to make an OR
+     */
     public void Or(boolean value) {
         this.value = this.value || value;
     }
 
+    /**
+     * Makes an AND between the parameter and the stored value
+     * @param value the value to make an AND
+     */
     public void And(boolean value) {
         this.value = this.value && value;
     }

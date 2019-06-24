@@ -27,10 +27,21 @@ import java.util.ArrayList;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
+
+/**
+ * Storing a dataset by implementing a singleton pattern. For tee a dataset with a pipe.
+ * @author María Novo
+ */
 public class DatasetStore {
 
+    /**
+     * For logging purposes
+     */
     private static final Logger logger = LogManager.getLogger(DatasetStore.class);
 
+    /**
+     * The stored dataset
+     */
     private Dataset dataset;
 
     /**

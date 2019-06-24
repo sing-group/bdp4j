@@ -38,8 +38,16 @@ import org.bdp4j.util.PipeUtils;
 import org.bdp4j.util.Configurator;
 import org.bdp4j.util.EBoolean;
 
+/**
+ * Parallel pipe execution that can be resumed after a fail
+ * @author María Novo
+ * @since jdk 1.8
+ */
 public class ResumableParallelPipes extends ParallelPipes {
 
+    /**
+     * The logger for logging purposes
+     */
     private static final Logger logger = LogManager.getLogger(ResumableParallelPipes.class);
 
     private Configurator configurator = Configurator.getLastUsed();
