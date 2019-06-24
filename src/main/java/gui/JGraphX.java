@@ -106,12 +106,12 @@ public class JGraphX extends JFrame {
             graph.insertEdge(options, null, null, plugins1, plugins2);
 
             // Output dir
-            Object outputFolder1 = graph.insertVertex(options, null, "Output dir", 20, 120, 150, 40, globalStyle);
+            Object outputFolder1 = graph.insertVertex(options, null, "Output folder", 20, 120, 150, 40, globalStyle);
             Object outputFolder2 = graph.insertVertex(options, null, "./output", 220, 120, 210, 40, globalStyle + fieldStyle);
             graph.insertEdge(options, null, null, outputFolder1, outputFolder2);
 
             // Temp dir
-            Object tempFolder1 = graph.insertVertex(options, null, "Temp dir", 20, 170, 150, 40, globalStyle);
+            Object tempFolder1 = graph.insertVertex(options, null, "Temp folder", 20, 170, 150, 40, globalStyle);
             Object tempFolder2 = graph.insertVertex(options, null, "./temp", 220, 170, 210, 40, globalStyle + fieldStyle);
             graph.insertEdge(options, null, null, tempFolder1, tempFolder2);
 
