@@ -106,14 +106,14 @@ public class JGraphX extends JFrame {
             graph.insertEdge(options, null, null, plugins1, plugins2);
 
             // Output dir
-            Object outputDir1 = graph.insertVertex(options, null, "Output dir", 20, 120, 150, 40, globalStyle);
-            Object outputDir2 = graph.insertVertex(options, null, "./output", 220, 120, 210, 40, globalStyle + fieldStyle);
-            graph.insertEdge(options, null, null, outputDir1, outputDir2);
+            Object outputFolder1 = graph.insertVertex(options, null, "Output dir", 20, 120, 150, 40, globalStyle);
+            Object outputFolder2 = graph.insertVertex(options, null, "./output", 220, 120, 210, 40, globalStyle + fieldStyle);
+            graph.insertEdge(options, null, null, outputFolder1, outputFolder2);
 
             // Temp dir
-            Object tempDir1 = graph.insertVertex(options, null, "Temp dir", 20, 170, 150, 40, globalStyle);
-            Object tempDir2 = graph.insertVertex(options, null, "./temp", 220, 170, 210, 40, globalStyle + fieldStyle);
-            graph.insertEdge(options, null, null, tempDir1, tempDir2);
+            Object tempFolder1 = graph.insertVertex(options, null, "Temp dir", 20, 170, 150, 40, globalStyle);
+            Object tempFolder2 = graph.insertVertex(options, null, "./temp", 220, 170, 210, 40, globalStyle + fieldStyle);
+            graph.insertEdge(options, null, null, tempFolder1, tempFolder2);
 
             // Debug
             Object debug1 = graph.insertVertex(options, null, "Debug", 20, 220, 150, 40, globalStyle);
@@ -334,7 +334,7 @@ public class JGraphX extends JFrame {
         this.setVisible(false);
 
         // Save configurations
-        String[] configurations = {"samplesFolder", "pluginsFolder", "outputDir", "tempDir", "debugMode", "resumable"};
+        String[] configurations = {"samplesFolder", "pluginsFolder", "outputFolder", "tempFolder", "debugMode", "resumable"};
         int y = pipeLineY + 20;
 
         for (String key : configurations) {
@@ -374,15 +374,15 @@ public class JGraphX extends JFrame {
             samplesFolder.appendChild(document.createTextNode(generalConfiguration.get("samplesFolder")));
             Element pluginsFolder = document.createElement("pluginsFolder");
             pluginsFolder.appendChild(document.createTextNode(generalConfiguration.get("pluginsFolder")));
-            Element outputDir = document.createElement("outputDir");
-            outputDir.appendChild(document.createTextNode(generalConfiguration.get("outputDir")));
-            Element tempDir = document.createElement("tempDir");
-            tempDir.appendChild(document.createTextNode(generalConfiguration.get("tempDir")));
+            Element outputFolder = document.createElement("outputFolder");
+            outputFolder.appendChild(document.createTextNode(generalConfiguration.get("outputFolder")));
+            Element tempFolder = document.createElement("tempFolder");
+            tempFolder.appendChild(document.createTextNode(generalConfiguration.get("tempFolder")));
 
             general.appendChild(samplesFolder);
             general.appendChild(pluginsFolder);
-            general.appendChild(outputDir);
-            general.appendChild(tempDir);
+            general.appendChild(outputFolder);
+            general.appendChild(tempFolder);
 
             // Pipeline element
             Element pipeline = document.createElement("pipeline");
