@@ -32,11 +32,27 @@ import java.util.ArrayList;
 import java.util.Locale;
 import java.time.format.DateTimeParseException;
 
+/**
+ * Identifies dates from their string representation
+ *
+ * @author Maria Novo
+ * @author Reyes Pavon
+ * @since jdk1.8
+ */
 public class DateTimeIdentifier {
-
+    /**
+     * Singleton pattern (local reference)
+     */
     private static DateTimeIdentifier defaultDateTimeProcessor = null;
     
+    /**
+     * DateTime format vector
+     */    
     private static final ArrayList<DateTimeFormatter> sdfs = new ArrayList<>();
+
+    /**
+     * Date format vector
+     */
     private static final ArrayList<DateTimeFormatter> patternsDate = new ArrayList<>();
 
     FormatStyle[] styles = new FormatStyle[] {FormatStyle.SHORT, FormatStyle.MEDIUM, FormatStyle.LONG, FormatStyle.FULL};

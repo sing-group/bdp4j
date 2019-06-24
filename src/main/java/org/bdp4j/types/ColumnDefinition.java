@@ -23,24 +23,53 @@
 
 package org.bdp4j.types;
 
+/**
+ * Definition of a column in a dataset (name, type and default value)
+ * @author María Novo 
+ */
 public class ColumnDefinition {
 
     private String columnName;
     private Class<?> columnType;
     private Object defaultValue;
 
+    /**
+     * Creates an String column definition 
+     * @param columnName The column name
+     * @param value The value
+     * @return The desired column definition
+     */
     public static ColumnDefinition stringColumn(String columnName, String value) {
         return new ColumnDefinition(columnName, value);
     }
+
+    /**
+     * Creates an Double column definition with
+     * @param columnName The column name
+     * @param value The value
+     * @return The desired column definition
+     */
 
     public static ColumnDefinition doubleColumn(String columnName, Double value) {
         return new ColumnDefinition(columnName, value);
     }
 
+    /**
+     * Creates an Object column definition with
+     * @param columnName The column name
+     * @param defaultValue The value
+     */
+
     public ColumnDefinition(String columnName, Object defaultValue) {
         this(columnName, defaultValue.getClass(), defaultValue);
     }
 
+    /**
+     * Creates a column definition with the values for all attributes
+     * @param columnName The column Name
+     * @param columnType The column type
+     * @param defaultValue The default value
+     */
     public ColumnDefinition(String columnName, Class<?> columnType, Object defaultValue) {
         boolean isStringType = String.class.equals(columnType);
        
@@ -57,18 +86,34 @@ public class ColumnDefinition {
         this.defaultValue = defaultValue;
     }
 
+    /**
+     * Indicates whether the columns is String or not
+     * @return true if the column type is string
+     */
     public final boolean isStringType() {
         return String.class.equals(columnType);
     }
 
+    /**
+     * Returns the column name 
+     * @return The column name
+     */
     public String getColumnName() {
         return columnName;
     }
 
+    /**
+     * Returns the type of the column
+     * @return The type of the column
+     */
     public Class<?> getColumnType() {
         return columnType;
     }
 
+    /**
+     * Returns the default value for the column
+     * @return The default value for the column
+     */
     public Object getDefaultValue() {
         return defaultValue;
     }

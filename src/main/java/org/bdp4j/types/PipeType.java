@@ -24,24 +24,30 @@
 
 package org.bdp4j.types;
 
+import java.lang.annotation.Annotation;
+
 import org.bdp4j.pipe.PropertyComputingPipe;
 import org.bdp4j.pipe.TargetAssigningPipe;
 import org.bdp4j.pipe.TeePipe;
 import org.bdp4j.pipe.TransformationPipe;
 
+/**
+ * An enumeration with the Pipe types to count the types of a pipe
+ * @author Yeray Lage
+ */
 public enum PipeType {
     TRANSFORMATION_PIPE(TransformationPipe.class),
     TARGET_ASSIGNING_PIPE(TargetAssigningPipe.class),
     PROPERTY_COMPUTING_PIPE(PropertyComputingPipe.class),
     TEE_PIPE(TeePipe.class);
 
-    private Class type;
+    private Class<?> type;
 
-    PipeType(Class type) {
+    PipeType(Class<?> type) {
         this.type = type;
     }
 
-    public Class typeClass() {
+    public Class<?> typeClass() {
         return type;
     }
 }

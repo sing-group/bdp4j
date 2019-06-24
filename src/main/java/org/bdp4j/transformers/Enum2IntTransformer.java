@@ -31,10 +31,21 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+/**
+ * Transform an input to Double, using transformList values
+ *
+ * @author María Novo
+ */
 public class Enum2IntTransformer extends Transformer {
-
+    
+    /**
+     * Represents the conversor from String to Integer
+     */
     private Map<String, Integer> transformList;
 
+    /**
+     * Build a Enum2IntTransformer using the default information
+     */
     public Enum2IntTransformer() {
         this(new HashMap<>());
     }

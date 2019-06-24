@@ -30,10 +30,42 @@ import org.bdp4j.util.BooleanBean;
 import java.util.Collection;
 import java.util.List;
 
+/**
+ * Pipe interface should be used only then you have to extend from a third class
+ * and you can not extend from AbstractPipe (only implementing an interface). Most of 
+ * BDP4J services are implemented in AbstractPipe class. In order to create a Pipe,
+ * if you extend from AbstractPipe class, only implementing pipe method is required.
+ * So, we really disadvice the usage of this interface to use BDP4J. Use this interface
+ * only in the case that there is no other option.
+ * 
+ * Pipe interface is the most difficult way to implement a Pipe. You have to implement 
+ * a large collection of methods to make them compatible with BDP4J. 
+ * 
+ * @since Java 1.8
+ * @author Jeray Lage
+ * @author María Novo
+ * @author José Ramón Méndez
+ */
 public interface Pipe {
-
+    /**
+     * Process an Instance. This method takes an input Instance, destructively
+     * modifies it in some way, and returns it. This is the method by which all
+     * pipes are eventually run.
+     * <p>
+     * One can create a new concrete subclass of Pipe simply by implementing
+     * this method.
+     *
+     * @param carrier Instance to be processed.
+     * @return Instancia procesada
+     */
     public Instance pipe(Instance carrier);
 
+    /**
+     * Pipe all instances from a Collection
+     *
+     * @param carriers Collection of instances to pipe
+     * @return The collection of instances after being processed
+     */    
     public Collection<Instance> pipeAll(Collection<Instance> carriers);
 
     /**
@@ -94,7 +126,7 @@ public interface Pipe {
 
     /**
      * Get the store path to save data
-     *
+     * @param carriers Get the store path to save some instances given a certain pipe
      * @return the store path to save data
      */
     String getStorePath(Collection<Instance> carriers);
@@ -137,7 +169,11 @@ public interface Pipe {
      */
     public boolean checkDependencies();
 
-    // TODO this javaDoc
+    /**
+     * Count how many pipes are included to be executed in sequence
+     * @param pipeType The type of pipe to count
+     * @return The number of pipes that are included to be executed in sequence
+     */
     public Integer countPipes(PipeType pipeType);
 
     /**

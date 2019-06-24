@@ -35,6 +35,17 @@ import org.bdp4j.util.Configurator;
 import org.bdp4j.util.EBoolean;
 import org.bdp4j.util.PipeUtils;
 
+/**
+ * Serial pipe execution that can be resummed after an execution fail
+ * 
+ *  The configuration of the pipe (including the temporal folder, the debug
+ * mode...) is created using the last used Configurator
+ * (Configurator.getLastUsed()). If another configuration is required, please
+ * stablish it through apropiate setters.
+ * 
+ * @author María Novo
+ * @since jdk 1.8
+ */
 public class ResumableSerialPipes extends SerialPipes {
 
     private static final Logger logger = LogManager.getLogger(SerialPipes.class);

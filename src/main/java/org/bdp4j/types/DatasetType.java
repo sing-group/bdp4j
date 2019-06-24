@@ -20,17 +20,27 @@
  * #L%
  */
 
-
-
 package org.bdp4j.types;
-
+/**
+ * Represents types of columns of a dataset
+ *
+ * @author María Novo
+ */
 public enum DatasetType {
     STRING("String"),
     DOUBLE("Double"),
     DATE("Date");
 
+    /**
+     * The description of the DatasetType
+     */
     private final String desc;
 
+    /**
+     * Creates the enum instance
+     *
+     * @param desc The full description of the constant
+     */
     DatasetType(final String desc) {
         this.desc = desc;
     }

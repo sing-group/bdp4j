@@ -29,10 +29,22 @@ import org.bdp4j.types.Transformer;
 import java.util.ArrayList;
 import java.util.List;
 
+/**
+ * Trasform an input from String to Double, that represents the input lenght.
+ *
+ * @author María Novo
+ */
 public class ComputeStringLenghtTransformer extends Transformer {
 
     private String transformerListValues;
 
+    /**
+     * Trasform an input from String to Double, that represents the input
+     * lenght.
+     *
+     * @param input A string to transform in Double
+     * @return A double value that represents the string length
+     */
     @Override
     public double transform(Object input) {
         return new Double(((String) input).length());
@@ -44,6 +56,11 @@ public class ComputeStringLenghtTransformer extends Transformer {
         return transformerListValues;
     }
     
+    /**
+     * Get a List who contains the values
+     *
+     * @return List who contains the values
+     */    
     public Class<?> getInputType() {
         return String.class;
     }

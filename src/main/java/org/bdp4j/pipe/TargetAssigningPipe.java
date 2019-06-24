@@ -32,6 +32,11 @@ import java.lang.annotation.Target;
 @Target(ElementType.TYPE)
 @Retention(RetentionPolicy.RUNTIME)
 
+/**
+ * Represents a pipe that only can modify the target of Instances
+ * @author Yeray Lage
+ * @since JDK 1.8
+ */
 public @interface TargetAssigningPipe {
 
 }

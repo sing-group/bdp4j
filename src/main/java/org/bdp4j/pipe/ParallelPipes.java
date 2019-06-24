@@ -35,6 +35,11 @@ import java.util.Arrays;
 import java.util.Collection;
 import java.util.List;
 
+/**
+ * Implements the execution of tasks (pipes) in parallel with threading
+ * @author Yeray Lage
+ * @since JDK 1.8
+ */
 public class ParallelPipes extends AbstractPipe {
 
     private static final Logger logger = LogManager.getLogger(ParallelPipes.class);

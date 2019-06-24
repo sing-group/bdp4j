@@ -41,8 +41,16 @@ import java.util.Map;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
+/**
+ * Build a weka dataset
+ *
+ * @author María Novo
+ */
 public class Dataset implements Serializable, Cloneable {
 
+    /**
+     * Combines columns by summing (used for frequency/count values)
+     */
     public static final CombineOperator COMBINE_SUM = new CombineOperator() {
         @Override
         public Double combine(Double a, Double b) {
@@ -50,6 +58,9 @@ public class Dataset implements Serializable, Cloneable {
         }
     };
 
+    /**
+     * Combines columns by OR (used for binary representation)
+     */    
     public static final CombineOperator COMBINE_OR = new CombineOperator() {
         @Override
         public Double combine(Double a, Double b) {
