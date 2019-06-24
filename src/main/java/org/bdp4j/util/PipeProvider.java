@@ -1,24 +1,26 @@
-/*
- * BDP4j implements a pipeline framework to allow definining 
- * project pipelines from XML. The main goal of the pipelines of this 
- * application is to transform imput data received from multiple sources 
- * into fully qualified datasets to be used with Machine Learning.
- *
- * Copyright (C) 2018  Sing Group (University of Vigo)
- *
+/*-
+ * #%L
+ * BDP4J
+ * %%
+ * Copyright (C) 2018 - 2019 SING Group (University of Vigo)
+ * %%
  * This program is free software: you can redistribute it and/or modify
- * it under the terms of the GNU General Public License as published by
- * the Free Software Foundation, either version 3 of the License, or
- * (at your option) any later version.
- *
+ * it under the terms of the GNU General Public License as
+ * published by the Free Software Foundation, either version 3 of the
+ * License, or (at your option) any later version.
+ * 
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  * GNU General Public License for more details.
- *
- * You should have received a copy of the GNU General Public License
- * along with this program.  If not, see <https://www.gnu.org/licenses/>.
+ * 
+ * You should have received a copy of the GNU General Public
+ * License along with this program.  If not, see
+ * <http://www.gnu.org/licenses/gpl-3.0.html>.
+ * #L%
  */
+
+
 package org.bdp4j.util;
 
 import org.apache.logging.log4j.LogManager;
@@ -34,24 +36,11 @@ import java.util.HashMap;
 import java.util.ServiceLoader;
 import org.bdp4j.pipe.TransformationPipe;
 
-/**
- * Class for loading jar with new Pipes dynamically
- *
- * @author Yeray Lage
- */
 public class PipeProvider {
 
     private ServiceLoader<Pipe> loader;
-    /**
-     * For logging purposes
-     */
     private static final Logger logger = LogManager.getLogger(PipeProvider.class);
 
-    /**
-     * Takes all the jar from location and adds the pipes to the ServiceLoader
-     *
-     * @param folder The folder location
-     */
     public PipeProvider(String folder) {
         File location = new File(folder);
 

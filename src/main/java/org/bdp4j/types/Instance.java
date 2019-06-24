@@ -1,15 +1,26 @@
-/* Copyright (C) 2002 Univ. of Vigo, SING Group
-   This file has been modified from the original one belonging to "MALLET"
-   (MAchine Learning for LanguagE Toolkit) project. Consequently this file
-   and the rest of the project is publised under the Common Plublic License, 
-   version 1.0, as published by http://www.opensource.org. For further information
-   see, seee the file 'LICENSE' included in this distribution. */
- /* Copyright (C) 2002 Univ. of Massachusetts Amherst, Computer Science Dept.
-   This file is part of "MALLET" (MAchine Learning for LanguagE Toolkit).
-   http://www.cs.umass.edu/~mccallum/mallet
-   This software is provided under the terms of the Common Public License,
-   version 1.0, as published by http://www.opensource.org.  For further
-   information, see the file `LICENSE' included with this distribution. */
+/*-
+ * #%L
+ * BDP4J
+ * %%
+ * Copyright (C) 2018 - 2019 SING Group (University of Vigo)
+ * %%
+ * This program is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as
+ * published by the Free Software Foundation, either version 3 of the
+ * License, or (at your option) any later version.
+ * 
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ * 
+ * You should have received a copy of the GNU General Public
+ * License along with this program.  If not, see
+ * <http://www.gnu.org/licenses/gpl-3.0.html>.
+ * #L%
+ */
+
+
 package org.bdp4j.types;
 
 import java.io.ByteArrayInputStream;
@@ -28,38 +39,8 @@ import java.util.LinkedHashMap;
 import java.util.Map;
 import java.util.Set;
 
-/**
- * A machine learning "example" to be used in training, testing or performance
- * of various machine learning algorithms.
- *
- * <p>
- * An instance contains four generic fields of predefined name: "data",
- * "target", "name", and "source". "Data" holds the data represented `by the
- * instance, "target" is often a label associated with the instance, "name" is a
- * short identifying name for the instance (such as a filename), and "source" is
- * human-readable sourceinformation, (such as the original text).
- *
- * <p>
- * Each field has no predefined type, and may change type as the instance is
- * processed. For example, the data field may start off being a string that
- * represents a file name and then be processed by a {@link AbstractPipe} into a
- * CharSequence representing the contents of the file, and eventually to a
- * feature vector holding words found in the file. It is up to each pipe which
- * fields in the Instance it modifies; the most common case is that the pipe
- * modifies the data field.
- *
- * @author Andrew McCallum
- * <a href="mailto:mccallum@cs.umass.edu">mccallum@cs.umass.edu</a>
- * @author José Ramón Méndez Reboredo
- * @author Yeray Lage
- * @author Maria Novo
- * @see AbstractPipe
- */
 public class Instance implements Serializable {
 
-    /**
-     * Serial version UID
-     */
     private static final long serialVersionUID = -8139659995227189017L;
 
     /**

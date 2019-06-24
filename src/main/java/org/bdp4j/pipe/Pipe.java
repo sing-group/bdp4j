@@ -1,24 +1,26 @@
-/*
- * BDP4j implements a pipeline framework to allow definining 
- * project pipelines from XML. The main goal of the pipelines of this 
- * application is to transform imput data received from multiple sources 
- * into fully qualified datasets to be used with Machine Learning.
- *
- * Copyright (C) 2018  Sing Group (University of Vigo)
- *
+/*-
+ * #%L
+ * BDP4J
+ * %%
+ * Copyright (C) 2018 - 2019 SING Group (University of Vigo)
+ * %%
  * This program is free software: you can redistribute it and/or modify
- * it under the terms of the GNU General Public License as published by
- * the Free Software Foundation, either version 3 of the License, or
- * (at your option) any later version.
- *
+ * it under the terms of the GNU General Public License as
+ * published by the Free Software Foundation, either version 3 of the
+ * License, or (at your option) any later version.
+ * 
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  * GNU General Public License for more details.
- *
- * You should have received a copy of the GNU General Public License
- * along with this program.  If not, see <https://www.gnu.org/licenses/>.
+ * 
+ * You should have received a copy of the GNU General Public
+ * License along with this program.  If not, see
+ * <http://www.gnu.org/licenses/gpl-3.0.html>.
+ * #L%
  */
+
+
 package org.bdp4j.pipe;
 
 import org.bdp4j.types.Instance;
@@ -28,43 +30,10 @@ import org.bdp4j.util.BooleanBean;
 import java.util.Collection;
 import java.util.List;
 
-/**
- * Pipe interface should be used only then you have to extend from a third class
- * and you can not extend from AbstractPipe (only implementing an interface). Most of 
- * BDP4J services are implemented in AbstractPipe class. In order to create a Pipe,
- * if you extend from AbstractPipe class, only implementing pipe method is required.
- * So, we really disadvice the usage of this interface to use BDP4J. Use this interface
- * only in the case that there is no other option.
- * 
- * Pipe interface is the most difficult way to implement a Pipe. You have to implement 
- * a large collection of methods to make them compatible with BDP4J. 
- * 
- * @since Java 1.8
- * @author Jeray Lage
- * @author María Novo
- * @author José Ramón Méndez
- */
 public interface Pipe {
 
-    /**
-     * Process an Instance. This method takes an input Instance, destructively
-     * modifies it in some way, and returns it. This is the method by which all
-     * pipes are eventually run.
-     * <p>
-     * One can create a new concrete subclass of Pipe simply by implementing
-     * this method.
-     *
-     * @param carrier Instance to be processed.
-     * @return Instancia procesada
-     */
     public Instance pipe(Instance carrier);
 
-    /**
-     * Pipe all instances from a Collection
-     *
-     * @param carriers Collection of instances to pipe
-     * @return The collection of instances after being processed
-     */
     public Collection<Instance> pipeAll(Collection<Instance> carriers);
 
     /**
