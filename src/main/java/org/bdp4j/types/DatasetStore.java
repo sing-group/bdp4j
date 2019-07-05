@@ -103,5 +103,8 @@ public class DatasetStore {
     public int size(){
         return datasetStore.size();
     }
+    public void clear(){
+        datasetStore = new DatasetStore();
+    }
   
 }
