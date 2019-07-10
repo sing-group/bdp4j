@@ -20,8 +20,6 @@
  * #L%
  */
 
-
-
 package org.bdp4j.transformers;
 
 import java.time.LocalDateTime;

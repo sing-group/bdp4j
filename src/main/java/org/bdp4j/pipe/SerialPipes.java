@@ -20,7 +20,6 @@
  * #L%
  */
 
-
 package org.bdp4j.pipe;
 
 import org.apache.logging.log4j.LogManager;
@@ -440,6 +439,11 @@ public class SerialPipes extends AbstractPipe {
         return false;
     }
 
+    /**
+     * Conunt pipes that are of a certain type
+     * @param pipeType The type of pipes to count
+     * @return the number of pipes of a certain type
+     */    
     @Override
     public Integer countPipes(PipeType pipeType) {
         int result = 0;

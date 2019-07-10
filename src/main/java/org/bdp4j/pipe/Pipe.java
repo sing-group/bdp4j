@@ -20,7 +20,6 @@
  * #L%
  */
 
-
 package org.bdp4j.pipe;
 
 import org.bdp4j.types.Instance;
@@ -148,7 +147,7 @@ public interface Pipe {
      * should be inserted.
      *
      * @param p The pipe that is being checked
-     * @param foundP // TODO what is this for?
+     * @param foundP Used for intenal representation. On calling use always new BooleanBean(false);
      * @return null if not sure about the fullfulling, true if the dependences
      * are satisfied, false if the dependences could not been satisfied
      */

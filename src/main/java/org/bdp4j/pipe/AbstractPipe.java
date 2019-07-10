@@ -20,7 +20,6 @@
  * #L%
  */
 
-
 package org.bdp4j.pipe;
 
 import java.io.File;
@@ -395,7 +394,7 @@ public abstract class AbstractPipe implements Pipe {
     /**
      * Get the store path to save data
      *
-     * @param carriers
+     * @param carriers The collection of carriers to be stored
      * @return the store path to save data
      */
     @Override
@@ -465,6 +464,7 @@ public abstract class AbstractPipe implements Pipe {
      * should be inserted.
      *
      * @param p The pipe that is being checked
+     * @param foundP Used for intenal representation. On calling use always new BooleanBean(false);
      * @return null if not sure about the fullfulling, true if the dependences
      * are satisfied, false if the dependences could not been satisfied
      */
