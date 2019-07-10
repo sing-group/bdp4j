@@ -48,8 +48,9 @@ public class Date2MillisTransformerTest {
 
     @Test
     public void testTransformDateTime() {
-        double expected = 1444686300000d; // 12/10/2015 23:45:00 
-        LocalDateTime input = Instant.ofEpochMilli((long)expected).atZone(ZoneId.systemDefault()).toLocalDateTime();
+        //double expected = 1444686300000d; // 12/10/2015 23:45:00 
+        double expected = 1444693500000d;
+        LocalDateTime input = Instant.ofEpochMilli((long)expected).atZone(ZoneId.of("UTC")).toLocalDateTime();
         double actual = this.transformer.transform(input);
         System.out.println(actual);
         assertEquals(expected, actual, 0d);
@@ -69,9 +70,11 @@ public class Date2MillisTransformerTest {
      */
     @Test
     public void testTransformString() {
-        double expected = 1444686300000d; // 12/10/2015 23:45:00
-        String input = "12/10/2015 23:45:00";     
+        //double expected = 1444686300000d; // 12/10/2015 23:45:00
+        double expected = 1444693500000d;
+        String input = "12/10/2015 23:45:00";
         double actual = this.transformer.transform(input);
+        System.out.println(""+actual);
         assertEquals(expected, actual, 0d);
     }
     

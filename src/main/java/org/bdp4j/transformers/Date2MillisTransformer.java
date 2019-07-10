@@ -53,7 +53,7 @@ public class Date2MillisTransformer extends Transformer {
         if (input != null && !input.equals("null")) {
             try {
                 LocalDateTime date = DateTimeIdentifier.getDefault().checkDateTime(input.toString());
-                return date.atZone(ZoneId.systemDefault()).toInstant().toEpochMilli();
+                return date.atZone(ZoneId.of("UTC")).toInstant().toEpochMilli();
             } catch (Exception ex) {
                 return 0;
             }
