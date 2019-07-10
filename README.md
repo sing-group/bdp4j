@@ -1,3 +1,6 @@
+[![Build Status](https://travis-ci.com/sing-group/bdp4j.svg?branch=master)](https://travis-ci.com/sing-group/bdp4j)
+[![lifecycle](https://img.shields.io/badge/lifecycle-stable-brightgreen.svg)](https://www.tidyverse.org/lifecycle/#stable)
+
 # Big Data Pipelining For Java (bdp4j)
 
 This project is a simple pipeline implementation derived from the pipeline of Mallet 
