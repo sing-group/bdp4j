@@ -74,6 +74,7 @@ public class Date2MillisTransformerTest {
         double expected = 1444693500000d;
         String input = "12/10/2015 23:45:00";     
         double actual = this.transformer.transform(input);
+        System.out.println(""+actual);
         assertEquals(expected, actual, 0d);
     }
     
