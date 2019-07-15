@@ -19,8 +19,6 @@
  * <http://www.gnu.org/licenses/gpl-3.0.html>.
  * #L%
  */
-
-
 package org.bdp4j.types;
 
 import org.apache.logging.log4j.LogManager;
@@ -40,6 +38,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
+import org.bdp4j.util.MCD;
 
 /**
  * Build a weka dataset
@@ -89,12 +88,12 @@ public class Dataset implements Serializable, Cloneable {
     private String outputFile = DEFAULT_OUTPUT_FILE;
 
     /**
-     * The default value for the dataset
+     * The default value for the instances
      */
     private Instances dataset = null;
 
     /**
-     * Default constructor, creates a new Dataset from dataset
+     * Default constructor, creates a new Dataset from instances
      *
      * @param dataset to create a new Dataset
      */
@@ -107,22 +106,22 @@ public class Dataset implements Serializable, Cloneable {
      * Default constructor, creates a new Dataset
      *
      * @param name The name of the relation
-     * @param attributes The attribute list of dataset
-     * @param capacity The initial capacity of the dataset
+     * @param attributes The attribute list of instances
+     * @param capacity The initial capacity of the instances
      */
     public Dataset(String name, ArrayList<Attribute> attributes, int capacity) {
         this.dataset = new Instances(name, attributes, capacity);
-
+        
     }
 
     /**
      * Default constructor, creates a new Dataset
      *
      * @param name The name of the relation
-     * @param attributes The attribute list of dataset
-     * @param capacity The initial capacity of the dataset
+     * @param attributes The attribute list of instances
+     * @param capacity The initial capacity of the instances
      * @param outputFile The output file name, only in case you can export
-     * dataset to an output file.
+     * instances to an output file.
      */
     public Dataset(String name, ArrayList<Attribute> attributes, int capacity, String outputFile) {
         this(name, attributes, capacity);
@@ -149,9 +148,9 @@ public class Dataset implements Serializable, Cloneable {
     }
 
     /**
-     * Returns the number of attributes in dataset
+     * Returns the number of attributes in instances
      *
-     * @return the number of attributes in dataset
+     * @return the number of attributes in instances
      */
     public int numAttributes() {
         return dataset.numAttributes();
@@ -168,23 +167,23 @@ public class Dataset implements Serializable, Cloneable {
     }
 
     /**
-     * Get an Instances from dataset
+     * Get an Instances from instances
      *
-     * @return an Instances from dataset
+     * @return an Instances from instances
      */
     public weka.core.Instances getWekaDataset() {
         return new Instances(dataset);
     }
 
     /**
-     * Print the dataset content using Standard output
+     * Print the instances content using Standard output
      */
     public void printLine() {
         dataset.stream().forEach(System.out::println);
     }
 
     /**
-     * Generates a CSV with the dataset contents. The CSV will be saved in the
+     * Generates a CSV with the instances contents. The CSV will be saved in the
      * file that store the outputFile. See Dataset.setOutputFile()
      */
     public void generateCSV() {
@@ -199,7 +198,7 @@ public class Dataset implements Serializable, Cloneable {
         } catch (IOException ex) {
             logger.error(ex.getMessage());
         }
-
+        
     }
 
     /**
@@ -227,7 +226,7 @@ public class Dataset implements Serializable, Cloneable {
     }
 
     /**
-     * Generates a CSV with dataset content.
+     * Generates a CSV with instances content.
      *
      * @param transformersList The list of transformers
      * @param file The destination file
@@ -244,7 +243,7 @@ public class Dataset implements Serializable, Cloneable {
             file = "WEKADatasetWithComments.arff";
         }
         try (OutputStream outputStream = new FileOutputStream(new File(file))) {
-
+            
             ArffSaver saver = new ArffSaver();
             saver.setInstances(wekaDataset);
             BufferedWriter bw = new BufferedWriter(new OutputStreamWriter(outputStream));
@@ -253,10 +252,10 @@ public class Dataset implements Serializable, Cloneable {
             }
             bw.write("\n");
             bw.flush();
-
+            
             saver.setDestination(outputStream);
             saver.writeBatch();
-
+            
         } catch (IOException ex) {
             ex.printStackTrace();
         }
@@ -264,9 +263,9 @@ public class Dataset implements Serializable, Cloneable {
     }
 
     /**
-     * Get the attributes list of dataset
+     * Get the attributes list of instances
      *
-     * @return A list with the attributes of dataset
+     * @return A list with the attributes of instances
      */
     public List<String> getAttributes() {
         Enumeration<Attribute> attributeEnum = dataset.enumerateAttributes();
@@ -278,12 +277,12 @@ public class Dataset implements Serializable, Cloneable {
     }
 
     /**
-     * Get the instance list of dataset
+     * Get the instance list of instances
      *
-     * @return A list with the instances of dataset
+     * @return A list with the instances of instances
      */
     public List<Instance> getInstances() {
-
+        
         Enumeration<Instance> instanceEnum = dataset.enumerateInstances();
         List<Instance> instanceList = new ArrayList<>();
         while (instanceEnum.hasMoreElements()) {
@@ -300,7 +299,7 @@ public class Dataset implements Serializable, Cloneable {
      */
     public List<String> filterColumnNames(String pattern) {
         Pattern p = Pattern.compile(pattern);
-
+        
         List<String> columnNamesList = new ArrayList<>();
         List<String> attributes = this.getAttributes();
         for (String attribute : attributes) {
@@ -339,7 +338,7 @@ public class Dataset implements Serializable, Cloneable {
                             Double combineValues = op.combine(lastAttValue, oldAttValue);
                             instance.setValue(lastAttribute, combineValues);
                         }
-
+                        
                         listAttributeName.add(oldValue);
                     }
                 } catch (NullPointerException ex) {
@@ -364,7 +363,7 @@ public class Dataset implements Serializable, Cloneable {
         Instances instances = this.dataset;
         List<String> attributesToDelete = new ArrayList<>();
         List<String> attributes = this.getAttributes();
-
+        
         for (String attribute : attributes) {
             Matcher m = p.matcher(attribute);
             if (!m.find()) {
@@ -410,17 +409,17 @@ public class Dataset implements Serializable, Cloneable {
     //TODO: change the name to joinAttributes or joinColumns (is more clear)
     public Dataset joinAttributeColumns(List<String> listAttributeNameToJoin, String newAttributeName, CombineOperator op) {
         Instances instances = this.dataset;
-
+        
         try {
             for (Instance instance : instances) {
                 Double newAttributeValue = 0d;
                 boolean isFirstInstance = instances.firstInstance().equals(instance);
-
+                
                 for (String attributeToJoin : listAttributeNameToJoin) {
                     try {
                         boolean isFirstAtt = listAttributeNameToJoin.get(0).equals(attributeToJoin);
                         Double attributeValue;
-
+                        
                         if (isFirstAtt && !isFirstInstance) {
                             attributeValue = instance.value(instances.attribute(newAttributeName).index());
                         } else {
@@ -432,10 +431,10 @@ public class Dataset implements Serializable, Cloneable {
                         }
                         newAttributeValue = op.combine(newAttributeValue, attributeValue);
                         instance.setValue(instances.attribute(newAttributeName), newAttributeValue);
-
+                        
                     } catch (NullPointerException ex) {
                         logger.warn(Dataset.class.getClass().getName() + ". Attribute >>" + attributeToJoin + "<< doesn't exist. " + ex.getMessage());
-
+                        
                     }
                 }
             }
@@ -447,7 +446,7 @@ public class Dataset implements Serializable, Cloneable {
     }
 
     /**
-     * Insert a column to the dataset (inserted before a certain position)
+     * Insert a column to the instances (inserted before a certain position)
      *
      * @param columnName The name of the column
      * @param columnType The type of the column
@@ -458,41 +457,44 @@ public class Dataset implements Serializable, Cloneable {
      */
     public boolean insertColumnAt(String columnName, Class<?> columnType, Object defaultValue, int position) {
         boolean isStringType = String.class.equals(columnType);
-
-        if (!isStringType && !Number.class.isAssignableFrom(columnType)) {
+        boolean isEnum = Enum.class.equals(columnType);
+        
+        if (!isStringType && !isEnum && !Number.class.isAssignableFrom(columnType)) {
             logger.error("[INSERT COLUMN AT] Column type must be a String or a Number type");
             return false;
         } else if (isStringType && defaultValue != null && !(defaultValue instanceof String)) {
             logger.error("[INSERT COLUMN AT] Default value must have the column's type");
             return false;
-        } else if (!isStringType && !(defaultValue instanceof Number)) {
+        } else if (!isStringType && !isEnum && !(defaultValue instanceof Number)) {
             logger.error("[INSERT COLUMN AT] Default value must have the column's type");
             return false;
         }
-
+        
         try {
             ArrayList<Attribute> attributes = new ArrayList<>();
-
+            
             Enumeration<Attribute> attrEnum = this.dataset.enumerateAttributes();
             while (attrEnum.hasMoreElements()) {
                 attributes.add(attrEnum.nextElement());
             }
-
-            Attribute newAttribute = isStringType ? new Attribute(columnName, true) : new Attribute(columnName);
+            Attribute newAttribute = isStringType ? new Attribute(columnName, true) : (isEnum ? new Attribute(columnName, (List<String>) defaultValue) : new Attribute(columnName));
+            
             if (!attributes.contains(newAttribute)) {
                 attributes.add(position, newAttribute);
                 Instances newDataset = new Instances("dataset", attributes, 0);
-
                 this.dataset.forEach((instance) -> {
                     newDataset.add(new DenseInstance(attributes.size()));
                     Instance newInstance = newDataset.lastInstance();
-
+                    
                     int indexOffset = 0;
                     for (Attribute attribute : attributes) {
                         if (attribute == newAttribute) {
+                            
                             indexOffset = 1;
                             if (isStringType) {
                                 newInstance.setValue(attribute, (String) defaultValue);
+                            } else if (isEnum) {
+                                newInstance.setValue(attribute, ((List<String>) defaultValue).get(0));
                             } else {
                                 newInstance.setValue(attribute, ((Number) defaultValue).doubleValue());
                             }
@@ -501,9 +503,9 @@ public class Dataset implements Serializable, Cloneable {
                         }
                     }
                 });
-
+                
                 this.dataset = newDataset;
-            }
+            }            
             return true;
         } catch (Exception ex) {
             logger.error("[INSERT COLUMN AT] " + ex.getMessage());
@@ -512,7 +514,7 @@ public class Dataset implements Serializable, Cloneable {
     }
 
     /**
-     * Insert a column to the dataset (inserted before a certain position)
+     * Insert a column to the instances (inserted before a certain position)
      *
      * @param column The column information
      * @param position The index where the new column will be inserted (0 upto
@@ -521,30 +523,32 @@ public class Dataset implements Serializable, Cloneable {
      */
     public boolean insertColumnAt(ColumnDefinition column, int position) {
         ArrayList<Attribute> attributes = new ArrayList<>();
-
+        
         try {
             Enumeration<Attribute> attrEnum = this.dataset.enumerateAttributes();
             while (attrEnum.hasMoreElements()) {
                 attributes.add(attrEnum.nextElement());
             }
-
+            
             Attribute newAttribute = column.isStringType()
                     ? new Attribute(column.getColumnName(), true)
                     : new Attribute(column.getColumnName());
             attributes.add(position, newAttribute);
-
+            
             Instances newDataset = new Instances("dataset", attributes, 0);
-
+            
             for (Instance instance : this.dataset) {
                 newDataset.add(new DenseInstance(attributes.size()));
                 Instance newInstance = newDataset.lastInstance();
-
+                
                 int indexOffset = 0;
                 for (Attribute attribute : attributes) {
                     if (attribute == newAttribute) {
                         indexOffset = 1;
                         if (column.isStringType()) {
                             newInstance.setValue(attribute, (String) column.getDefaultValue());
+                        } else if (column.isEnumType()) {
+                            newInstance.setValue(attribute, ((List<String>) column.getDefaultValue()).get(0));
                         } else {
                             newInstance.setValue(attribute, ((Number) column.getDefaultValue()).doubleValue());
                         }
@@ -559,11 +563,11 @@ public class Dataset implements Serializable, Cloneable {
             logger.error("[INSERT COLUMN AT] " + ex.getMessage());
             return false;
         }
-
+        
     }
 
     /**
-     * Insert columns to the dataset (inserted before a certain position)
+     * Insert columns to the instances (inserted before a certain position)
      *
      * @param columnNames The name of the columns
      * @param columnTypes The type of the columns
@@ -586,7 +590,7 @@ public class Dataset implements Serializable, Cloneable {
     }
 
     /**
-     * Insert columns to the dataset (inserted before a certain position)
+     * Insert columns to the instances (inserted before a certain position)
      *
      * @param columns The information for the columns included
      * @param position The index where the new columns will start to be inserted
@@ -669,7 +673,7 @@ public class Dataset implements Serializable, Cloneable {
     }
 
     /**
-     * Add row to the dataset
+     * Add row to the instances
      *
      * @param values List of values of the row
      * @return true if the row could be added; false otherwise
@@ -687,17 +691,17 @@ public class Dataset implements Serializable, Cloneable {
                 }
                 return true;
             } else {
-                logger.error("[ADD ROW ] The number of attributes doesn't match with the number of instance values.");
+                logger.error("[ADD ROW] The number of attributes doesn't match with the number of instance values.");
                 return false;
             }
         } catch (Exception ex) {
-            logger.error("[ADD ROW ] " + ex.getMessage());
+            logger.error("[ADD ROW] " + ex.getMessage());
             return false;
         }
     }
 
     /**
-     * Add rows to the dataset
+     * Add rows to the instances
      *
      * @param rowsToAdd List of rows to add
      * @return true if the rows could be added; false otherwise
@@ -715,11 +719,11 @@ public class Dataset implements Serializable, Cloneable {
         }
         return false;
     }
-
+    
     @Override
     public Dataset clone() {
         return new Dataset(this);
-
+        
     }
 
     /**
@@ -735,5 +739,85 @@ public class Dataset implements Serializable, Cloneable {
          * @return The result
          */
         Double combine(Double a, Double b);
+    }
+
+    /**
+     * Split the dataset in many datasets (as many as indicated by parameter
+     * outputDims).
+     *
+     * @param stratified Indicate if the dataset need to be stratified or not
+     * @param outputDims Number of output datasets
+     * @return An array of datasets
+     */
+    public Dataset[] split(boolean stratified, int... outputDims) {
+        ArrayList<Attribute> attributes = new ArrayList<>();
+        Instances instances = this.dataset;
+        Enumeration<Attribute> attrEnum = instances.enumerateAttributes();
+        Dataset retVal[] = new Dataset[outputDims.length];
+        
+        try {
+            while (attrEnum.hasMoreElements()) {
+                attributes.add(attrEnum.nextElement());
+            }
+            
+            int mcd_res = MCD.mcd(outputDims);
+            int instancesPerLoop[] = new int[outputDims.length];
+            int loopSize = 0;
+            for (int j = 0; j < outputDims.length; j++) {
+                instancesPerLoop[j] = outputDims[j] / mcd_res;
+                loopSize += instancesPerLoop[j];
+            }
+            
+            for (int j = 0; j < outputDims.length; j++) {
+                retVal[j] = new Dataset("dataset_" + j, attributes, 0);
+            }
+            
+            if (stratified) {
+                int att_size = (attributes.size() > 0 ? attributes.size() - 1 : 0);
+                instances.sort(att_size);
+            }
+            
+            for (int i = 0; i < instances.size(); i++) {
+                int posInLoop = i % loopSize;
+                int sum = 0;
+                for (int k = 0; k < instancesPerLoop.length; k++) {
+                    sum += instancesPerLoop[k];
+                    if (posInLoop < sum) {
+                        retVal[k].dataset.add(instances.get(i));
+                        break;
+                    }
+                }
+            }
+        } catch (Exception ex) {
+            logger.error("[SPLIT] " + ex.getMessage());
+        }
+        return retVal;
+    }
+
+    /**
+     * Match test dataset attributes with training dataset attributes
+     *
+     * @param training Training dataset
+     * @return Test dataset that contains only the attributes that match with
+     * training dataset
+     */
+    public Dataset match(Dataset training) {
+        
+        List<String> attTest = this.getAttributes();
+        List<String> attTraining = training.getAttributes();
+        List<String> columnsToDelete = new ArrayList<>();
+        try {
+            for (String att : attTest) {
+                if (!attTraining.contains(att)) {
+                    columnsToDelete.add(att);
+                }
+            }
+            if (columnsToDelete.size() > 0) {
+                this.deleteAttributeColumns(columnsToDelete);
+            }
+        } catch (Exception ex) {
+            logger.warn("[MATCH] " + ex.getMessage());
+        }
+        return this;
     }
 }

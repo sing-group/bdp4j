@@ -93,6 +93,10 @@ public class ColumnDefinition {
     public final boolean isStringType() {
         return String.class.equals(columnType);
     }
+    
+     public final boolean isEnumType() {
+        return Enum.class.equals(columnType);
+    }
 
     /**
      * Returns the column name 
