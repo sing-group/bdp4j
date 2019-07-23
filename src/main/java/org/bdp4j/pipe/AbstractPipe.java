@@ -102,7 +102,7 @@ public abstract class AbstractPipe implements Pipe {
      */
     public AbstractPipe(Class<?>[] alwaysBeforeDeps, Class<?>[] notAfterDeps) {
         this.notAfterDeps = notAfterDeps;
-        this.alwaysBeforeDeps = alwaysBeforeDeps;        
+        this.alwaysBeforeDeps = alwaysBeforeDeps;
     }
 
     /**
@@ -410,7 +410,7 @@ public abstract class AbstractPipe implements Pipe {
         }
         if (getParent() == null) {
             if (this instanceof SerialPipes || this instanceof ParallelPipes) {
-                storePath = temp_folder + PipeUtils.generateMD5(this.toString() +  carriers)+ fileSeparator;
+                storePath = temp_folder + PipeUtils.generateMD5(this.toString() + carriers) + fileSeparator;
                 return getPath(storePath);
             } else {
                 return findPosition(this) + "_" + PipeUtils.generateMD5(this.toString()) + ".ser";
