@@ -19,8 +19,6 @@
  * <http://www.gnu.org/licenses/gpl-3.0.html>.
  * #L%
  */
-
-
 package org.bdp4j.dataset;
 
 import org.apache.commons.csv.CSVFormat;
@@ -39,7 +37,6 @@ import java.io.FileReader;
 import java.io.IOException;
 import java.util.*;
 import java.util.function.Predicate;
-import org.bdp4j.util.DateTimeIdentifier;
 
 /**
  * Generate Dataset from file. This dataset will contain only columns with a
@@ -49,6 +46,7 @@ import org.bdp4j.util.DateTimeIdentifier;
  * @author María Novo
  */
 public class CSVDatasetReader {
+
     /**
      * For logging purposes
      */
@@ -132,16 +130,8 @@ public class CSVDatasetReader {
             Double.parseDouble(value);
             return "Double";
         } catch (NumberFormatException e) {
-            // Check if the field is Date                            
-            try {
-                if (DateTimeIdentifier.getDefault().checkDateTime(value) != null) {
-                    return "Date";
-                }
-            } catch (Exception ex) {
-                return "String";
-            }
+            return "String";
         }
-        return "String";
     }
 
     /**
@@ -167,7 +157,6 @@ public class CSVDatasetReader {
             Iterable<CSVRecord> records = csvFormat.parse(reader);
             long lineNumber;
             String field;
-
             // Loop to detect type of each file column. 
             Predicate<String> isDetectedColumnType = name -> columnTypes.stream().anyMatch(header -> header.getObj1().equals(name));
             // Create a columnTypes list, with the name of the column and the data type
@@ -223,10 +212,7 @@ public class CSVDatasetReader {
                 for (Map.Entry<String, Transformer> entry : transformersList.entrySet()) {
                     String key = entry.getKey();
                     Transformer value = entry.getValue();
-                    //if (value.getInputType() == )
-                    // if (!SubClassParameterTypeIdentificator.findSubClassParameterType(value, Transformer.class, 0).getName().equals("Double")) {
                     noDoubleTransformers.add(key);
-                    // }
                 }
             }
 
@@ -239,8 +225,8 @@ public class CSVDatasetReader {
             boolean hasTargetAdd = false;
             if (!columnTypes.isEmpty()) {
                 for (Pair<String, String> next : columnTypes) {
-                    final String type = next.getObj2();
                     final String header = next.getObj1();
+                    final String type = next.getObj2();
 
                     if (header.equalsIgnoreCase("target") && !hasTargetAdd) {
                         List<String> target_values = new ArrayList<>();
@@ -257,7 +243,6 @@ public class CSVDatasetReader {
                     }
                 }
             }
-
             // Generate Dataset
             dataset = new Dataset("dataset", attributes, 0);
 
@@ -309,7 +294,6 @@ public class CSVDatasetReader {
                     }
                 }
             }
-
             //---------------------------------------------------------------------------
             // Se genera un fichero csv donde se añade el contenido del dataset
             //---------------------------------------------------------------------------
