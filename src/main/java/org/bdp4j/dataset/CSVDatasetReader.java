@@ -124,6 +124,11 @@ public class CSVDatasetReader {
         this.transformersList = transformersList;
     }
 
+    /**
+     * Identify if the type of param is Double or String. 
+     * @param value
+     * @return The type of the value
+     */
     private String identifyType(String value) {
         // Check if the field is Double                            
         try {
@@ -295,7 +300,7 @@ public class CSVDatasetReader {
                 }
             }
             //---------------------------------------------------------------------------
-            // Se genera un fichero csv donde se añade el contenido del dataset
+            // Generates csv file with the content of dataset
             //---------------------------------------------------------------------------
             dataset.generateCSV();
         } catch (IOException e) {
