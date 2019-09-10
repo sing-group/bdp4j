@@ -125,7 +125,8 @@ public class CSVDatasetReader {
     }
 
     /**
-     * Identify if the type of param is Double or String. 
+     * Identify if the type of param is Double or String.
+     *
      * @param value
      * @return The type of the value
      */
@@ -216,7 +217,6 @@ public class CSVDatasetReader {
             if (transformersList.size() > 0) {
                 for (Map.Entry<String, Transformer> entry : transformersList.entrySet()) {
                     String key = entry.getKey();
-                    Transformer value = entry.getValue();
                     noDoubleTransformers.add(key);
                 }
             }
@@ -229,7 +229,8 @@ public class CSVDatasetReader {
             attributes.add(new Attribute("id", true));
             boolean hasTargetAdd = false;
             if (!columnTypes.isEmpty()) {
-                for (Pair<String, String> next : columnTypes) {
+                for (String head : headers) {
+                    Pair<String, String> next = headerExists(head, columnTypes);
                     final String header = next.getObj1();
                     final String type = next.getObj2();
 
@@ -250,7 +251,6 @@ public class CSVDatasetReader {
             }
             // Generate Dataset
             dataset = new Dataset("dataset", attributes, 0);
-
             records = csvFormat.parse(dsReader);
 
             for (CSVRecord record : records) {
@@ -267,20 +267,15 @@ public class CSVDatasetReader {
                                     instance.setValue(indInstance, field);
                                 } else {
                                     if ((t = transformersList.get(headers.get(index))) != null) {
-                                        if (field != null && !field.isEmpty() && !field.equals("null") && !field.equals("") && !field.equals(" ")) {
-                                            try {
-                                                instance.setValue(indInstance, t.transform(field));
-                                            } catch (Exception ex) {
-                                                instance.setValue(indInstance, 0d);
-                                                logger.warn("[LOAD FILE] The transformer can't be applied to field " + field + ". Field value set to 0. " + ex.getMessage());
-                                            }
-                                        } else {
+                                        try {
+                                            instance.setValue(indInstance, t.transform(field));
+                                        } catch (Exception ex) {
                                             instance.setValue(indInstance, 0d);
+                                            logger.warn("[LOAD FILE] The transformer can't be applied to field " + field + ". Field value set to 0. " + ex.getMessage());
                                         }
                                     } else {
                                         if (field != null && !field.isEmpty() && !field.equals("") && !field.equals(" ")) {
                                             try {
-
                                                 instance.setValue(indInstance, Float.parseFloat(field));
                                             } catch (NumberFormatException ex) {
                                                 instance.setValue(indInstance, 0d);
@@ -307,5 +302,21 @@ public class CSVDatasetReader {
             logger.error("[LOAD FILE] " + e.getMessage());
         }
         return dataset;
+    }
+
+    /**
+     * Check if columnTypes contains an object whose key is head
+     *
+     * @param head Key to find in columnTypes list
+     * @param columnTypes List in which you search
+     * @return The Pair found in the search carried out, otherwise null.
+     */
+    private Pair<String, String> headerExists(String head, List<Pair<String, String>> columnTypes) {
+        for (Pair<String, String> next : columnTypes) {
+            if (head.equals(next.getObj1())) {
+                return next;
+            }
+        }
+        return null;
     }
 }

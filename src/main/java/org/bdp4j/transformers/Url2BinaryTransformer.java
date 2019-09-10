@@ -29,7 +29,7 @@ public class Url2BinaryTransformer extends Transformer {
     @Override
     public double transform(Object input) {
         try {
-            return (input.toString().contains("http") ? 1 : 0);
+            return (((input.toString().indexOf("http:")) != -1 || (input.toString().indexOf("https:")) != -1 || (input.toString().indexOf("www.")) != -1) ? 1 : 0);
         } catch (NullPointerException ex) {
             return 0;
         }
