@@ -231,21 +231,24 @@ public class CSVDatasetReader {
             if (!columnTypes.isEmpty()) {
                 for (String head : headers) {
                     Pair<String, String> next = headerExists(head, columnTypes);
-                    final String header = next.getObj1();
-                    final String type = next.getObj2();
 
-                    if (header.equalsIgnoreCase("target") && !hasTargetAdd) {
-                        List<String> target_values = new ArrayList<>();
-                        Transformer transformer = transformersList.get(header);
-                        if (transformer != null) {
-                            for (Object value : transformer.getListValues()) {
-                                target_values.add(value.toString());
+                    if (next != null) {
+                        final String header = next.getObj1();
+                        final String type = next.getObj2();
+
+                        if (header.equalsIgnoreCase("target") && !hasTargetAdd) {
+                            List<String> target_values = new ArrayList<>();
+                            Transformer transformer = transformersList.get(header);
+                            if (transformer != null) {
+                                for (Object value : transformer.getListValues()) {
+                                    target_values.add(value.toString());
+                                }
                             }
+                            attributes.add(new Attribute(header, target_values));
+                            hasTargetAdd = true;
+                        } else if ((type.equals("Double") || noDoubleTransformers.contains(header)) && !isAttribute.test(header)) {
+                            attributes.add(new Attribute(header));
                         }
-                        attributes.add(new Attribute(header, target_values));
-                        hasTargetAdd = true;
-                    } else if ((type.equals("Double") || noDoubleTransformers.contains(header)) && !isAttribute.test(header)) {
-                        attributes.add(new Attribute(header));
                     }
                 }
             }
