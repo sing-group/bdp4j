@@ -121,7 +121,6 @@ public class CSVDatasetReader {
      *
      * @param transformersList The list of transformers.
      */
-    @PipeParameter(name = "transformersList", description = "The list of transformers", defaultValue = "")
     public void setTransformersList(Map<String, Transformer> transformersList) {
         this.transformersList = transformersList;
     }
