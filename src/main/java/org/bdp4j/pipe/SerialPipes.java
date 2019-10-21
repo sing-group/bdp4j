@@ -24,6 +24,7 @@ package org.bdp4j.pipe;
 
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
+import org.bdp4j.util.Configurator;
 import org.bdp4j.types.Instance;
 import org.bdp4j.types.PipeType;
 import org.bdp4j.util.BooleanBean;
@@ -191,7 +192,9 @@ public class SerialPipes extends AbstractPipe {
             } else {
                 logger.fatal("[PIPE ADD] Bad compatibility between Pipes: " + pipes.get(pipes.size() - 1)
                         .getClass().getSimpleName() + " | " + pipe.getClass().getSimpleName());
-                System.exit(-1);
+                Configurator.setIrrecoverableErrorInfo("[PIPE ADD] Bad compatibility between Pipes: " + pipes.get(pipes.size() - 1)
+                .getClass().getSimpleName() + " | " + pipe.getClass().getSimpleName());
+                Configurator.getActionOnIrrecoverableError().run();
             }
         } else {
             // If first AbstractPipe
@@ -244,7 +247,8 @@ public class SerialPipes extends AbstractPipe {
 
             if (p == null) {
                 logger.fatal("AbstractPipe " + i + " is null");
-                System.exit(-1);
+                Configurator.setIrrecoverableErrorInfo("AbstractPipe " + i + " is null");
+                Configurator.getActionOnIrrecoverableError().run();
             } else {
 
                 try {
@@ -257,7 +261,8 @@ public class SerialPipes extends AbstractPipe {
                 } catch (Exception e) {
                     logger.fatal("Exception caught on pipe " + i + " (" + p.getClass().getName() + "). " + e.getMessage() + " while processing " + carrier.toString());
                     e.printStackTrace(System.err);
-                    System.exit(-1);
+                    Configurator.setIrrecoverableErrorInfo("Exception caught on pipe " + i + " (" + p.getClass().getName() + "). " + e.getMessage() + " while processing " + carrier.toString());
+                    Configurator.getActionOnIrrecoverableError().run();
                 }
             }
         }
@@ -277,7 +282,8 @@ public class SerialPipes extends AbstractPipe {
             AbstractPipe p = pipes.get(i);
             if (p == null) {
                 logger.fatal("AbstractPipe " + i + " is null");
-                System.exit(-1);
+                Configurator.setIrrecoverableErrorInfo("AbstractPipe " + i + " is null");
+                Configurator.getActionOnIrrecoverableError().run();
             } else {
                 p.pipeAll(carriers);
             }

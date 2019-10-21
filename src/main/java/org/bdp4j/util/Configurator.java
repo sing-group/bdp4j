@@ -20,7 +20,6 @@
  * #L%
  */
 
-
 package org.bdp4j.util;
 
 import org.apache.logging.log4j.LogManager;
@@ -55,7 +54,7 @@ public final class Configurator {
 
     /**
      * Default samples folder property value.
-     */    
+     */
     public static final String DEFAULT_SAMPLES_FOLDER = "./samples";
 
     /**
@@ -144,6 +143,22 @@ public final class Configurator {
     private static Configurator lastUsed = null;
 
     /**
+     * Detailed information about irrecoverable error
+     */
+    private static String irrecoverableErrorInfo = "";
+
+    /**
+     * The action on errors
+     */
+    private static Runnable actionOnIrrecoverableError = new Runnable() {
+        @Override
+        public void run() {
+            logger.fatal("Application should be stopped: "+ getIrrecoverableErrorInfo() );
+            System.exit(-1);
+        }
+    };
+
+    /**
      * Default constructor
      */
     private Configurator() {
@@ -154,6 +169,39 @@ public final class Configurator {
         this.setProp(TEMP_FOLDER, DEFAULT_TEMP_FOLDER);
         this.setProp(DEBUG_MODE, DEFAULT_DEBUG_MODE);
         this.setProp(RESUMABLE_MODE, DEFAULT_RESUMABLE_MODE);
+    }
+
+    /**
+     * Returns the information about an irrecoverable error
+     * @return the information about an irrecoverable error that recently happened 
+     */
+    public static String getIrrecoverableErrorInfo() {
+        return irrecoverableErrorInfo;
+    }
+
+    /**
+     * Stablish the information about an irrecoveriable error
+     * @param irrecoverableErrorInfo The detailed information about the irrecoverable error
+     */
+    public static void setIrrecoverableErrorInfo(String irrecoverableErrorInfo) {
+        Configurator.irrecoverableErrorInfo = irrecoverableErrorInfo;
+    }
+
+    /**
+     * Returns a callback defining how should be done when an error is found
+     * 
+     * @return The callback defining how shoudl be done on a irrecoverable error
+     */
+    public static Runnable getActionOnIrrecoverableError() {
+        return actionOnIrrecoverableError;
+    }
+
+    /**
+     * Stablishes what to do when an error is found
+     * @param actionOnError A runnable speficiying the actions to do on a irrecoverable error
+     */
+    public static void setActionOnIrrecoverableError(Runnable actionOnError) {
+        Configurator.actionOnIrrecoverableError = actionOnError;
     }
 
     /**
@@ -265,7 +313,8 @@ public final class Configurator {
             configuredPipe = new ParallelPipes();
         } else {
             logger.fatal("[PIPE CONFIGURATION] No serialPipe or parallelPipe is correctly defined.");
-            System.exit(-1);
+            Configurator.setIrrecoverableErrorInfo("[PIPE CONFIGURATION] No serialPipe or parallelPipe is correctly defined.");
+            Configurator.getActionOnIrrecoverableError().run();
         }
 
         // Global pipe children
@@ -301,7 +350,9 @@ public final class Configurator {
                     } catch (NullPointerException e) {
                         logger.fatal("[PIPE CONFIGURATION] " + child.getTextContent().trim()
                                 + " does not exist or is not loaded.");
-                        System.exit(-1);
+                        Configurator.setIrrecoverableErrorInfo("[PIPE CONFIGURATION] " + child.getTextContent().trim()
+                        + " does not exist or is not loaded.");
+                        Configurator.getActionOnIrrecoverableError().run();
                     }
                 }
             }
@@ -309,7 +360,8 @@ public final class Configurator {
 
         if (configuredPipe.countPipes(PipeType.TARGET_ASSIGNING_PIPE) > 1) {
             logger.fatal("[PIPE CONFIGURATION] The number of target assigning pipes must be one or zero.");
-            System.exit(-1);
+            Configurator.setIrrecoverableErrorInfo("[PIPE CONFIGURATION] The number of target assigning pipes must be one or zero.");
+            Configurator.getActionOnIrrecoverableError().run();
         }
 
         return configuredPipe;
@@ -328,7 +380,8 @@ public final class Configurator {
 
         if (pipes.get(pipeName) == null) {
             logger.fatal("[PIPE GET] " + pipeName + " is not loaded.");
-            System.exit(-1);
+            Configurator.setIrrecoverableErrorInfo("[PIPE GET] " + pipeName + " is not loaded.");
+            Configurator.getActionOnIrrecoverableError().run();
         } else {
             PipeInfo pipeInfo = pipes.get(pipeName);
 
@@ -380,7 +433,8 @@ public final class Configurator {
                 }
             } catch (Exception e) {
                 logger.fatal("[GET PIPE INSTANCE] Error getting pipe instance of " + pipeName);
-                System.exit(-1);
+                Configurator.setIrrecoverableErrorInfo("[GET PIPE INSTANCE] Error getting pipe instance of " + pipeName);
+                Configurator.getActionOnIrrecoverableError().run();
             }
         }
 
@@ -459,7 +513,8 @@ public final class Configurator {
         }
 
         logger.fatal("[GET NAME FROM PIPE] Could not get name from pipe.");
-        System.exit(-1);
+        Configurator.setIrrecoverableErrorInfo("[GET NAME FROM PIPE] Could not get name from pipe.");
+        Configurator.getActionOnIrrecoverableError().run();
         return name;
     }
 
@@ -473,7 +528,8 @@ public final class Configurator {
         // Check if the property exists.
         if (props.get(k) == null) {
             logger.fatal("[PROPERTY GET] The requested property '" + k + "' does not exists.");
-            System.exit(-1);
+            Configurator.setIrrecoverableErrorInfo("[PROPERTY GET] The requested property '" + k + "' does not exists.");
+            Configurator.getActionOnIrrecoverableError().run();
         }
 
         return props.get(k);

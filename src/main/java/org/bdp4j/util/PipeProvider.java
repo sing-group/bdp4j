@@ -34,7 +34,6 @@ import java.net.URL;
 import java.net.URLClassLoader;
 import java.util.HashMap;
 import java.util.ServiceLoader;
-import org.bdp4j.pipe.TransformationPipe;
 
 public class PipeProvider {
 
@@ -79,7 +78,8 @@ public class PipeProvider {
             if (!transformationPipe) {
                 if (!pipe.getInputType().equals(pipe.getOutputType())) {
                     logger.fatal("[GET PIPES] Error checking types in pipe " + pipe.getClass().getSimpleName());
-                    System.exit(-1);
+                    Configurator.setIrrecoverableErrorInfo("[GET PIPES] Error checking types in pipe " + pipe.getClass().getSimpleName());
+                    Configurator.getActionOnIrrecoverableError().run();
                 }
             }
 
