@@ -176,7 +176,8 @@ public abstract class AbstractPipe implements Pipe {
 
                         if (numberOfPropertiesBefore >= numberOfPropertiesAfter) {
                             logger.fatal("[PIPE ALL] Error adding properties in " + this.getClass().getSimpleName());
-                            System.exit(-1);
+                            Configurator.setIrrecoverableErrorInfo("[PIPE ALL] Error adding properties in " + this.getClass().getSimpleName());
+                            Configurator.getActionOnIrrecoverableError().run();
                         }
                     }
                 } else {
@@ -190,7 +191,8 @@ public abstract class AbstractPipe implements Pipe {
         } catch (Exception e) {
             logger.fatal("Exception caught on pipe " + getClass().getName() + ". " + e.getMessage() + " while processing instance");
             e.printStackTrace(System.err);
-            System.exit(-1);
+            Configurator.setIrrecoverableErrorInfo("Exception caught on pipe " + getClass().getName() + ". " + e.getMessage() + " while processing instance");
+            Configurator.getActionOnIrrecoverableError().run();
         }
 
         return carriers;

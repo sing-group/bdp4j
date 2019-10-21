@@ -53,16 +53,6 @@ public class ResumableParallelPipes extends ParallelPipes {
     private Configurator configurator = Configurator.getLastUsed();
 
     /**
-     * The input type
-     */
-    private Class<?> inputType = null;
-
-    /**
-     * The output type
-     */
-    private Class<?> outputType = null;
-
-    /**
      * Pipes being executed in parallel
      */
     private ArrayList<AbstractPipe> pipes;
@@ -352,7 +342,8 @@ public class ResumableParallelPipes extends ParallelPipes {
                                         Serializable target = ((ArrayList<Instance>) clones2).get(i).getTarget();
                                         if (target == null) {
                                             logger.fatal("Instance with no target: " + ((ArrayList<Instance>) clones2).get(i).getName());
-                                            System.exit(0);
+                                            Configurator.setIrrecoverableErrorInfo("Instance with no target: " + ((ArrayList<Instance>) clones2).get(i).getName());
+                                            Configurator.getActionOnIrrecoverableError().run();
                                         }
                                         ((ArrayList<Instance>) ret).get(i).setTarget(target);
                                     }

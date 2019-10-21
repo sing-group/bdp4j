@@ -86,8 +86,6 @@ public class Main {
         long init = System.currentTimeMillis();
         p.pipeAll(carriers);
         logger.info("Instances processed in " + (System.currentTimeMillis() - init) + "ms.");
-
-        System.exit(0);
     }
 
     /**
@@ -103,6 +101,7 @@ public class Main {
                     .forEach(FileMng::visit);
         } catch (IOException e) {
             System.exit(-1);
+
         }
     }
 

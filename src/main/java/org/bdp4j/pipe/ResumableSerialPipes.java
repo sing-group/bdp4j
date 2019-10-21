@@ -231,7 +231,8 @@ public class ResumableSerialPipes extends SerialPipes {
 
                         if (p == null) {
                             logger.fatal("AbstractPipe " + i + " is null");
-                            System.exit(-1);
+                            Configurator.setIrrecoverableErrorInfo("AbstractPipe " + i + " is null");
+                            Configurator.getActionOnIrrecoverableError().run();
                         } else {
                             p.pipeAll(carriers);
                         }
@@ -278,7 +279,8 @@ public class ResumableSerialPipes extends SerialPipes {
                     p = pipeList[i];
                     if (p == null) {
                         logger.fatal("AbstractPipe " + i + " is null");
-                        System.exit(-1);
+                        Configurator.setIrrecoverableErrorInfo("AbstractPipe " + i + " is null");
+                        Configurator.getActionOnIrrecoverableError().run();
                     } else {
                         p.pipeAll(carriers);
 

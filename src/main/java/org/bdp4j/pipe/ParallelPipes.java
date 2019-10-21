@@ -20,7 +20,6 @@
  * #L%
  */
 
-
 package org.bdp4j.pipe;
 
 import org.apache.logging.log4j.LogManager;
@@ -28,6 +27,7 @@ import org.apache.logging.log4j.Logger;
 import org.bdp4j.types.Instance;
 import org.bdp4j.types.PipeType;
 import org.bdp4j.util.BooleanBean;
+import org.bdp4j.util.Configurator;
 
 import java.io.Serializable;
 import java.util.ArrayList;
@@ -112,7 +112,8 @@ public class ParallelPipes extends AbstractPipe {
         pipes.stream().parallel().forEach((p) -> {
             if (p == null) {
                 logger.fatal("AbstractPipe is null");
-                System.exit(-1);
+                Configurator.setIrrecoverableErrorInfo("AbstractPipe is null");
+                Configurator.getActionOnIrrecoverableError().run();
             } else {
                 if (!p.equals(pipes.get(0))) {
                     Collection<Instance> clones2 = new ArrayList<>();
@@ -126,7 +127,8 @@ public class ParallelPipes extends AbstractPipe {
                             Serializable target = ((ArrayList<Instance>) clones2).get(i).getTarget();
                             if (target==null) {
                                 logger.fatal("Instance with no target: "+((ArrayList<Instance>) clones2).get(i).getName());
-                                System.exit(0);
+                                Configurator.setIrrecoverableErrorInfo("Instance with no target: "+((ArrayList<Instance>) clones2).get(i).getName());
+                                Configurator.getActionOnIrrecoverableError().run();
                             }
                             ((ArrayList<Instance>) ret).get(i).setTarget(target);
                         }
@@ -141,7 +143,8 @@ public class ParallelPipes extends AbstractPipe {
     public Instance pipe(Instance original) {
         if (pipes.isEmpty()) {
             logger.fatal("[PARALLEL PIPE] ParallelPipe is empty.");
-            System.exit(-1);
+            Configurator.setIrrecoverableErrorInfo("[PARALLEL PIPE] ParallelPipe is empty.");
+            Configurator.getActionOnIrrecoverableError().run();
         }
 
         Instance originalCopy = new Instance(original); // Copy instance of original for saving Data state.
@@ -172,7 +175,9 @@ public class ParallelPipes extends AbstractPipe {
                 logger.fatal("Exception caught on pipe " + p.getClass().getName() + ". " + e.getMessage()
                         + " while processing instance");
                 e.printStackTrace(System.err);
-                System.exit(-1);
+                Configurator.setIrrecoverableErrorInfo("Exception caught on pipe " + p.getClass().getName() + ". " + e.getMessage()
+                + " while processing instance");
+                Configurator.getActionOnIrrecoverableError().run();
             }
         });
 
@@ -202,7 +207,9 @@ public class ParallelPipes extends AbstractPipe {
                 // If inputType doesn't match with actual.
                 logger.fatal("[PIPE ADD] Bad compatibility between Pipes: " + pipes.get(0).getClass().getSimpleName()
                         + " | " + pipe.getClass().getSimpleName());
-                System.exit(-1);
+                Configurator.setIrrecoverableErrorInfo("[PIPE ADD] Bad compatibility between Pipes: " + pipes.get(0).getClass().getSimpleName()
+                + " | " + pipe.getClass().getSimpleName());
+                Configurator.getActionOnIrrecoverableError().run();
             }
             pipe.setParent(this);
             pipes.add(pipe);

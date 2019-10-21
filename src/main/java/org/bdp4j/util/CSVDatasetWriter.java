@@ -1026,7 +1026,8 @@ public class CSVDatasetWriter {
                 br.close();
             } catch (IOException e) {
                 logger.error("The Buffered Reader (br) is probably opened but it could not be flushed/closed for further operation");
-                System.exit(1);
+                Configurator.setIrrecoverableErrorInfo("The Buffered Reader (br) is probably opened but it could not be flushed/closed for further operation");
+                Configurator.getActionOnIrrecoverableError().run();
             }
             br = null;
         }
@@ -1037,7 +1038,8 @@ public class CSVDatasetWriter {
                 bw.close();
             } catch (IOException e) {
                 logger.error("The Buffered Writer (bw) is probably opened but it could not be flushed/closed for further operation");
-                System.exit(1);
+                Configurator.setIrrecoverableErrorInfo("The Buffered Writer (bw) is probably opened but it could not be flushed/closed for further operation");
+                Configurator.getActionOnIrrecoverableError().run();
             }
             bw = null;
         }
