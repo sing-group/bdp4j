@@ -59,7 +59,7 @@ public class InstanceListUtils {
      * all files included in testDir directory
      *
      * @param path The directory where the instances should be loaded
-     * @return
+     * @return The list of loaded instances
      */
     public static List<Instance> load(String path) {
         try {
