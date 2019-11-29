@@ -138,11 +138,11 @@ public abstract class AbstractPipe implements Pipe {
 
         //Search the last valid instance
         int lastValidInstanceIdx = carriers.size() - 1;
-        while (!carriersAsArray[lastValidInstanceIdx].isValid() && lastValidInstanceIdx > 0) {
+        while (lastValidInstanceIdx > 0 && !carriersAsArray[lastValidInstanceIdx].isValid()) {
             lastValidInstanceIdx--;
         }
 
-        if (lastValidInstanceIdx == 0 && !carriersAsArray[lastValidInstanceIdx].isValid()) {
+        if ( (lastValidInstanceIdx < 0) || (lastValidInstanceIdx == 0 && !carriersAsArray[lastValidInstanceIdx].isValid())) {
             logger.fatal("All instances were invalidated.");
             return carriers;
         }
