@@ -722,6 +722,7 @@ public class Dataset implements Serializable, Cloneable {
         if (rowsToAdd.length > 0) {
             for (Object[] row : rowsToAdd) {
                 if (!addRow(row)) {
+                    logger.info("[ADD ROWS] Failed. Unable to add current row.");
                     return false;
                 }
             }
