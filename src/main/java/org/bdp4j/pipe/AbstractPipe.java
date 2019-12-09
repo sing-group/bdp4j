@@ -144,6 +144,9 @@ public abstract class AbstractPipe implements Pipe {
 
         if ( (lastValidInstanceIdx < 0) || (lastValidInstanceIdx == 0 && !carriersAsArray[lastValidInstanceIdx].isValid())) {
             logger.fatal("All instances were invalidated.");
+            Configurator.setIrrecoverableErrorInfo( this.getClass().getName() + " - "+ "All instances were invalidated." );
+            Configurator.getActionOnIrrecoverableError().run();
+            
             return carriers;
         }
 
