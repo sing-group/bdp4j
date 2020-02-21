@@ -24,6 +24,7 @@
 package org.bdp4j.util;
 
 import java.io.Serializable;
+import java.util.Objects;
 
 public final class Pair<T1, T2> implements Serializable {
 
@@ -71,5 +72,34 @@ public final class Pair<T1, T2> implements Serializable {
      */
     public void setObj2(T2 obj2) {
         this.obj2 = obj2;
+    }
+
+    @Override
+    public int hashCode() {
+        int hash = 5;
+        hash = 29 * hash + Objects.hashCode(this.obj1);
+        hash = 29 * hash + Objects.hashCode(this.obj2);
+        return hash;
+    }
+
+    @Override
+    public boolean equals(Object obj) {
+        if (this == obj) {
+            return true;
+        }
+        if (obj == null) {
+            return false;
+        }
+        if (getClass() != obj.getClass()) {
+            return false;
+        }
+        final Pair<?, ?> other = (Pair<?, ?>) obj;
+        if (!Objects.equals(this.obj1, other.obj1)) {
+            return false;
+        }
+        if (!Objects.equals(this.obj2, other.obj2)) {
+            return false;
+        }
+        return true;
     }
 }

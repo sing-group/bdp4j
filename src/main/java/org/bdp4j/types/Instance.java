@@ -19,8 +19,6 @@
  * <http://www.gnu.org/licenses/gpl-3.0.html>.
  * #L%
  */
-
-
 package org.bdp4j.types;
 
 import java.io.ByteArrayInputStream;
@@ -35,15 +33,15 @@ import java.io.Serializable;
 import java.util.Collection;
 import java.util.LinkedHashMap;
 import java.util.Map;
+import java.util.Objects;
 import java.util.Set;
 
- /* Copyright (C) 2002 Univ. of Massachusetts Amherst, Computer Science Dept.
+/* Copyright (C) 2002 Univ. of Massachusetts Amherst, Computer Science Dept.
    This file is part of "MALLET" (MAchine Learning for LanguagE Toolkit).
    http://www.cs.umass.edu/~mccallum/mallet
    This software is provided under the terms of the Common Public License,
    version 1.0, as published by http://www.opensource.org.  For further
    information, see the file `LICENSE' included with this distribution. */
-
 /**
  * A machine learning "example" to be used in training, testing or performance
  * of various machine learning algorithms.
@@ -326,4 +324,83 @@ public class Instance implements Serializable {
         return isValid;
     }
 
+    /*@Override
+    public boolean equals(Object obj) {
+        if (obj instanceof Instance) {
+            return this.equals((Instance) obj);
+        } else {
+            return super.equals(obj); //To change body of generated methods, choose Tools | Templates.
+        }
+    }
+    
+    public boolean equals(Instance instance) {
+        
+//            System.out.println( this.getName() + " -- " + expectedInstance.getName());
+//            System.out.println( this.getData() + " -- " + expectedInstance.getData());
+//            System.out.println( this.getSource() + " -- " + expectedInstance.getSource());
+//            System.out.println( this.getTarget() + " -- " + expectedInstance.getTarget());
+            
+        if (this.getName().equals(instance.getName())
+                && this.getData().toString().equals(instance.getData().toString())
+                && this.getSource().equals(instance.getSource())
+                && this.getTarget().equals(instance.getTarget())) {
+
+            for (String property : this.getPropertyList()) {
+                if (!this.getProperty(property).toString().equals(instance.getProperty(property).toString())) {
+                    System.out.println("Expected " + property + " value: " + instance.getProperty(property).toString() + " but founded: " + this.getProperty(property).toString());
+                    return false;
+                }
+            }
+            return true;
+        }
+        return false;
+    }*/
+    @Override
+    public int hashCode() {
+        int hash = 7;
+        hash = 47 * hash + Objects.hashCode(this.properties);
+        hash = 47 * hash + Objects.hashCode(this.data);
+        hash = 47 * hash + Objects.hashCode(this.target);
+        hash = 47 * hash + Objects.hashCode(this.name);
+        hash = 47 * hash + Objects.hashCode(this.source);
+        hash = 47 * hash + (this.isValid ? 1 : 0);
+        return hash;
+    }
+
+    @Override
+    public boolean equals(Object obj) {
+        if (this == obj) {
+            return true;
+        }
+        if (obj == null) {
+            return false;
+        }
+        if (getClass() != obj.getClass()) {
+            return false;
+        }
+        final Instance other = (Instance) obj;
+        if (this.isValid != other.isValid) {
+            return false;
+        }
+        if (!Objects.equals(this.properties, other.properties)) {
+            return false;
+        }
+        if (this.data instanceof CharSequence && other.data instanceof CharSequence) {
+            if (!this.data.toString().equals(other.data.toString())) {
+                return false;
+            }
+        } else if (!Objects.equals(this.data, other.data)) {
+            return false;
+        }
+        if (!Objects.equals(this.target, other.target)) {
+            return false;
+        }
+        if (!Objects.equals(this.name, other.name)) {
+            return false;
+        }
+        if (!Objects.equals(this.source, other.source)) {
+            return false;
+        }
+        return true;
+    }
 }
