@@ -234,4 +234,46 @@ public class DatasetTest {
         assertThat(actualInstances, containsInstancesInOrder(expected));
     }
 
+    @Test
+    public void testEvaluateColumns() {
+
+        Instance instance = dataset.createDenseInstance();
+        instance.setValue(0, "2");
+        instance.setValue(1, 15);
+        instance.setValue(2, 10d);
+        instance.setValue(3, 2d);
+        instance.setValue(4, 1d);
+        instance.setValue(5, 0);
+
+        instance = dataset.createDenseInstance();
+        instance.setValue(0, "3");
+        instance.setValue(1, 11);
+        instance.setValue(2, 10d);
+        instance.setValue(3, 2d);
+        instance.setValue(4, 1d);
+        instance.setValue(5, 0);
+
+        instance = dataset.createDenseInstance();
+        instance.setValue(0, "4");
+        instance.setValue(1, 20);
+        instance.setValue(2, 10d);
+        instance.setValue(3, 2d);
+        instance.setValue(4, 1d);
+        instance.setValue(5, 0);
+
+        Map<String, Integer> expected = new HashMap<>();
+        expected.put("0", 1);
+        expected.put("1", 1);
+
+        Map<String, Integer> result = dataset.evaluateColumns("((length > 14.0) && (length < 20.0)) ? 1: 0", int.class, new String[]{"length"}, new Class[]{double.class}, "target");
+        assertEquals(expected, result);
+
+        expected = new HashMap<>();
+        expected.put("0", 2);
+        expected.put("1", 1);
+
+        result = dataset.evaluateColumns("(length > 14.0) ? 1: 0", int.class, new String[]{"length"}, new Class[]{double.class}, "target");
+        assertEquals(expected, result);
+    }
+
 }

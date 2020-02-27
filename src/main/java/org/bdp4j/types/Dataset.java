@@ -33,12 +33,16 @@ import weka.core.converters.CSVSaver;
 
 import java.io.*;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Enumeration;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.logging.Level;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import org.bdp4j.util.MCD;
+import org.codehaus.janino.ExpressionEvaluator;
 
 /**
  * Build a weka dataset
@@ -59,7 +63,7 @@ public class Dataset implements Serializable, Cloneable {
 
     /**
      * Combines columns by OR (used for binary representation)
-     */    
+     */
     public static final CombineOperator COMBINE_OR = new CombineOperator() {
         @Override
         public Double combine(Double a, Double b) {
@@ -478,7 +482,7 @@ public class Dataset implements Serializable, Cloneable {
                 attributes.add(attrEnum.nextElement());
             }
             Attribute newAttribute = isStringType ? new Attribute(columnName, true) : (isEnum ? new Attribute(columnName, (List<String>) defaultValue) : new Attribute(columnName));
-            if (!containsAttribute(attributes, newAttribute)){
+            if (!containsAttribute(attributes, newAttribute)) {
                 attributes.add(position, newAttribute);
                 Instances newDataset = new Instances("dataset", attributes, 0);
                 for (Instance instance : this.dataset) {
@@ -540,8 +544,8 @@ public class Dataset implements Serializable, Cloneable {
             Attribute newAttribute = column.isStringType()
                     ? new Attribute(column.getColumnName(), true)
                     : new Attribute(column.getColumnName());
-           // if (!attributes.contains(newAttribute)) {
-           if (!containsAttribute(attributes, newAttribute)){
+            // if (!attributes.contains(newAttribute)) {
+            if (!containsAttribute(attributes, newAttribute)) {
                 attributes.add(position, newAttribute);
 
                 Instances newDataset = new Instances("dataset", attributes, 0);
@@ -695,7 +699,7 @@ public class Dataset implements Serializable, Cloneable {
                 for (int i = 0; i < values.length; i++) {
                     if (this.getInstances().get(0).attribute(i).isNumeric()) {
                         instance.setValue(i, Double.parseDouble(values[i].toString()));
-                    } else if (this.getInstances().get(0).attribute(i).isNominal()){
+                    } else if (this.getInstances().get(0).attribute(i).isNominal()) {
                         instance.setValue(i, values[i].toString());
                     } else {
                         instance.setValue(i, values[i].toString());
@@ -833,4 +837,72 @@ public class Dataset implements Serializable, Cloneable {
         }
         return this;
     }
+
+    /**
+     * This method get the number of instances which met the condition (given by
+     * expression), group by target column(resultColumn) values
+     *
+     * @param expression Expression to evaluate
+     * @param expressionType Class of the result from evaluate expression
+     * @param parameterNames Array with the parameter names
+     * @param parameterTypes Array with the parameter types
+     * @param resultColumn Target column from which you get the output results
+     *
+     * @return A counter of list of target values from instances that match with
+     * expression
+     */
+    public Map<String, Integer> evaluateColumns(String expression, Class expressionType, String[] parameterNames, Class[] parameterTypes, String resultColumn) {
+        Object[] parameterValues = new Object[parameterNames.length];
+        List<Instance> instances = this.getInstances();
+        List<String> attributes = this.getAttributes();
+        Attribute attr = this.dataset.attribute(resultColumn);
+        Map<String, Integer> result = new HashMap<>();
+        for (int valueIndex = 0; valueIndex < attr.numValues(); valueIndex++) {
+            result.put(attr.value(valueIndex), 0);
+        }
+
+        List<String> parameterNamesList = Arrays.asList(parameterNames);
+        for (int i = 0; i < instances.size(); i++) {
+            for (int x = 0; x < parameterNamesList.size(); x++) {
+                for (int z = 0; z < attributes.size(); z++) {
+                    if (parameterNamesList.get(x).equals(attributes.get(z))) {
+                        parameterValues[x] = instances.get(i).value(z);
+                        try {
+                            Integer evaluateResult = evaluateExpression(expression, expressionType, parameterNames, parameterTypes, parameterValues);
+
+                            Object value = instances.get(i).value(attr);
+                            String targetValue;
+                            if (value instanceof Double) {
+                                targetValue = String.valueOf((int) instances.get(i).value(attr));
+                            } else {
+                                targetValue = String.valueOf(instances.get(i).value(attr));
+                            }
+
+                            if (evaluateResult > 0) { // The condition is met
+                                int incrementedValue = result.get(targetValue) + 1;
+                                result.put(targetValue, incrementedValue);
+                            }
+                        } catch (Exception ex) {
+                            java.util.logging.Logger.getLogger(Dataset.class.getName()).log(Level.SEVERE, null, ex);
+                        }
+                    }
+                }
+            }
+        }
+        return result;
+    }
+
+    private static Integer evaluateExpression(String expression, Class expressionType, String[] parameterNames, Class[] parameterTypes, Object[] parameterValues) throws Exception {
+        ExpressionEvaluator ee = new org.codehaus.janino.ExpressionEvaluator(expression,
+                expressionType,
+                parameterNames,
+                parameterTypes
+        );
+        try {
+            return (Integer) ee.evaluate(parameterValues);
+        } catch (Exception e) {
+            return 0;
+        }
+    }
+
 }
