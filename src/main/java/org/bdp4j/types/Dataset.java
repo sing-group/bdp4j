@@ -42,7 +42,7 @@ import java.util.logging.Level;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import org.bdp4j.util.MCD;
-import org.codehaus.janino.ExpressionEvaluator;
+import org.bdp4j.util.RegularExpressionEvaluator;
 
 /**
  * Build a weka dataset
@@ -868,7 +868,8 @@ public class Dataset implements Serializable, Cloneable {
                     if (parameterNamesList.get(x).equals(attributes.get(z))) {
                         parameterValues[x] = instances.get(i).value(z);
                         try {
-                            Integer evaluateResult = evaluateExpression(expression, expressionType, parameterNames, parameterTypes, parameterValues);
+                            RegularExpressionEvaluator ree = new RegularExpressionEvaluator();
+                            Object evaluateResult = ree.evaluateExpression(expression, expressionType, parameterNames, parameterTypes, parameterValues);
 
                             Object value = instances.get(i).value(attr);
                             String targetValue;
@@ -878,9 +879,21 @@ public class Dataset implements Serializable, Cloneable {
                                 targetValue = String.valueOf(instances.get(i).value(attr));
                             }
 
-                            if (evaluateResult > 0) { // The condition is met
-                                int incrementedValue = result.get(targetValue) + 1;
-                                result.put(targetValue, incrementedValue);
+                            if (evaluateResult instanceof Integer){
+                                if ((Integer)evaluateResult > 0) { // The condition is met
+                                    int incrementedValue = result.get(targetValue) + 1;
+                                    result.put(targetValue, incrementedValue);
+                                }
+                            }else if (evaluateResult instanceof Double){
+                                if ((Double)evaluateResult > 0) { // The condition is met
+                                    int incrementedValue = result.get(targetValue) + 1;
+                                    result.put(targetValue, incrementedValue);
+                                }
+                            } else if (evaluateResult instanceof Boolean){
+                                if ((Boolean)evaluateResult) { // The condition is met
+                                    int incrementedValue = result.get(targetValue) + 1;
+                                    result.put(targetValue, incrementedValue);
+                                }
                             }
                         } catch (Exception ex) {
                             java.util.logging.Logger.getLogger(Dataset.class.getName()).log(Level.SEVERE, null, ex);
@@ -891,18 +904,4 @@ public class Dataset implements Serializable, Cloneable {
         }
         return result;
     }
-
-    private static Integer evaluateExpression(String expression, Class expressionType, String[] parameterNames, Class[] parameterTypes, Object[] parameterValues) throws Exception {
-        ExpressionEvaluator ee = new org.codehaus.janino.ExpressionEvaluator(expression,
-                expressionType,
-                parameterNames,
-                parameterTypes
-        );
-        try {
-            return (Integer) ee.evaluate(parameterValues);
-        } catch (Exception e) {
-            return 0;
-        }
-    }
-
 }

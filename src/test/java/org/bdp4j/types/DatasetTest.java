@@ -29,14 +29,12 @@ import java.util.List;
 import java.util.Map;
 import static org.bdp4j.matchers.IsEqualToInstance.containsInstancesInOrder;
 import org.hamcrest.CoreMatchers;
-import org.hamcrest.Matcher;
 import static org.hamcrest.collection.IsIterableContainingInOrder.contains;
 import org.junit.After;
 import org.junit.Before;
 import static org.junit.Assert.*;
 import org.junit.Test;
 import weka.core.Attribute;
-import weka.core.DenseInstance;
 import weka.core.Instance;
 
 public class DatasetTest {
@@ -138,8 +136,6 @@ public class DatasetTest {
         Dataset actual = this.dataset.replaceColumnNames(columnsToReplace, Dataset.COMBINE_SUM);
         List<String> actualAttributes = actual.getAttributes();
         List<Instance> actualInstances = actual.getInstances();
-        System.out.println("actualAttributes " + actualAttributes);
-        System.out.println("actual Instances " + actualInstances);
         assertThat(actualAttributes, contains("id", "length", "length_after_drop", "drug", "target"));
 
         assertThat(actualInstances, containsInstancesInOrder(expected));
@@ -198,7 +194,7 @@ public class DatasetTest {
         Dataset actual = this.dataset.deleteAttributeColumns(listAttributeName);
         List<String> actualAttributes = actual.getAttributes();
         List<Instance> actualInstances = actual.getInstances();
-        System.out.println("actualInstances: " + actualInstances + " - expected: " + expected);
+        
         assertThat(actualAttributes, contains("id", "viagra", "cialis", "target"));
         assertThat(actualInstances, containsInstancesInOrder(expected));
     }

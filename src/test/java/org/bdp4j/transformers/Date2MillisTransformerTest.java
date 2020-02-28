@@ -27,7 +27,6 @@ package org.bdp4j.transformers;
 import java.time.Instant;
 import java.time.LocalDateTime;
 import java.time.ZoneId;
-import java.util.Date;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
@@ -52,7 +51,6 @@ public class Date2MillisTransformerTest {
         double expected = 1444693500000d;
         LocalDateTime input = Instant.ofEpochMilli((long)expected).atZone(ZoneId.of("UTC")).toLocalDateTime();
         double actual = this.transformer.transform(input);
-        System.out.println(actual);
         assertEquals(expected, actual, 0d);
     }
 
