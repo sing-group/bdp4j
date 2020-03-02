@@ -47,7 +47,6 @@ public class RegularExpressionEvaluator {
         try {
             return ee.evaluate(parameterValues);
         } catch (Exception e) {
-            System.out.println("Sale por exception");
             e.printStackTrace();
             return null;
         }

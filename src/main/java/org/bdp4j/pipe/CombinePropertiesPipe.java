@@ -153,28 +153,38 @@ public class CombinePropertiesPipe extends AbstractPipe {
 
         RegularExpressionEvaluator ree = new RegularExpressionEvaluator();
         Object[] parameterValues = new Object[parameterNames.length];
+        boolean validProperty = true;
 
         for (int i = 0; i < parameterNames.length; i++) {
-            if (carrier.getProperty(parameterNames[i]) instanceof Integer) {
-                parameterValues[i] = (Integer) carrier.getProperty(parameterNames[i]);
-            } else if (carrier.getProperty(parameterNames[i]) instanceof Double) {
-                parameterValues[i] = (Double) carrier.getProperty(parameterNames[i]);
+            String property = parameterNames[i];
+            if (carrier.getProperty(property) != null) {
+                if (carrier.getProperty(property) instanceof Integer) {
+                    parameterValues[i] = (Integer) carrier.getProperty(property);
+                } else if (carrier.getProperty(property) instanceof Double) {
+                    parameterValues[i] = (Double) carrier.getProperty(property);
+                } else {
+                    parameterValues[i] = carrier.getProperty(property).toString();
+                }
             } else {
-                parameterValues[i] = carrier.getProperty(parameterNames[i]).toString();
+                logger.error("ERROR  " + this.getClass() + " -  retrieving property: " + property + " does not exist. ");
+                validProperty = false;
+                break;
             }
         }
-        try {
-            Object result = ree.evaluateExpression(this.regex, this.expressionType, this.parameterNames,
-                    this.parameterTypes, parameterValues);
-            if (result instanceof Integer) {
-                carrier.setProperty(combineProp, (Integer) result);
-            } else if (result instanceof Double) {
-                carrier.setProperty(combineProp, (Double) result);
-            } else {
-                carrier.setProperty(combineProp, (String) result);
+        if (validProperty) {
+            try {
+                Object result = ree.evaluateExpression(this.regex, this.expressionType, this.parameterNames,
+                        this.parameterTypes, parameterValues);
+                if (result instanceof Integer) {
+                    carrier.setProperty(combineProp, (Integer) result);
+                } else if (result instanceof Double) {
+                    carrier.setProperty(combineProp, (Double) result);
+                } else {
+                    carrier.setProperty(combineProp, (String) result);
+                }
+            } catch (Exception ex) {
+                logger.error("ERROR: " + this.getClass() + ". " + ex.getMessage());
             }
-        } catch (Exception ex) {
-            logger.error("ERROR: " + this.getClass()  +" - pipe. " + ex.getMessage());
         }
 
         return carrier;

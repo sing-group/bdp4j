@@ -36,7 +36,7 @@ import static org.junit.Assert.*;
  * @author María Novo
  */
 public class CombinePropertiesPipeTest {
-    
+
     String data = "December is here";
     String name = "basic_example/_spam_/7c63a8fd7ae52e350e354d63b23e1c3b.tsms";
     String source = "basic_example/_spam_/7c63a8fd7ae52e350e354d63b23e1c3b.tsms";
@@ -44,18 +44,23 @@ public class CombinePropertiesPipeTest {
     private static Instance carrier = null;
 
     private CombinePropertiesPipe instance;
+    private CombinePropertiesPipe badInstance;
 
     public CombinePropertiesPipeTest() {
     }
-    
+
     @Before
     public void setUp() {
-        instance = new CombinePropertiesPipe("length - length_after_drop", Integer.class, new String[]{"length","length_after_drop"}, new Class[]{Integer.class,Integer.class});
+        instance = new CombinePropertiesPipe("length - length_after_drop", Integer.class,
+                new String[] { "length", "length_after_drop" }, new Class[] { Integer.class, Integer.class });
+        badInstance = new CombinePropertiesPipe("(length - length_after_drop) / wordcounter", Integer.class,
+                new String[] { "length", "length_after_drop", "wordcounter" },
+                new Class[] { Integer.class, Integer.class, Integer.class });
         carrier = new Instance(new StringBuffer(data), null, name, source);
         carrier.setProperty("length", 16);
         carrier.setProperty("length_after_drop", 14);
     }
-    
+
     /**
      * Test of getInputType method, of class CombinePropertiesPipe.
      */
@@ -100,14 +105,22 @@ public class CombinePropertiesPipeTest {
      */
     @Test
     public void testPipe() {
+        // Right parameters test
         Instance expResult = new Instance(new StringBuffer(data), null, name, source);
+        expResult.setProperty("length", 16);
+        expResult.setProperty("length_after_drop", 14);
+        
+        Instance result = badInstance.pipe(carrier);
+        assertEquals(expResult, result);
+
+        // Wrong parameters test
+        expResult = new Instance(new StringBuffer(data), null, name, source);
         expResult.setProperty("length", 16);
         expResult.setProperty("length_after_drop", 14);
         expResult.setProperty("combine", 2);
 
-        Instance result = instance.pipe(carrier);
-
-        assertEquals(expResult,result);
+        result = instance.pipe(carrier);
+        assertEquals(expResult, result);
     }
-    
+
 }
