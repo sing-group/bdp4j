@@ -146,7 +146,6 @@ public class CombinePropertiesPipe extends AbstractPipe {
      *
      * @param carrier Instance to be processed.
      * @return Instance processed
-     * @throws Exception
      */
     @Override
     public Instance pipe(Instance carrier) {
