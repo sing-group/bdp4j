@@ -19,7 +19,7 @@
  * <http://www.gnu.org/licenses/gpl-3.0.html>.
  * #L%
  */
-/*
+ /*
  * To change this license header, choose License Headers in Project Properties.
  * To change this template file, choose Tools | Templates
  * and open the template in the editor.
@@ -58,7 +58,8 @@ public class CombinePropertiesPipe extends AbstractPipe {
     private String regex;
 
     /**
-     * The property to store the type of the returned result from evaluate columns
+     * The property to store the type of the returned result from evaluate
+     * columns
      */
     private Class expressionType;
 
@@ -73,16 +74,16 @@ public class CombinePropertiesPipe extends AbstractPipe {
     private Class[] parameterTypes;
 
     /**
-     * Default constructor. Build a CombineColumnsFromStringBufferPipe that stores
-     * the result of combined columns in the default property ("combine")
+     * Default constructor. Build a CombineColumnsFromStringBufferPipe that
+     * stores the result of combined columns in the default property ("combine")
      */
     public CombinePropertiesPipe(String regex, Class expressionType, String[] parameterNames, Class[] parameterTypes) {
         this(DEFAULT_COMBINE_PROPERTY, regex, expressionType, parameterNames, parameterTypes);
     }
 
     /**
-     * Build a MeasureLengthFromStringBufferPipe that stores the result of combined
-     * columns in the property indicated by combineProp parameter
+     * Build a MeasureLengthFromStringBufferPipe that stores the result of
+     * combined columns in the property indicated by combineProp parameter
      *
      * @param combineProp the name of the property to store the text length
      */
@@ -98,32 +99,35 @@ public class CombinePropertiesPipe extends AbstractPipe {
     }
 
     /**
-     * Return the input type included the data attribute of an Instance
+     * Return the input type included the data attribute of an Instance. If
+     * Object.class is returned means that the type is not important
      *
      * @return the input type for the data attribute of the Instance processed
      */
     @Override
     public Class<?> getInputType() {
-        return StringBuffer.class;
+        return Object.class;
     }
 
     /**
-     * Indicates the datatype expected in the data attribute of an Instance after
-     * processing
+     * Indicates the datatype expected in the data attribute of an Instance
+     * after processing. If Object.class is returned means that the type is not
+     * important
      *
      * @return the datatype expected in the data attribute of an Instance after
-     *         processing
+     * processing
      */
     @Override
     public Class<?> getOutputType() {
-        return StringBuffer.class;
+        return Object.class;
     }
 
     /**
-     * Establish the name of the property to store the result of combined columns
+     * Establish the name of the property to store the result of combined
+     * columns
      *
-     * @param combineProp the name of the property to store the result of combined
-     *                    columns text
+     * @param combineProp the name of the property to store the result of
+     * combined columns text
      */
     @PipeParameter(name = "combinePropname", description = "Indicates the property name to store the result of combined columns", defaultValue = DEFAULT_COMBINE_PROPERTY)
     public void setCombineProp(String combineProp) {
@@ -140,9 +144,9 @@ public class CombinePropertiesPipe extends AbstractPipe {
     }
 
     /**
-     * Process an Instance. This method takes an input Instance, calculates the the
-     * result of indicated by regex combined columns, and returns it. This is the
-     * method by which all pipes are eventually run.
+     * Process an Instance. This method takes an input Instance, calculates the
+     * the result of indicated by regex combined columns, and returns it. This
+     * is the method by which all pipes are eventually run.
      *
      * @param carrier Instance to be processed.
      * @return Instance processed

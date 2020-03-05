@@ -63,6 +63,8 @@ public class SerialPipes extends AbstractPipe {
      */
     private ArrayList<AbstractPipe> pipes;
 
+    private Object result;
+
     /**
      * Build an empty SerialPipes
      */
@@ -178,8 +180,9 @@ public class SerialPipes extends AbstractPipe {
     public void add(AbstractPipe pipe) {
         if (!pipes.isEmpty()) {
             if (checkCompatibility(pipe)) {
-                logger.info("[PIPE ADD] Good compatibility between Pipes: " + pipes.get(pipes.size() - 1).getClass()
-                        .getSimpleName() + " | " + pipe.getClass().getSimpleName());
+                logger.info("[PIPE ADD] Good compatibility between Pipes: "
+                        + pipes.get(pipes.size() - 1).getClass().getSimpleName() + " | "
+                        + pipe.getClass().getSimpleName());
                 pipe.setParent(this);
                 pipes.add(pipe);
 
@@ -190,10 +193,12 @@ public class SerialPipes extends AbstractPipe {
 
                 outputType = pipe.getOutputType();
             } else {
-                logger.fatal("[PIPE ADD] Bad compatibility between Pipes: " + pipes.get(pipes.size() - 1)
-                        .getClass().getSimpleName() + " | " + pipe.getClass().getSimpleName());
-                Configurator.setIrrecoverableErrorInfo("[PIPE ADD] Bad compatibility between Pipes: " + pipes.get(pipes.size() - 1)
-                .getClass().getSimpleName() + " | " + pipe.getClass().getSimpleName());
+                logger.fatal("[PIPE ADD] Bad compatibility between Pipes: "
+                        + pipes.get(pipes.size() - 1).getClass().getSimpleName() + " | "
+                        + pipe.getClass().getSimpleName());
+                Configurator.setIrrecoverableErrorInfo("[PIPE ADD] Bad compatibility between Pipes: "
+                        + pipes.get(pipes.size() - 1).getClass().getSimpleName() + " | "
+                        + pipe.getClass().getSimpleName());
                 Configurator.getActionOnIrrecoverableError().run();
             }
         } else {
@@ -214,9 +219,33 @@ public class SerialPipes extends AbstractPipe {
      * @return true if the pipe can be placed at the end of the pipelist
      */
     private boolean checkCompatibility(AbstractPipe pipe) {
-        AbstractPipe lastPipe = pipes.get(pipes.size() - 1);
+        AbstractPipe lastPipe;
 
-        return lastPipe.getOutputType() == pipe.getInputType();
+        if (pipes.contains(pipe)) {
+            lastPipe = pipes.get(pipes.indexOf(pipe) - 1);
+            if (lastPipe.getOutputType().equals(this.result)) {
+                return true;
+            }
+        } else {
+            lastPipe = pipes.get(pipes.size() - 1);
+            if (pipe.getInputType().equals(Object.class)) {
+                this.result = lastPipe.getOutputType();
+                return true;
+            }
+        }
+
+        while (lastPipe.getOutputType().equals(Object.class)) {
+            if (checkCompatibility(lastPipe)) {
+                return true;
+            }
+        }
+
+        boolean equals = lastPipe.getOutputType() == pipe.getInputType();        
+        if (equals) {
+            this.result = lastPipe.getOutputType();
+        }
+        return equals;
+
     }
 
     /**
@@ -277,7 +306,7 @@ public class SerialPipes extends AbstractPipe {
      */
     @Override
     public Collection<Instance> pipeAll(Collection<Instance> carriers) {
-        //Call pipeAll for each pipe included in the serialPipes
+        // Call pipeAll for each pipe included in the serialPipes
         for (int i = 0; i < pipes.size(); i++) {
             AbstractPipe p = pipes.get(i);
             if (p == null) {
@@ -311,7 +340,7 @@ public class SerialPipes extends AbstractPipe {
      * @param index The position of the pipe that will be replaced
      * @param p The new AbstractPipe
      */
-    //added by Fuchun Jan.30, 2004
+    // added by Fuchun Jan.30, 2004
     public void replacePipe(int index, AbstractPipe p) {
         try {
             pipes.set(index, p);
@@ -419,7 +448,8 @@ public class SerialPipes extends AbstractPipe {
                     retVal = retVal && !(Arrays.asList(p.getNotAfterDeps()).contains(p1.getClass()));
                 }
                 if (!retVal) {
-                    errorMessage = "Unsatisfied NotAfter dependency for pipe " + p.getClass().getName() + " (" + p1.getClass().getName() + ")";
+                    errorMessage = "Unsatisfied NotAfter dependency for pipe " + p.getClass().getName() + " ("
+                            + p1.getClass().getName() + ")";
                     return retVal;
                 }
                 foundP.Or(p == p1);
@@ -447,9 +477,10 @@ public class SerialPipes extends AbstractPipe {
 
     /**
      * Conunt pipes that are of a certain type
+     *
      * @param pipeType The type of pipes to count
      * @return the number of pipes of a certain type
-     */    
+     */
     @Override
     public Integer countPipes(PipeType pipeType) {
         int result = 0;
@@ -472,7 +503,8 @@ public class SerialPipes extends AbstractPipe {
 
         for (AbstractPipe p1 : pipes) {
             if (!(p1 instanceof SerialPipes) && !(p1 instanceof ParallelPipes)) {
-                returnValue = returnValue & getParentRoot().checkAlwaysBeforeDeps(p1, new ArrayList<Class<?>>(Arrays.asList(p1.alwaysBeforeDeps)));
+                returnValue = returnValue & getParentRoot().checkAlwaysBeforeDeps(p1,
+                        new ArrayList<Class<?>>(Arrays.asList(p1.alwaysBeforeDeps)));
                 returnValue = returnValue & getParentRoot().checkNotAfterDeps(p1, new BooleanBean(false));
             } else {
                 returnValue = returnValue & p1.checkDependencies();

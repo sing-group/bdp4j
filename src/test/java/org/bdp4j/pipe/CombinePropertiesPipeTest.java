@@ -66,7 +66,7 @@ public class CombinePropertiesPipeTest {
      */
     @Test
     public void testGetInputType() {
-        Class expResult = StringBuffer.class;
+        Class expResult = Object.class;
         Class result = instance.getInputType();
         assertEquals(expResult, result);
     }
@@ -76,7 +76,7 @@ public class CombinePropertiesPipeTest {
      */
     @Test
     public void testGetOutputType() {
-        Class expResult = StringBuffer.class;
+        Class expResult = Object.class;
         Class result = instance.getOutputType();
         assertEquals(expResult, result);
     }
