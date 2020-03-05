@@ -32,6 +32,7 @@ import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStreamReader;
 import java.io.OutputStreamWriter;
+import java.nio.charset.Charset;
 import java.util.regex.Pattern;
 
 import org.apache.logging.log4j.LogManager;
@@ -356,7 +357,7 @@ public class CSVDatasetWriter {
         try {
             //Open the file for appending
             if (bw == null) {
-                bw = new BufferedWriter(new OutputStreamWriter(new FileOutputStream(csvDataset, true)));
+                bw = new BufferedWriter(new OutputStreamWriter(new FileOutputStream(csvDataset, true),Charset.forName("UTF-8")));
             }
 
             for (int j = 0; j < values.length; j++) {
@@ -426,7 +427,7 @@ public class CSVDatasetWriter {
 
         if (sourceFile.length() == 0) {
             try {
-                bw = new BufferedWriter(new OutputStreamWriter(new FileOutputStream(sourceFile)));
+                bw = new BufferedWriter(new OutputStreamWriter(new FileOutputStream(sourceFile, true),Charset.forName("UTF-8")));
                 bw.write(columnName + lineSep);
                 bw.close();
                 bw = null;
@@ -442,8 +443,9 @@ public class CSVDatasetWriter {
         File destinationFile = new File(csvDataset.getParent(), "copy_" + csvDataset.getName());
 
         try {
-            br = new BufferedReader(new InputStreamReader(new FileInputStream(sourceFile)));
-            bw = new BufferedWriter(new OutputStreamWriter(new FileOutputStream(destinationFile)));
+            br = new BufferedReader(new InputStreamReader(new FileInputStream(sourceFile),Charset.forName("UTF-8")));
+            bw = new BufferedWriter(new OutputStreamWriter(new FileOutputStream(sourceFile, true),Charset.forName("UTF-8")));
+            
             int i = 0;
             for (String line = br.readLine(); line != null; line = br.readLine(), i++) {
                 String column = ((i == 0) ? columnName : defaultValue.toString());
@@ -496,7 +498,7 @@ public class CSVDatasetWriter {
 
         if (sourceFile.length() == 0) {
             try {
-                bw = new BufferedWriter(new OutputStreamWriter(new FileOutputStream(sourceFile)));
+                bw = new BufferedWriter(new OutputStreamWriter(new FileOutputStream(sourceFile, true),Charset.forName("UTF-8")));
                 bw.write(column.getColumnName() + lineSep);
                 bw.close();
                 bw = null;
@@ -512,8 +514,8 @@ public class CSVDatasetWriter {
         File destinationFile = new File(csvDataset.getParent(), "copy_" + csvDataset.getName());
 
         try {
-            br = new BufferedReader(new InputStreamReader(new FileInputStream(sourceFile)));
-            bw = new BufferedWriter(new OutputStreamWriter(new FileOutputStream(destinationFile)));
+            br = new BufferedReader(new InputStreamReader(new FileInputStream(sourceFile),Charset.forName("UTF-8")));
+            bw = new BufferedWriter(new OutputStreamWriter(new FileOutputStream(destinationFile, true),Charset.forName("UTF-8")));
             int i = 0;
             for (String line = br.readLine(); line != null; line = br.readLine(), i++) {
                 String col = ((i == 0) ? column.getColumnName() : defaultValue.toString());
@@ -564,7 +566,7 @@ public class CSVDatasetWriter {
 
         if (sourceFile.length() == 0) {
             try {
-                bw = new BufferedWriter(new OutputStreamWriter(new FileOutputStream(sourceFile)));
+                bw = new BufferedWriter(new OutputStreamWriter(new FileOutputStream(sourceFile, true),Charset.forName("UTF-8")));
                 String columns = "";
                 for (int k = 0; k < columnNames.length; k++) {
                     columns += columnNames[k];
@@ -586,8 +588,8 @@ public class CSVDatasetWriter {
         File destinationFile = new File(csvDataset.getParent(), "copy_" + csvDataset.getName());
 
         try {
-            br = new BufferedReader(new InputStreamReader(new FileInputStream(sourceFile)));
-            bw = new BufferedWriter(new OutputStreamWriter(new FileOutputStream(destinationFile)));
+            br = new BufferedReader(new InputStreamReader(new FileInputStream(sourceFile),Charset.forName("UTF-8")));
+            bw = new BufferedWriter(new OutputStreamWriter(new FileOutputStream(destinationFile, true),Charset.forName("UTF-8")));
             int i = 0;
             for (String line = br.readLine(); line != null; line = br.readLine(), i++) {
                 String columns = "";
@@ -639,7 +641,7 @@ public class CSVDatasetWriter {
 
         if (sourceFile.length() == 0) {
             try {
-                bw = new BufferedWriter(new OutputStreamWriter(new FileOutputStream(sourceFile)));
+                bw = new BufferedWriter(new OutputStreamWriter(new FileOutputStream(sourceFile, true),Charset.forName("UTF-8")));
                 String columnsW = "";
                 for (int k = 0; k < columns.length; k++) {
                     columnsW += columns[k].getColumnName();
@@ -661,8 +663,8 @@ public class CSVDatasetWriter {
         File destinationFile = new File(csvDataset.getParent(), "copy_" + csvDataset.getName());
 
         try {
-            br = new BufferedReader(new InputStreamReader(new FileInputStream(sourceFile)));
-            bw = new BufferedWriter(new OutputStreamWriter(new FileOutputStream(destinationFile)));
+            br = new BufferedReader(new InputStreamReader(new FileInputStream(sourceFile),Charset.forName("UTF-8")));
+            bw = new BufferedWriter(new OutputStreamWriter(new FileOutputStream(destinationFile, true),Charset.forName("UTF-8")));
             int i = 0;
             for (String line = br.readLine(); line != null; line = br.readLine(), i++) {
                 String columnsW = "";
@@ -722,8 +724,8 @@ public class CSVDatasetWriter {
         File destinationFile = new File(csvDataset.getParent(), "copy_" + csvDataset.getName());
 
         try {
-            br = new BufferedReader(new InputStreamReader(new FileInputStream(sourceFile)));
-            bw = new BufferedWriter(new OutputStreamWriter(new FileOutputStream(destinationFile)));
+            br = new BufferedReader(new InputStreamReader(new FileInputStream(sourceFile),Charset.forName("UTF-8")));
+            bw = new BufferedWriter(new OutputStreamWriter(new FileOutputStream(destinationFile, true),Charset.forName("UTF-8")));
             int i = 0;
             for (String line = br.readLine(); line != null; line = br.readLine(), i++) {
 
@@ -796,8 +798,8 @@ public class CSVDatasetWriter {
         File destinationFile = new File(csvDataset.getParent(), "copy_" + csvDataset.getName());
 
         try {
-            br = new BufferedReader(new InputStreamReader(new FileInputStream(sourceFile)));
-            bw = new BufferedWriter(new OutputStreamWriter(new FileOutputStream(destinationFile)));
+            br = new BufferedReader(new InputStreamReader(new FileInputStream(sourceFile),Charset.forName("UTF-8")));
+            bw = new BufferedWriter(new OutputStreamWriter(new FileOutputStream(destinationFile, true),Charset.forName("UTF-8")));
             int i = 0;
             for (String line = br.readLine(); line != null; line = br.readLine(), i++) {
 
@@ -869,8 +871,8 @@ public class CSVDatasetWriter {
         File destinationFile = new File(csvDataset.getParent(), "copy_" + csvDataset.getName());
 
         try {
-            br = new BufferedReader(new InputStreamReader(new FileInputStream(sourceFile)));
-            bw = new BufferedWriter(new OutputStreamWriter(new FileOutputStream(destinationFile)));
+            br = new BufferedReader(new InputStreamReader(new FileInputStream(sourceFile),Charset.forName("UTF-8")));
+            bw = new BufferedWriter(new OutputStreamWriter(new FileOutputStream(destinationFile, true),Charset.forName("UTF-8")));
             int i = 0;
             for (String line = br.readLine(); line != null; line = br.readLine(), i++) {
                 int whereToInsert = 0;
@@ -938,8 +940,8 @@ public class CSVDatasetWriter {
         File destinationFile = new File(csvDataset.getParent(), "copy_" + csvDataset.getName());
 
         try {
-            br = new BufferedReader(new InputStreamReader(new FileInputStream(sourceFile)));
-            bw = new BufferedWriter(new OutputStreamWriter(new FileOutputStream(destinationFile)));
+            br = new BufferedReader(new InputStreamReader(new FileInputStream(sourceFile),Charset.forName("UTF-8")));
+            bw = new BufferedWriter(new OutputStreamWriter(new FileOutputStream(destinationFile, true),Charset.forName("UTF-8")));
             int i = 0;
             for (String line = br.readLine(); line != null; line = br.readLine(), i++) {
                 int whereToInsert = 0;
@@ -1001,7 +1003,7 @@ public class CSVDatasetWriter {
                 this.columnCount = 0;
                 return new String[0];
             }
-            br = new BufferedReader(new InputStreamReader(new FileInputStream(csvDataset)));
+            br = new BufferedReader(new InputStreamReader(new FileInputStream(csvDataset),Charset.forName("UTF-8")));
             String line = br.readLine();
             if (line != null) {
                 String[] retVal = line.split(Pattern.quote(getCSVSep()));
