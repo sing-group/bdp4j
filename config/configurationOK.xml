@@ -1,0 +1,55 @@
+<?xml version="1.0"?>
+<configuration>
+    <!-- General properties for the app. -->
+    <general>
+        <samplesFolder>./samples</samplesFolder>
+        <pluginsFolder>./plugins</pluginsFolder>
+        <outputFolder>./output</outputFolder>
+        <tempFolder>./temp</tempFolder>
+    </general>
+
+    <!-- AbstractPipe structure that is going to be used -->
+    <pipeline resumable="yes" debug="yes">
+        <serialPipes>
+
+            <pipe>
+                <name>File2TargetAssigningPipe</name>
+            </pipe>
+
+            <pipe>
+                <name>FileSizePipe</name>
+                <params>
+                    <pipeParameter>
+                        <name>propName</name>
+                        <value>The file size</value>
+                    </pipeParameter>
+                </params>
+                <debug/>
+            </pipe>
+
+            <pipe>
+                <name>File2StringPipe</name>
+            </pipe>
+
+            <pipe>
+                <name>MeasureLengthPipe</name>
+            </pipe>
+
+            <pipe>
+                <name>GenerateStringOutputPipe</name>
+            </pipe>
+
+            <pipe>
+                <name>String2TokenArray</name>
+            </pipe>
+
+            <pipe>
+                <name>TokenArray2FeatureVector</name>
+            </pipe>
+
+            <pipe>
+                <name>GenerateFeatureVectorOutputPipe</name>
+            </pipe>
+        </serialPipes>
+    </pipeline>
+</configuration>
