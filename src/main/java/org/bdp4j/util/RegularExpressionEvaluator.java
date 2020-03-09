@@ -19,31 +19,45 @@
  * <http://www.gnu.org/licenses/gpl-3.0.html>.
  * #L%
  */
-/*
+ /*
  * To change this license header, choose License Headers in Project Properties.
  * To change this template file, choose Tools | Templates
  * and open the template in the editor.
  */
 package org.bdp4j.util;
 
+import java.util.HashMap;
+import java.util.Map;
+
 import org.codehaus.janino.ExpressionEvaluator;
+
 /**
  *
  * @author María Novo
  */
 public class RegularExpressionEvaluator {
-    public RegularExpressionEvaluator() {
-    } 
 
+    /**
+     * Default constructor
+     */
+    public RegularExpressionEvaluator() {
+    }
+
+    /**
+     *
+     * @param expression Expression to evaluate
+     * @param expressionType The type of the result of evaluating the expression
+     * @param parameterNames The name of the parameters to evaluate
+     * @param parameterTypes The type of the parameters to evaluate
+     * @param parameterValues The values of parameters to evaluate
+     * @return THe evaluated expression
+     * @throws Exception
+     */
     public Object evaluateExpression(String expression, Class expressionType, String[] parameterNames,
             Class[] parameterTypes, Object[] parameterValues) throws Exception {
-               
-                ExpressionEvaluator ee = new ExpressionEvaluator(expression,
-                expressionType,
-                parameterNames,
-                parameterTypes
-        );
-        
+
+        ExpressionEvaluator ee = new ExpressionEvaluator(expression, expressionType, parameterNames, parameterTypes);
+
         try {
             return ee.evaluate(parameterValues);
         } catch (Exception e) {
@@ -52,5 +66,34 @@ public class RegularExpressionEvaluator {
         }
     }
 
-   
+    /**
+     * Format a expression deleting all non alphanumeric characters
+     *
+     * @param expression Expression to format
+     * @param parameterNames Array with parameter names needed to change all
+     * parameter names in expression
+     * @return The formatted expression
+     */
+    public String formatExpression(String expression, String[] parameterNames) {
+        String formattedExpression = expression;
+        for (int i = 0; i < parameterNames.length; i++) {
+            String currentName = parameterNames[i];
+            formattedExpression = formattedExpression.replaceAll(parameterNames[i], currentName.replaceAll("[^a-zA-Z0-9]", ""));
+        }
+        return formattedExpression;
+    }
+
+    /**
+     * Format a list of parameter names deleting all non alphanumeric characters
+     *
+     * @param parameterNames Array with parameter names to format
+     * @return The formatted parameter names
+     */
+    public String[] formatParameterNames(String[] parameterNames) {
+        String[] formattedParameterNames = new String[parameterNames.length];
+        for (int i = 0; i < parameterNames.length; i++) {
+            formattedParameterNames[i] = parameterNames[i].replaceAll("[^a-zA-Z0-9]", "");
+        }
+        return formattedParameterNames;
+    }
 }

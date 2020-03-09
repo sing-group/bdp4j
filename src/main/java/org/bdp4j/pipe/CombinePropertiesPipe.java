@@ -55,7 +55,7 @@ public class CombinePropertiesPipe extends AbstractPipe {
     /**
      * The property to store the regular expression used to combine columns
      */
-    private String regex;
+    private String expression;
 
     /**
      * The property to store the type of the returned result from evaluate
@@ -75,24 +75,36 @@ public class CombinePropertiesPipe extends AbstractPipe {
 
     /**
      * Default constructor. Build a CombineColumnsFromStringBufferPipe that
-     * stores the result of combined columns in the default property ("combine")
+     * stores the result of combined properties in the default property
+     * ("combine")
+     *
+     * @param expression The expression to evaluate the indicated properties
+     * @param expressionType The Class(data type) that returns the evaluation of
+     * the expression
+     * @param parameterNames The name of properties to combine
+     * @param parameterTypes The type of properties to combine
      */
-    public CombinePropertiesPipe(String regex, Class expressionType, String[] parameterNames, Class[] parameterTypes) {
-        this(DEFAULT_COMBINE_PROPERTY, regex, expressionType, parameterNames, parameterTypes);
+    public CombinePropertiesPipe(String expression, Class expressionType, String[] parameterNames, Class[] parameterTypes) {
+        this(DEFAULT_COMBINE_PROPERTY, expression, expressionType, parameterNames, parameterTypes);
     }
 
     /**
-     * Build a MeasureLengthFromStringBufferPipe that stores the result of
-     * combined columns in the property indicated by combineProp parameter
+     * Build a CombineColumnsFromStringBufferPipe that stores the result of
+     * combined properties in the combineProp property
      *
-     * @param combineProp the name of the property to store the text length
+     * @param combineProp Name of the new property to store the result of
+     * combining the indicated properties
+     * @param expression The expression to evaluate the indicated properties
+     * @param expressionType The Class(data type) that returns the evaluation of
+     * the expression
+     * @param parameterNames The name of properties to combine
+     * @param parameterTypes The type of properties to combine
      */
-    public CombinePropertiesPipe(String combineProp, String regex, Class expressionType, String[] parameterNames,
-            Class[] parameterTypes) {
+    public CombinePropertiesPipe(String combineProp, String expression, Class expressionType, String[] parameterNames, Class[] parameterTypes) {
         super(new Class<?>[0], new Class<?>[0]);
 
         this.combineProp = combineProp;
-        this.regex = regex;
+        this.expression = expression;
         this.expressionType = expressionType;
         this.parameterNames = parameterNames;
         this.parameterTypes = parameterTypes;
@@ -145,15 +157,14 @@ public class CombinePropertiesPipe extends AbstractPipe {
 
     /**
      * Process an Instance. This method takes an input Instance, calculates the
-     * the result of indicated by regex combined columns, and returns it. This
-     * is the method by which all pipes are eventually run.
+     * the result of indicated by expression combined columns, and returns it.
+     * This is the method by which all pipes are eventually run.
      *
      * @param carrier Instance to be processed.
      * @return Instance processed
      */
     @Override
     public Instance pipe(Instance carrier) {
-
         RegularExpressionEvaluator ree = new RegularExpressionEvaluator();
         Object[] parameterValues = new Object[parameterNames.length];
         boolean validProperty = true;
@@ -176,7 +187,11 @@ public class CombinePropertiesPipe extends AbstractPipe {
         }
         if (validProperty) {
             try {
-                Object result = ree.evaluateExpression(this.regex, this.expressionType, this.parameterNames,
+                // This is necessary because RegularExpressionEvaluator doesn't allow non alphanumeric characters. 
+                String[] formattedParameterNames = ree.formatParameterNames(parameterNames);
+                String formattedExpression = ree.formatExpression(this.expression, this.parameterNames);
+                
+                Object result = ree.evaluateExpression(formattedExpression, this.expressionType, formattedParameterNames,
                         this.parameterTypes, parameterValues);
                 if (result instanceof Integer) {
                     carrier.setProperty(combineProp, (Integer) result);

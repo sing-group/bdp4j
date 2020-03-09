@@ -869,7 +869,11 @@ public class Dataset implements Serializable, Cloneable {
                         parameterValues[x] = instances.get(i).value(z);
                         try {
                             RegularExpressionEvaluator ree = new RegularExpressionEvaluator();
-                            Object evaluateResult = ree.evaluateExpression(expression, expressionType, parameterNames, parameterTypes, parameterValues);
+                            // This is necessary because RegularExpressionEvaluator doesn't allow non alphanumeric characters. 
+                            String[] formattedParameterNames = ree.formatParameterNames(parameterNames);
+                            String formattedExpression = ree.formatExpression(expression, parameterNames);
+                
+                            Object evaluateResult = ree.evaluateExpression(formattedExpression, expressionType, formattedParameterNames, parameterTypes, parameterValues);
 
                             Object value = instances.get(i).value(attr);
                             String targetValue;
