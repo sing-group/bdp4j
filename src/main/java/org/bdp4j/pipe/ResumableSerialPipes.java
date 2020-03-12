@@ -19,8 +19,6 @@
  * <http://www.gnu.org/licenses/gpl-3.0.html>.
  * #L%
  */
-
-
 package org.bdp4j.pipe;
 
 import java.io.File;
@@ -37,12 +35,12 @@ import org.bdp4j.util.PipeUtils;
 
 /**
  * Serial pipe execution that can be resummed after an execution fail
- * 
- *  The configuration of the pipe (including the temporal folder, the debug
+ *
+ * The configuration of the pipe (including the temporal folder, the debug
  * mode...) is created using the last used Configurator
  * (Configurator.getLastUsed()). If another configuration is required, please
  * stablish it through apropiate setters.
- * 
+ *
  * @author María Novo
  * @since jdk 1.8
  */
@@ -168,9 +166,7 @@ public class ResumableSerialPipes extends SerialPipes {
                                     // Retrieve carriers
                                     Collection<Instance> savedCarriers = (Collection<Instance>) PipeUtils.readFromDisk(pipeFilename);
                                     if (carriers.size() == savedCarriers.size()) {
-                                        for (int x = 0; x < savedCarriers.size(); x++) {
-                                            ((Instance) carriers.toArray()[x]).setData(((Instance) savedCarriers.toArray()[x]).getData());
-                                        }
+                                        carriers = savedCarriers;
                                     } else {
                                         return this.pipeAll(carriers, step);
                                     }
