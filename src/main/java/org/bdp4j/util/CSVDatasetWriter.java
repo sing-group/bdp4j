@@ -362,7 +362,11 @@ public class CSVDatasetWriter {
 
             for (int j = 0; j < values.length; j++) {
                 Object o = values[j];
-                bw.append(escapeCSV(o.toString()));
+                if (!o.equals("null")){
+                    bw.append(escapeCSV(o.toString()));
+                } else {
+                    bw.append(escapeCSV(""));
+                }
                 if (j < values.length - 1) {
                     bw.append(getCSVSep());
                 }

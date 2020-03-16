@@ -190,15 +190,28 @@ public class CombinePropertiesPipe extends AbstractPipe {
                 // This is necessary because RegularExpressionEvaluator doesn't allow non alphanumeric characters. 
                 String[] formattedParameterNames = ree.formatParameterNames(parameterNames);
                 String formattedExpression = ree.formatExpression(this.expression, this.parameterNames);
-                
+
                 Object result = ree.evaluateExpression(formattedExpression, this.expressionType, formattedParameterNames,
                         this.parameterTypes, parameterValues);
-                if (result instanceof Integer) {
-                    carrier.setProperty(combineProp, (Integer) result);
-                } else if (result instanceof Double) {
-                    carrier.setProperty(combineProp, (Double) result);
+                
+                if (this.expressionType.equals(Integer.class)) {
+                    if (result != null){
+                        carrier.setProperty(combineProp, (Integer) result);
+                    } else {
+                        carrier.setProperty(combineProp, 0);
+                    }
+                } else if (this.expressionType.equals(Double.class)) {
+                    if (result != null){
+                        carrier.setProperty(combineProp, (Double) result);
+                    } else {
+                        carrier.setProperty(combineProp, 0);
+                    }
                 } else {
-                    carrier.setProperty(combineProp, (String) result);
+                   if (result != null){
+                        carrier.setProperty(combineProp, (String) result);
+                    } else {
+                        carrier.setProperty(combineProp, null);
+                    }
                 }
             } catch (Exception ex) {
                 logger.error("ERROR: " + this.getClass() + ". " + ex.getMessage());

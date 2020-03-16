@@ -26,6 +26,7 @@
  */
 package org.bdp4j.util;
 
+import java.lang.reflect.InvocationTargetException;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -55,15 +56,15 @@ public class RegularExpressionEvaluator {
      */
     public Object evaluateExpression(String expression, Class expressionType, String[] parameterNames,
             Class[] parameterTypes, Object[] parameterValues) throws Exception {
-
+        
         ExpressionEvaluator ee = new ExpressionEvaluator(expression, expressionType, parameterNames, parameterTypes);
 
-        try {
+         try {
             return ee.evaluate(parameterValues);
-        } catch (Exception e) {
-            e.printStackTrace();
+        } catch ( InvocationTargetException e) {
             return null;
         }
+
     }
 
     /**
