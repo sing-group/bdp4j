@@ -27,8 +27,6 @@
 package org.bdp4j.util;
 
 import java.lang.reflect.InvocationTargetException;
-import java.util.HashMap;
-import java.util.Map;
 
 import org.codehaus.janino.ExpressionEvaluator;
 
@@ -52,10 +50,10 @@ public class RegularExpressionEvaluator {
      * @param parameterTypes The type of the parameters to evaluate
      * @param parameterValues The values of parameters to evaluate
      * @return THe evaluated expression
-     * @throws Exception
+     * @throws Exception add to a Compile, Parse or Runtime Exception
      */
     public Object evaluateExpression(String expression, Class expressionType, String[] parameterNames,
-            Class[] parameterTypes, Object[] parameterValues) throws Exception {
+            Class[] parameterTypes, Object[] parameterValues) throws Exception  {
         
         ExpressionEvaluator ee = new ExpressionEvaluator(expression, expressionType, parameterNames, parameterTypes);
 
