@@ -61,6 +61,8 @@ public class RegularExpressionEvaluator {
             return ee.evaluate(parameterValues);
         } catch ( InvocationTargetException e) {
             return null;
+        } catch(Exception ex){
+            return null;
         }
 
     }

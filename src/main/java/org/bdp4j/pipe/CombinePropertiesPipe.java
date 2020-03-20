@@ -220,5 +220,4 @@ public class CombinePropertiesPipe extends AbstractPipe {
 
         return carrier;
     }
-
 }

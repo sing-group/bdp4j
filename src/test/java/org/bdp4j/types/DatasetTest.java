@@ -19,8 +19,6 @@
  * <http://www.gnu.org/licenses/gpl-3.0.html>.
  * #L%
  */
-
-
 package org.bdp4j.types;
 
 import java.util.ArrayList;
@@ -55,8 +53,8 @@ public class DatasetTest {
         attributes.add(new Attribute("id", true));
         attributes.add(new Attribute("length"));
         attributes.add(new Attribute("length_after_drop"));
-        attributes.add(new Attribute("viagra"));
-        attributes.add(new Attribute("cialis"));
+        attributes.add(new Attribute("bn:00071570n"));
+        attributes.add(new Attribute("bn:00019048n"));
         attributes.add(new Attribute("target", target_values));
         dataset = new Dataset(name, attributes, 0);
 
@@ -87,7 +85,7 @@ public class DatasetTest {
     public void testGetAttributes() {
         List<String> actual = this.dataset.getAttributes();
 
-        assertThat(actual, contains("id", "length", "length_after_drop", "viagra", "cialis", "target"));
+        assertThat(actual, contains("id", "length", "length_after_drop", "bn:00071570n", "bn:00019048n", "target"));
     }
 
     @Test
@@ -130,8 +128,8 @@ public class DatasetTest {
 
         // Actual
         Map<String, String> columnsToReplace = new HashMap<>();
-        columnsToReplace.put("viagra", "drug");
-        columnsToReplace.put("cialis", "drug");
+        columnsToReplace.put("bn:00071570n", "drug");
+        columnsToReplace.put("bn:00019048n", "drug");
 
         Dataset actual = this.dataset.replaceColumnNames(columnsToReplace, Dataset.COMBINE_SUM);
         List<String> actualAttributes = actual.getAttributes();
@@ -147,8 +145,8 @@ public class DatasetTest {
         // Expected dataset
         ArrayList<Attribute> attribute = new ArrayList<>();
         attribute.add(new Attribute("id", true));
-        attribute.add(new Attribute("viagra"));
-        attribute.add(new Attribute("cialis"));
+        attribute.add(new Attribute("bn:00071570n"));
+        attribute.add(new Attribute("bn:00019048n"));
         attribute.add(new Attribute("target", target_values));
         Dataset expectedDataset = new Dataset(name, attribute, 0);
 
@@ -160,11 +158,11 @@ public class DatasetTest {
         List<Instance> expected = new ArrayList<>();
         expected.add(expectedInstance);
 
-        Dataset actual = this.dataset.filterColumns("id|viagra|cialis|target");
+        Dataset actual = this.dataset.filterColumns("id|bn:00071570n|bn:00019048n|target");
         List<String> actualAttributes = actual.getAttributes();
         List<Instance> actualInstances = actual.getInstances();
 
-        assertThat(actualAttributes, contains("id", "viagra", "cialis", "target"));
+        assertThat(actualAttributes, contains("id", "bn:00071570n", "bn:00019048n", "target"));
         assertThat(actualInstances, containsInstancesInOrder(expected));
 
     }
@@ -174,8 +172,8 @@ public class DatasetTest {
         // Expected dataset
         ArrayList<Attribute> attribute = new ArrayList<>();
         attribute.add(new Attribute("id", true));
-        attribute.add(new Attribute("viagra"));
-        attribute.add(new Attribute("cialis"));
+        attribute.add(new Attribute("bn:00071570n"));
+        attribute.add(new Attribute("bn:00019048n"));
         attribute.add(new Attribute("target", target_values));
         Dataset expectedDataset = new Dataset(name, attribute, 0);
 
@@ -194,8 +192,8 @@ public class DatasetTest {
         Dataset actual = this.dataset.deleteAttributeColumns(listAttributeName);
         List<String> actualAttributes = actual.getAttributes();
         List<Instance> actualInstances = actual.getInstances();
-        
-        assertThat(actualAttributes, contains("id", "viagra", "cialis", "target"));
+
+        assertThat(actualAttributes, contains("id", "bn:00071570n", "bn:00019048n", "target"));
         assertThat(actualInstances, containsInstancesInOrder(expected));
     }
 
@@ -219,8 +217,8 @@ public class DatasetTest {
         expected.add(expectedInstance);
 
         List<String> listAttributeName = new ArrayList<>();
-        listAttributeName.add("viagra");
-        listAttributeName.add("cialis");
+        listAttributeName.add("bn:00071570n");
+        listAttributeName.add("bn:00019048n");
 
         Dataset actual = this.dataset.joinAttributeColumns(listAttributeName, "drug", Dataset.COMBINE_SUM);
         List<String> actualAttributes = actual.getAttributes();
@@ -270,6 +268,14 @@ public class DatasetTest {
 
         result = dataset.evaluateColumns("(length > 14.0) ? 1: 0", int.class, new String[]{"length"}, new Class[]{double.class}, "target");
         assertEquals(expected, result);
+        
+        expected = new HashMap<>();
+        expected.put("0", 0);
+        expected.put("1", 0);
+        
+        result = dataset.evaluateColumns("((bn:00071570n > 1) && (bn:00019048n > 1)) ? 1 : 0", int.class, new String[]{"bn:00071570n", "bn:00019048n"}, new Class[]{double.class, double.class}, "target");
+        assertEquals(expected, result);
+
     }
 
 }

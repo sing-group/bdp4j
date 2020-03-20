@@ -43,6 +43,7 @@ import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import org.bdp4j.util.MCD;
 import org.bdp4j.util.RegularExpressionEvaluator;
+import org.codehaus.janino.CompileException;
 
 /**
  * Build a weka dataset
@@ -867,45 +868,50 @@ public class Dataset implements Serializable, Cloneable {
                 for (int z = 0; z < attributes.size(); z++) {
                     if (parameterNamesList.get(x).equals(attributes.get(z))) {
                         parameterValues[x] = instances.get(i).value(z);
-                        try {
-                            RegularExpressionEvaluator ree = new RegularExpressionEvaluator();
-                            // This is necessary because RegularExpressionEvaluator doesn't allow non alphanumeric characters. 
-                            String[] formattedParameterNames = ree.formatParameterNames(parameterNames);
-                            String formattedExpression = ree.formatExpression(expression, parameterNames);
-                
-                            Object evaluateResult = ree.evaluateExpression(formattedExpression, expressionType, formattedParameterNames, parameterTypes, parameterValues);
-
-                            Object value = instances.get(i).value(attr);
-                            String targetValue;
-                            if (value instanceof Double) {
-                                targetValue = String.valueOf((int) instances.get(i).value(attr));
-                            } else {
-                                targetValue = String.valueOf(instances.get(i).value(attr));
-                            }
-
-                            if (evaluateResult instanceof Integer){
-                                if ((Integer)evaluateResult > 0) { // The condition is met
-                                    int incrementedValue = result.get(targetValue) + 1;
-                                    result.put(targetValue, incrementedValue);
-                                }
-                            }else if (evaluateResult instanceof Double){
-                                if ((Double)evaluateResult > 0) { // The condition is met
-                                    int incrementedValue = result.get(targetValue) + 1;
-                                    result.put(targetValue, incrementedValue);
-                                }
-                            } else if (evaluateResult instanceof Boolean){
-                                if ((Boolean)evaluateResult) { // The condition is met
-                                    int incrementedValue = result.get(targetValue) + 1;
-                                    result.put(targetValue, incrementedValue);
-                                }
-                            }
-                        } catch (Exception ex) {
-                            java.util.logging.Logger.getLogger(Dataset.class.getName()).log(Level.SEVERE, null, ex);
-                        }
                     }
                 }
             }
+            try {
+                RegularExpressionEvaluator ree = new RegularExpressionEvaluator();
+                // This is necessary because RegularExpressionEvaluator doesn't allow non alphanumeric characters. 
+                String[] formattedParameterNames = ree.formatParameterNames(parameterNames);
+                String formattedExpression = ree.formatExpression(expression, parameterNames);
+
+                Object evaluateResult = ree.evaluateExpression(formattedExpression, expressionType, formattedParameterNames, parameterTypes, parameterValues);
+
+                Object value = instances.get(i).value(attr);
+                String targetValue;
+                if (value instanceof Double) {
+                    targetValue = String.valueOf((int) instances.get(i).value(attr));
+                } else {
+                    targetValue = String.valueOf(instances.get(i).value(attr));
+                }
+
+                if (evaluateResult instanceof Integer) {
+                    if ((Integer) evaluateResult > 0) { // The condition is met
+                        int incrementedValue = result.get(targetValue) + 1;
+                        result.put(targetValue, incrementedValue);
+                    }
+                } else if (evaluateResult instanceof Double) {
+                    if ((Double) evaluateResult > 0) { // The condition is met
+                        int incrementedValue = result.get(targetValue) + 1;
+                        result.put(targetValue, incrementedValue);
+                    }
+                } else if (evaluateResult instanceof Boolean) {
+                    if ((Boolean) evaluateResult) { // The condition is met
+                        int incrementedValue = result.get(targetValue) + 1;
+                        result.put(targetValue, incrementedValue);
+                    }
+                }
+            } catch (CompileException cex) {
+                logger.error("[EVALUATE COLUMNS] The defined parameter types is wrong. " + cex.getMessage());
+                
+            } catch (Exception ex){
+                logger.error("[EVALUATE COLUMNS] " + ex.getMessage());
+            }
+
         }
         return result;
     }
+
 }
