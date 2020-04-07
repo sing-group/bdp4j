@@ -47,7 +47,7 @@ public class CheckVoidTransformer extends Transformer {
     @Override
     public double transform(Object input) {
         try {
-            return ((input == null || input.equals("null")) ? 0 : 1);
+            return ((input == null || input.equals("null") || input.equals(" ") || input.equals("")) ? 0 : 1);
         } catch (NullPointerException ex) {
             return 0;
         }
