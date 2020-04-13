@@ -414,7 +414,7 @@ public class Dataset implements Serializable, Cloneable {
     //TODO: change the name to joinAttributes or joinColumns (is more clear)
     public Dataset joinAttributeColumns(List<String> listAttributeNameToJoin, String newAttributeName, CombineOperator op) {
         Instances instances = this.dataset;
-
+        String tmpName = "temporalAttName";
         try {
             for (Instance instance : instances) {
                 Double newAttributeValue = 0d;
@@ -426,16 +426,16 @@ public class Dataset implements Serializable, Cloneable {
                         Double attributeValue;
 
                         if (isFirstAtt && !isFirstInstance) {
-                            attributeValue = instance.value(instances.attribute(newAttributeName).index());
+                            attributeValue = instance.value(instances.attribute(tmpName).index());
                         } else {
                             attributeValue = instance.value(instances.attribute(attributeToJoin).index());
                             if (isFirstAtt && isFirstInstance) {
                                 Attribute attribute = instances.attribute(attributeToJoin);
-                                instances.renameAttribute(attribute, newAttributeName);
+                                instances.renameAttribute(attribute, tmpName);
                             }
                         }
                         newAttributeValue = op.combine(newAttributeValue, attributeValue);
-                        instance.setValue(instances.attribute(newAttributeName), newAttributeValue);
+                        instance.setValue(instances.attribute(tmpName), newAttributeValue);
 
                     } catch (NullPointerException ex) {
                         logger.warn(Dataset.class.getClass().getName() + ". Attribute >>" + attributeToJoin + "<< doesn't exist. " + ex.getMessage());
@@ -444,6 +444,10 @@ public class Dataset implements Serializable, Cloneable {
                 }
             }
             deleteAttributeColumns(listAttributeNameToJoin);
+            //   Replace temporal name with the new attribute name
+            Attribute attribute = instances.attribute(tmpName);
+            instances.renameAttribute(attribute, newAttributeName);
+
         } catch (Exception ex) {
             logger.warn(ex.getMessage());
         }
@@ -905,8 +909,8 @@ public class Dataset implements Serializable, Cloneable {
                 }
             } catch (CompileException cex) {
                 logger.error("[EVALUATE COLUMNS] The defined parameter types is wrong. " + cex.getMessage());
-                
-            } catch (Exception ex){
+
+            } catch (Exception ex) {
                 logger.error("[EVALUATE COLUMNS] " + ex.getMessage());
             }
 
