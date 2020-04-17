@@ -101,7 +101,7 @@ public class Enum2IntTransformer extends Transformer {
      */
     @Override
     public List<Integer> getListValues() {
-        List<Integer> values = new ArrayList<Integer>();
+        List<Integer> values = new ArrayList<>();
         for (Map.Entry<String, Integer> entry : transformList.entrySet()) {
             values.add(entry.getValue());
         }
