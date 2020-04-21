@@ -437,8 +437,8 @@ public class Dataset implements Serializable, Cloneable {
                 if (joinExistingAttribute) {
                     listAttributeNameToJoin.add(newAttributeName);
                 } else {
-                    logger.info("Attributes have not been joined because  '" + newAttributeName + "' already exists. If you want to join with existing attribute, set joinExistingAttribute true.");
-                    return this;
+                    logger.fatal("Attributes have not been joined because  '" + newAttributeName + "' already exists. If you want to join with existing attribute, set joinExistingAttribute true.");
+                    System.exit(-1);
                 }
             }
             for (Instance instance : instances) {
