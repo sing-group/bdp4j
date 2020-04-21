@@ -403,19 +403,44 @@ public class Dataset implements Serializable, Cloneable {
     }
 
     /**
-     * Join attribute columns
+     * Join attributes. If the newAttributeName already exists,
+     * listAttributeNameToJoin attributes not be combined
      *
-     * @param listAttributeNameToJoin The name of colums that should be joined
-     * @param newAttributeName The name of the new column
+     * @param listAttributeNameToJoin The name of attributes that should be joined
+     * @param newAttributeName The name of the new attribute
      * @param op Operator that indicates the type of operation to do to combine
-     * columns
-     * @return A Dataset where some columns have been combined
+     * attributes
+     * @return A Dataset where some attributes have been combined
      */
-    //TODO: change the name to joinAttributes or joinColumns (is more clear)
-    public Dataset joinAttributeColumns(List<String> listAttributeNameToJoin, String newAttributeName, CombineOperator op) {
+    public Dataset joinAttributes(List<String> listAttributeNameToJoin, String newAttributeName, CombineOperator op) {
+        return joinAttributes(listAttributeNameToJoin, newAttributeName, op, false);
+    }
+
+    /**
+     * Join attributes
+     *
+     * @param listAttributeNameToJoin The name of attributes that should be joined
+     * @param newAttributeName The name of the new attribute
+     * @param op Operator that indicates the type of operation to do to combine
+     * attributes
+     * @param joinExistingAttribute Indicates if, in case of the
+     * newAttributeName already exists, you want to combine values with the new
+     * one
+     * @return A Dataset where some attributes have been combined
+     */
+    public Dataset joinAttributes(List<String> listAttributeNameToJoin, String newAttributeName, CombineOperator op, Boolean joinExistingAttribute) {
         Instances instances = this.dataset;
         String tmpName = "temporalAttName";
         try {
+
+            if (instances.attribute(newAttributeName) != null) {
+                if (joinExistingAttribute) {
+                    listAttributeNameToJoin.add(newAttributeName);
+                } else {
+                    logger.info("Attributes have not been joined because  '" + newAttributeName + "' already exists. If you want to join with existing attribute, set joinExistingAttribute true.");
+                    return this;
+                }
+            }
             for (Instance instance : instances) {
                 Double newAttributeValue = 0d;
                 boolean isFirstInstance = instances.firstInstance().equals(instance);
