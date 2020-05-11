@@ -202,7 +202,7 @@ public class DatasetTest {
     }
 
     @Test
-    public void testJoinAttributeColumns() {
+    public void testJoinAttributes() {
 
         attributes = new ArrayList<>();
         attributes.add(new Attribute("id", true));
@@ -231,7 +231,7 @@ public class DatasetTest {
         assertThat(actualAttributes, contains("id", "length", "length_after_drop", "drug", "target"));
         assertThat(actualInstances, containsInstancesInOrder(expected));
 
-       // Test 1
+        // Test 1
         attributes = new ArrayList<>();
         attributes.add(new Attribute("id", true));
         attributes.add(new Attribute("drug"));
@@ -319,6 +319,65 @@ public class DatasetTest {
         assertThat(actualAttributes, contains("id", "length", "length_after_drop", "bn:00071570n", "target"));
         assertThat(actualInstances, containsInstancesInOrder(expected));
          */
+    }
+
+    @Test
+    public void testJoinAttributesByRegularExpression() {
+        Dataset cloneDataset = this.dataset.clone();
+        attributes = new ArrayList<>();
+        attributes.add(new Attribute("id", true));
+        attributes.add(new Attribute("length"));
+        attributes.add(new Attribute("length_after_drop"));
+        attributes.add(new Attribute("drug2"));
+        attributes.add(new Attribute("bn:00071570n"));
+        attributes.add(new Attribute("bn:00019048n"));
+        attributes.add(new Attribute("target", target_values));
+        Dataset expectedDataset = new Dataset(name, attributes, 0);
+        Instance expectedInstance = expectedDataset.createDenseInstance();
+        expectedInstance.setValue(0, "1");
+        expectedInstance.setValue(1, 18d);
+        expectedInstance.setValue(2, 12d);
+        expectedInstance.setValue(3, 0.67d);
+        expectedInstance.setValue(4, 1d);
+        expectedInstance.setValue(5, 1d);
+        expectedInstance.setValue(6, 1);
+        List<Instance> expected = new ArrayList<>();
+        expected.add(expectedInstance);
+
+        Dataset actual = this.dataset.joinAttributesByRegularExpression("drug2", "Math.round((length_after_drop/length)*100d)/100d", Double.class, new String[]{"length", "length_after_drop"}, new Class[]{Double.class, Double.class}, false);
+        List<String> actualAttributes = actual.getAttributes();
+        List<Instance> actualInstances = actual.getInstances();
+        System.out.println("actualAttributes: " + actualAttributes);
+        System.out.println("expectedAttributes: " + expectedDataset.getAttributes());
+
+        assertThat(actualAttributes, contains("id", "length", "length_after_drop", "drug2", "bn:00071570n", "bn:00019048n", "target"));
+        assertThat(actualInstances, containsInstancesInOrder(expected));
+
+        // Testing join Attributes with an existing column
+        attributes = new ArrayList<>();
+        attributes.add(new Attribute("id", true));
+        attributes.add(new Attribute("length"));
+        attributes.add(new Attribute("length_after_drop"));
+        attributes.add(new Attribute("bn:00071570n"));
+        attributes.add(new Attribute("bn:00019048n"));
+        attributes.add(new Attribute("target", target_values));
+        expectedDataset = new Dataset(name, attributes, 0);
+        expectedInstance = expectedDataset.createDenseInstance();
+        expectedInstance.setValue(0, "1");
+        expectedInstance.setValue(1, 18d);
+        expectedInstance.setValue(2, 0.67d);
+        expectedInstance.setValue(3, 1d);
+        expectedInstance.setValue(4, 1d);
+        expectedInstance.setValue(5, 1);
+        expected = new ArrayList<>();
+        expected.add(expectedInstance);
+
+        actual = cloneDataset.joinAttributesByRegularExpression("length_after_drop", "Math.round((length_after_drop/length)*100d)/100d", Double.class, new String[]{"length", "length_after_drop"}, new Class[]{Double.class, Double.class}, true);
+        actualAttributes = actual.getAttributes();
+        actualInstances = actual.getInstances();
+
+        assertThat(actualAttributes, contains("id", "length", "length_after_drop", "bn:00071570n", "bn:00019048n", "target"));
+        assertThat(actualInstances, containsInstancesInOrder(expected));
     }
 
     @Test

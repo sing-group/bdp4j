@@ -406,7 +406,8 @@ public class Dataset implements Serializable, Cloneable {
      * Join attributes. If the newAttributeName already exists,
      * listAttributeNameToJoin attributes not be combined
      *
-     * @param listAttributeNameToJoin The name of attributes that should be joined
+     * @param listAttributeNameToJoin The name of attributes that should be
+     * joined
      * @param newAttributeName The name of the new attribute
      * @param op Operator that indicates the type of operation to do to combine
      * attributes
@@ -419,7 +420,8 @@ public class Dataset implements Serializable, Cloneable {
     /**
      * Join attributes
      *
-     * @param listAttributeNameToJoin The name of attributes that should be joined
+     * @param listAttributeNameToJoin The name of attributes that should be
+     * joined
      * @param newAttributeName The name of the new attribute
      * @param op Operator that indicates the type of operation to do to combine
      * attributes
@@ -475,6 +477,97 @@ public class Dataset implements Serializable, Cloneable {
 
         } catch (Exception ex) {
             logger.warn(ex.getMessage());
+        }
+        return this;
+    }
+
+    public Dataset joinAttributesByRegularExpression(String newAttributeName, String expression, Class expressionType, String[] parameterNames, Class[] parameterTypes, Boolean replaceExistingAttribute) {
+
+        RegularExpressionEvaluator ree = new RegularExpressionEvaluator();
+        Object[] parameterValues = new Object[parameterNames.length];
+        String tmpName = "temporalAttName";
+
+        try {
+            // if the new attribute name does not exists, insert after the last parameter name
+            if (this.dataset.attribute(newAttributeName) == null) {
+                ColumnDefinition column = new ColumnDefinition(tmpName, expressionType, 0);
+                int position = this.dataset.attribute(parameterNames[parameterNames.length - 1]).index();
+                if (position < this.numAttributes()) {
+                    position++;
+                }
+                this.insertColumnAt(column, position);
+                //if the  newAttribute name already existi and replaceExistinAttribute is false, exit
+            } else if (this.dataset.attribute(newAttributeName) != null && !replaceExistingAttribute) {
+                logger.fatal("Attributes have not been joined because  '" + newAttributeName + "' already exists. If you want to replace the existing attribute, set replaceExistingAttribute true.");
+                System.exit(-1);
+            } else if (replaceExistingAttribute) {
+                tmpName = newAttributeName;
+            }
+
+            Instances instances = this.dataset;
+
+            for (Instance instance : instances) {
+                // Fill parameterValues with instances values
+                for (int i = 0; i < parameterNames.length; i++) {
+                    Attribute currentAtt = instances.attribute(parameterNames[i]);
+                    if (currentAtt != null) {
+                        parameterValues[i] = instance.value(currentAtt);
+                    } else {
+                        logger.fatal("Attributes have not been joined because  '" + parameterNames[i] + "' not exists.");
+                        System.exit(-1);
+                    }
+                }
+
+                for (String attributeToJoin : parameterNames) {
+                    try {
+                        // This is necessary because RegularExpressionEvaluator doesn't allow non alphanumeric characters. 
+                        String[] formattedParameterNames = ree.formatParameterNames(parameterNames);
+                        String formattedExpression = ree.formatExpression(expression, parameterNames);
+                        try {
+                            
+                            Object result = ree.evaluateExpression(formattedExpression, expressionType, formattedParameterNames, parameterTypes, parameterValues);
+
+                            if (expressionType.equals(Integer.class)) {
+                                if (result != null) {
+                                    instance.setValue(instances.attribute(tmpName), (Integer) result);
+                                } else {
+                                    instance.setValue(instances.attribute(tmpName), 0d);
+                                }
+                            } else if (expressionType.equals(Double.class)) {
+                                Double resultToDouble = new Double(result.toString());
+                                if (resultToDouble.isNaN()) {
+                                    instance.setValue(instances.attribute(tmpName), 0d);
+                                } else {
+                                    if (result != null) {
+                                        instance.setValue(instances.attribute(tmpName), resultToDouble);
+                                    } else {
+                                        instance.setValue(instances.attribute(tmpName), 0d);
+                                    }
+                                }
+                            } else {
+                                if (result != null) {
+                                    instance.setValue(instances.attribute(tmpName), (String) result);
+                                } else {
+                                    instance.setValue(instances.attribute(tmpName), null);
+                                }
+                            }
+
+                        } catch (Exception ex) {
+                            instance.setValue(instances.attribute(tmpName), 0d);
+                            logger.error("ERROR: " + this.getClass() + ". " + ex.getMessage());
+                        }
+                    } catch (NullPointerException ex) {
+                        instance.setValue(instances.attribute(tmpName), 0d);
+                        logger.warn(Dataset.class.getClass().getName() + ". Attribute >>" + attributeToJoin + "<< doesn't exist. " + ex.getMessage());
+                    }
+                }
+            }
+            Map<String, String> newColumnNames = new HashMap<>();
+            newColumnNames.put(tmpName, newAttributeName);
+            this.replaceColumnNames(newColumnNames, null);
+
+        } catch (Exception ex) {
+            logger.error("ERROR: " + this.getClass() + ". " + ex.getMessage());
         }
         return this;
     }
