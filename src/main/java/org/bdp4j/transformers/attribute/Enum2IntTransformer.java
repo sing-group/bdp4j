@@ -22,7 +22,7 @@
 
 
 
-package org.bdp4j.transformers;
+package org.bdp4j.transformers.attribute;
 
 import org.bdp4j.types.Transformer;
 

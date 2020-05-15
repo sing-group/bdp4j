@@ -25,6 +25,7 @@
 package org.bdp4j.transformers;
 
 import java.util.Date;
+import org.bdp4j.transformers.attribute.Double2BinaryTransformer;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;

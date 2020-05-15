@@ -20,35 +20,42 @@
  * #L%
  */
 
-package org.bdp4j.transformers;
+package org.bdp4j.transformers.attribute;
 
+import java.time.LocalDateTime;
+import java.time.ZoneId;
 import org.bdp4j.types.Transformer;
-
 import java.util.ArrayList;
+import java.util.Date;
 import java.util.List;
+import org.bdp4j.util.DateTimeIdentifier;
 
 /**
- * Trasform an input from String to Double, that represents if this input is
- * empty or not.
+ * Trasform an input from String, that represents a Data to Double
  *
  * @author María Novo
  */
-public class CheckVoidTransformer extends Transformer {
+public class Date2MillisTransformer extends Transformer {
 
     private String transformerListValues;
 
     /**
-     * Trasform an input from String to Double, that represents if this input is
-     * empty or not.
+     * Transform an input, that represents a Date to Double
      *
      * @param input A string to transform in Double
-     * @return A double value that represents a void or not void value
+     * @return A double value that represents a Date
      */
     @Override
     public double transform(Object input) {
-        try {
-            return ((input == null || input.equals("null") || input.equals(" ") || input.equals("")) ? 0 : 1);
-        } catch (NullPointerException ex) {
+           
+        if (input != null && !input.equals("null")) {
+            try {
+                LocalDateTime date = DateTimeIdentifier.getDefault().checkDateTime(input.toString());
+                return date.atZone(ZoneId.of("UTC")).toInstant().toEpochMilli();
+            } catch (Exception ex) {
+                return 0;
+            }
+        } else {
             return 0;
         }
     }
@@ -58,8 +65,9 @@ public class CheckVoidTransformer extends Transformer {
         return transformerListValues;
     }
     
-    public  Class<?>  getInputType(){
-     return String.class;   
+    @Override
+    public Class<?> getInputType() {
+        return Date.class;
     }
 
     /**
@@ -69,6 +77,6 @@ public class CheckVoidTransformer extends Transformer {
      */
     @Override
     public List<Integer> getListValues() {
-        return new ArrayList<Integer>();
+        return new ArrayList<>();
     }
 }

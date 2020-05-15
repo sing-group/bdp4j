@@ -30,6 +30,7 @@ import java.util.Date;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.function.Supplier;
+import org.bdp4j.transformers.attribute.Enum2IntTransformer;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;

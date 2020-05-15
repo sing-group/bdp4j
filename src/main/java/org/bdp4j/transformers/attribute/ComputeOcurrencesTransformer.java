@@ -24,41 +24,57 @@
  * To change this template file, choose Tools | Templates
  * and open the template in the editor.
  */
-package org.bdp4j.transformers;
+package org.bdp4j.transformers.attribute;
 
 import java.util.ArrayList;
 import java.util.List;
 import org.bdp4j.types.Transformer;
-import org.bdp4j.util.Pair;
 
 /**
- * Transform an input value on an input scale in to an output scale
+ * Compute the number of ocurrences of an expression
  *
  * @author María Novo
  */
-public class InputScale2OutputScaleTransformer extends Transformer {
+public class ComputeOcurrencesTransformer extends Transformer {
 
     private String transformerListValues;
 
     /**
-     * Input value scale
+     * The default value of the regex to split the text
      */
-    private Pair<Double, Double> inputScale;
+    public static final String DEFAULT_REGEX_VALUE = "([\\W\\s]+)";
 
     /**
-     * Output value scale
+     * Regex value used to compute ocurrences number
      */
-    private Pair<Double, Double> outputScale;
+    private String regex = DEFAULT_REGEX_VALUE;
 
     /**
-     * Build a InputScale2OutputScaleTransformer using input and output scale
+     * Build a ComputeOcurrencesTransformer using regex value
      *
-     * @param inputScale Input value scale
-     * @param outputScale Output value scale
+     * @param regex Regex value
      */
-    public InputScale2OutputScaleTransformer(Pair<Double, Double> inputScale, Pair<Double, Double> outputScale) {
-        this.inputScale = inputScale;
-        this.outputScale = outputScale;
+    public ComputeOcurrencesTransformer(String regex) {
+        this.regex = regex;
+    }
+
+    /**
+     * Return the regex used to transform input data
+     *
+     * @return the regex used to transform input data
+     */
+    public String getRegex() {
+        return this.regex;
+    }
+
+    /**
+     * Estabilish the regex used to transform input data
+     *
+     * @param regex The regex used to transform input data
+     */
+    public void setRegex(String regex) {
+        this.regex = regex;
+
     }
 
     /**
@@ -70,20 +86,11 @@ public class InputScale2OutputScaleTransformer extends Transformer {
     @Override
     public double transform(Object input) {
         try {
-
-            Double min_input = inputScale.getObj1();
-            Double max_input = inputScale.getObj2();
-
-            Double min_output = outputScale.getObj1();
-            Double max_output = outputScale.getObj2();
-
-            Double value = Double.parseDouble(input.toString());
-
-            Double first_step = (value - min_input) / (max_input - min_input);
-            Double second_step = (max_output - min_output);
-            Double result = (first_step * second_step) + min_output;
-            return result;
-
+            if (input == null || input.equals("null") || input.equals(" ") || input.equals("")) {
+                return 0;
+            }
+            String[] ocurrences = input.toString().split(this.regex);
+            return ocurrences.length;
         } catch (Exception ex) {
             return 0;
         }
@@ -100,9 +107,9 @@ public class InputScale2OutputScaleTransformer extends Transformer {
     }
 
     /**
-     * Get a List who contains the transformated values
+     * Return the input type to transform
      *
-     * @return List who contains the transformated values
+     * @return the input type to transform
      */
     @Override
     public Class<?> getInputType() {
@@ -119,11 +126,4 @@ public class InputScale2OutputScaleTransformer extends Transformer {
         return new ArrayList<>();
     }
 
-//    public static void main(String[] args) {
-//        Pair<Double, Double> inputScale = new Pair<>(-1d, 1d);
-//        Pair<Double, Double> outputScale = new Pair<>(0d, 10d);
-//        InputScale2OutputScaleTransformer ieot = new InputScale2OutputScaleTransformer(inputScale, outputScale);
-//        Double res = ieot.transform("");
-//
-//    }
 }

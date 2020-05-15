@@ -22,7 +22,7 @@
 
 
 
-package org.bdp4j.transformers;
+package org.bdp4j.transformers.attribute;
 
 import org.bdp4j.types.Transformer;
 
@@ -30,41 +30,50 @@ import java.util.ArrayList;
 import java.util.List;
 
 /**
- * Trasform an input from String to Double, that represents the input lenght.
+ * Trasform an input from String, that represents a Data to Double
  *
  * @author María Novo
  */
-public class ComputeStringLenghtTransformer extends Transformer {
+public class Double2BinaryTransformer extends Transformer {
 
     private String transformerListValues;
 
     /**
-     * Trasform an input from String to Double, that represents the input
-     * lenght.
+     * Transform an input, that represents a Date to Double
      *
-     * @param input A string to transform in Double
-     * @return A double value that represents the string length
+     * @param input A Double to transform in binary
+     * @return A Double value that represents a binary value
      */
     @Override
     public double transform(Object input) {
-        return new Double(((String) input).length());
+        if (input != null && !input.equals("null")) {
+            try {
+                Double value = Double.parseDouble(input.toString());
+                if (value > 0)
+                    return 1;
+                else return 0;
+            } catch (Exception ex) {
+                return 0;
+            }
+        } else {
+            return 0;
+        }
     }
-
 
     @Override
     public String getTransformerListValues() {
         return transformerListValues;
     }
-    
+
+    public Class<?> getInputType() {
+        return Double.class;
+    }
+
     /**
      * Get a List who contains the values
      *
      * @return List who contains the values
-     */    
-    public Class<?> getInputType() {
-        return String.class;
-    }
-
+     */
     @Override
     public List<Integer> getListValues() {
         return new ArrayList<Integer>();

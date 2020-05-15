@@ -19,39 +19,72 @@
  * <http://www.gnu.org/licenses/gpl-3.0.html>.
  * #L%
  */
-/*
+ /*
  * To change this license header, choose License Headers in Project Properties.
  * To change this template file, choose Tools | Templates
  * and open the template in the editor.
  */
-package org.bdp4j.transformers;
+package org.bdp4j.transformers.attribute;
 
 import java.util.ArrayList;
 import java.util.List;
 import org.bdp4j.types.Transformer;
+import org.bdp4j.util.Pair;
 
 /**
- * Transform an input url to double, that represents if this input has an url or
- * not.
+ * Transform an input value on an input scale in to an output scale
  *
  * @author María Novo
  */
-public class Url2BinaryTransformer extends Transformer {
+public class InputScale2OutputScaleTransformer extends Transformer {
 
     private String transformerListValues;
 
     /**
-     * Transform an input url to double, that represents if this input has an
-     * url or not.
+     * Input value scale
+     */
+    private Pair<Double, Double> inputScale;
+
+    /**
+     * Output value scale
+     */
+    private Pair<Double, Double> outputScale;
+
+    /**
+     * Build a InputScale2OutputScaleTransformer using input and output scale
      *
-     * @param input A url to transform in 0 or 1
-     * @return A double value that represents if contains a url or not
+     * @param inputScale Input value scale
+     * @param outputScale Output value scale
+     */
+    public InputScale2OutputScaleTransformer(Pair<Double, Double> inputScale, Pair<Double, Double> outputScale) {
+        this.inputScale = inputScale;
+        this.outputScale = outputScale;
+    }
+
+    /**
+     * Transform an input value from input scale to output scale
+     *
+     * @param input A value to change from input scale to output scale
+     * @return A double value that represents the input value in an output scale
      */
     @Override
     public double transform(Object input) {
         try {
-            return (((input.toString().indexOf("http:")) != -1 || (input.toString().indexOf("https:")) != -1 || (input.toString().indexOf("www.")) != -1) ? 1 : 0);
-        } catch (NullPointerException ex) {
+
+            Double min_input = inputScale.getObj1();
+            Double max_input = inputScale.getObj2();
+
+            Double min_output = outputScale.getObj1();
+            Double max_output = outputScale.getObj2();
+
+            Double value = Double.parseDouble(input.toString());
+
+            Double first_step = (value - min_input) / (max_input - min_input);
+            Double second_step = (max_output - min_output);
+            Double result = (first_step * second_step) + min_output;
+            return result;
+
+        } catch (Exception ex) {
             return 0;
         }
     }
@@ -85,4 +118,12 @@ public class Url2BinaryTransformer extends Transformer {
     public List<Integer> getListValues() {
         return new ArrayList<>();
     }
+
+//    public static void main(String[] args) {
+//        Pair<Double, Double> inputScale = new Pair<>(-1d, 1d);
+//        Pair<Double, Double> outputScale = new Pair<>(0d, 10d);
+//        InputScale2OutputScaleTransformer ieot = new InputScale2OutputScaleTransformer(inputScale, outputScale);
+//        Double res = ieot.transform("");
+//
+//    }
 }

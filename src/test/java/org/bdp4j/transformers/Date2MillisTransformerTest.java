@@ -27,6 +27,7 @@ package org.bdp4j.transformers;
 import java.time.Instant;
 import java.time.LocalDateTime;
 import java.time.ZoneId;
+import org.bdp4j.transformers.attribute.Date2MillisTransformer;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;

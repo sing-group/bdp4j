@@ -38,7 +38,6 @@ import java.util.Enumeration;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.logging.Level;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import org.bdp4j.util.MCD;
@@ -108,7 +107,16 @@ public class Dataset implements Serializable, Cloneable {
     }
 
     /**
-     * Default constructor, creates a new Dataset
+     * Creates a new Dataset from a weka Instances
+     *
+     * @param dataset The Dataset created
+     */
+    public Dataset(Instances dataset) {
+        this.dataset = dataset;
+    }
+
+    /**
+     * Creates a new Dataset
      *
      * @param name The name of the relation
      * @param attributes The attribute list of instances
@@ -116,11 +124,10 @@ public class Dataset implements Serializable, Cloneable {
      */
     public Dataset(String name, ArrayList<Attribute> attributes, int capacity) {
         this.dataset = new Instances(name, attributes, capacity);
-
     }
 
     /**
-     * Default constructor, creates a new Dataset
+     * Creates a new Dataset
      *
      * @param name The name of the relation
      * @param attributes The attribute list of instances
@@ -403,8 +410,9 @@ public class Dataset implements Serializable, Cloneable {
     }
 
     /**
-     * Join attributes. If the newAttributeName already exists,
-     * listAttributeNameToJoin attributes not be combined
+     * Join attributes, combining their values and creating a new attribute. If
+     * the newAttributeName already exists, listAttributeNameToJoin attributes
+     * not be combined
      *
      * @param listAttributeNameToJoin The name of attributes that should be
      * joined
@@ -418,7 +426,7 @@ public class Dataset implements Serializable, Cloneable {
     }
 
     /**
-     * Join attributes
+     * Join attributes, combining their values and creating a new attribute.
      *
      * @param listAttributeNameToJoin The name of attributes that should be
      * joined
@@ -481,7 +489,24 @@ public class Dataset implements Serializable, Cloneable {
         return this;
     }
 
-    public Dataset joinAttributesByRegularExpression(String newAttributeName, String expression, Class expressionType, String[] parameterNames, Class[] parameterTypes, Boolean replaceExistingAttribute) {
+    /**
+     * Join attributes usign a math expression.
+     *
+     * @param newAttributeName The name of the new attribute
+     * @param expression Expresssion used to join attribute values
+     * @param expressionType The type of the result of evaluating the expression
+     * @param parameterNames The name of attributes to evaluate
+     * @param parameterTypes The type of attributes to evaluate
+     * @param replaceExistingAttribute Indicates, in case of newAttributeName
+     * attribute exists, if is replaced or not(in this case, application
+     * finished).
+     * @param invalidateInstance In case of the result of evaluate expression is
+     * not a number, indicates if instance be invalidated(deleted) or not
+     * @param defaultNaNValue In case of the result of evaluate expression is
+     * not a number, and invalidateInstance is false, indicates the value to set
+     * @return A Dataset where some attributes have been combined
+     */
+    public Dataset joinAttributesByMathExpression(String newAttributeName, String expression, Class expressionType, String[] parameterNames, Class[] parameterTypes, Boolean replaceExistingAttribute, Boolean invalidateInstance, Double defaultNaNValue) {
 
         RegularExpressionEvaluator ree = new RegularExpressionEvaluator();
         Object[] parameterValues = new Object[parameterNames.length];
@@ -505,7 +530,7 @@ public class Dataset implements Serializable, Cloneable {
             }
 
             Instances instances = this.dataset;
-
+            int instanceIndex = 0;
             for (Instance instance : instances) {
                 // Fill parameterValues with instances values
                 for (int i = 0; i < parameterNames.length; i++) {
@@ -524,7 +549,7 @@ public class Dataset implements Serializable, Cloneable {
                         String[] formattedParameterNames = ree.formatParameterNames(parameterNames);
                         String formattedExpression = ree.formatExpression(expression, parameterNames);
                         try {
-                            
+
                             Object result = ree.evaluateExpression(formattedExpression, expressionType, formattedParameterNames, parameterTypes, parameterValues);
 
                             if (expressionType.equals(Integer.class)) {
@@ -536,7 +561,12 @@ public class Dataset implements Serializable, Cloneable {
                             } else if (expressionType.equals(Double.class)) {
                                 Double resultToDouble = new Double(result.toString());
                                 if (resultToDouble.isNaN()) {
-                                    instance.setValue(instances.attribute(tmpName), 0d);
+                                    if (invalidateInstance) {
+                                        this.dataset.delete(instanceIndex);
+                                        logger.info("[JOIN ATTRIBUTES BY MATH EXPRESSION]: Instance has been delete because the result of the operation is NaN (Not a Number)");
+                                    } else {
+                                        instance.setValue(instances.attribute(tmpName), defaultNaNValue);
+                                    }
                                 } else {
                                     if (result != null) {
                                         instance.setValue(instances.attribute(tmpName), resultToDouble);
@@ -561,6 +591,7 @@ public class Dataset implements Serializable, Cloneable {
                         logger.warn(Dataset.class.getClass().getName() + ". Attribute >>" + attributeToJoin + "<< doesn't exist. " + ex.getMessage());
                     }
                 }
+                instanceIndex++;
             }
             Map<String, String> newColumnNames = new HashMap<>();
             newColumnNames.put(tmpName, newAttributeName);
@@ -867,21 +898,6 @@ public class Dataset implements Serializable, Cloneable {
     }
 
     /**
-     * Interface that defines the operation to combine 2 columns
-     */
-    public interface CombineOperator {
-
-        /**
-         * Combine values of an atrribute for two columns
-         *
-         * @param a the value on the first column
-         * @param b the value on the second column
-         * @return The result
-         */
-        Double combine(Double a, Double b);
-    }
-
-    /**
      * Split the dataset in many datasets (as many as indicated by parameter
      * outputDims).
      *
@@ -1036,4 +1052,18 @@ public class Dataset implements Serializable, Cloneable {
         return result;
     }
 
+    /**
+     * Interface that defines the operation to combine 2 columns
+     */
+    public interface CombineOperator {
+
+        /**
+         * Combine values of an atrribute for two columns
+         *
+         * @param a the value on the first column
+         * @param b the value on the second column
+         * @return The result
+         */
+        Double combine(Double a, Double b);
+    }
 }

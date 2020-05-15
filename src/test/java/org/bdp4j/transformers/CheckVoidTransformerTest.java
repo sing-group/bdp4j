@@ -19,12 +19,10 @@
  * <http://www.gnu.org/licenses/gpl-3.0.html>.
  * #L%
  */
-
-
-
 package org.bdp4j.transformers;
 
 import java.util.Date;
+import org.bdp4j.transformers.attribute.CheckVoidTransformer;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
@@ -60,7 +58,7 @@ public class CheckVoidTransformerTest {
 
         assertEquals(expected, actual, 0d);
     }
-    
+
     @Test
     public void testTransformString() {
         double expected = 1;
@@ -70,7 +68,8 @@ public class CheckVoidTransformerTest {
 
         assertEquals(expected, actual, 0d);
     }
-     @Test
+
+    @Test
     public void testTransformNumber() {
         double expected = 1;
         Number input = 1.5;

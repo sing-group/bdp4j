@@ -20,9 +20,7 @@
  * #L%
  */
 
-
-
-package org.bdp4j.transformers;
+package org.bdp4j.transformers.attribute;
 
 import org.bdp4j.types.Transformer;
 
@@ -30,32 +28,27 @@ import java.util.ArrayList;
 import java.util.List;
 
 /**
- * Trasform an input from String, that represents a Data to Double
+ * Trasform an input from String to Double, that represents if this input is
+ * empty or not.
  *
  * @author María Novo
  */
-public class Double2BinaryTransformer extends Transformer {
+public class CheckVoidTransformer extends Transformer {
 
     private String transformerListValues;
 
     /**
-     * Transform an input, that represents a Date to Double
+     * Trasform an input from String to Double, that represents if this input is
+     * empty or not.
      *
-     * @param input A Double to transform in binary
-     * @return A Double value that represents a binary value
+     * @param input A string to transform in Double
+     * @return A double value that represents a void or not void value
      */
     @Override
     public double transform(Object input) {
-        if (input != null && !input.equals("null")) {
-            try {
-                Double value = Double.parseDouble(input.toString());
-                if (value > 0)
-                    return 1;
-                else return 0;
-            } catch (Exception ex) {
-                return 0;
-            }
-        } else {
+        try {
+            return ((input == null || input.equals("null") || input.equals(" ") || input.equals("")) ? 0 : 1);
+        } catch (NullPointerException ex) {
             return 0;
         }
     }
@@ -64,9 +57,9 @@ public class Double2BinaryTransformer extends Transformer {
     public String getTransformerListValues() {
         return transformerListValues;
     }
-
-    public Class<?> getInputType() {
-        return Double.class;
+    
+    public  Class<?>  getInputType(){
+     return String.class;   
     }
 
     /**

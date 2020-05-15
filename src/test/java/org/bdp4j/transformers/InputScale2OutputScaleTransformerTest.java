@@ -28,6 +28,7 @@ package org.bdp4j.transformers;
 
 import java.util.ArrayList;
 import java.util.List;
+import org.bdp4j.transformers.attribute.InputScale2OutputScaleTransformer;
 import org.bdp4j.util.Pair;
 import org.junit.Before;
 import org.junit.Test;

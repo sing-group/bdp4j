@@ -19,79 +19,39 @@
  * <http://www.gnu.org/licenses/gpl-3.0.html>.
  * #L%
  */
- /*
+/*
  * To change this license header, choose License Headers in Project Properties.
  * To change this template file, choose Tools | Templates
  * and open the template in the editor.
  */
-package org.bdp4j.transformers;
+package org.bdp4j.transformers.attribute;
 
 import java.util.ArrayList;
 import java.util.List;
 import org.bdp4j.types.Transformer;
 
 /**
- * Compute the number of ocurrences of an expression
+ * Transform an input url to double, that represents if this input has an url or
+ * not.
  *
  * @author María Novo
  */
-public class ComputeOcurrencesTransformer extends Transformer {
+public class Url2BinaryTransformer extends Transformer {
 
     private String transformerListValues;
 
     /**
-     * The default value of the regex to split the text
-     */
-    public static final String DEFAULT_REGEX_VALUE = "([\\W\\s]+)";
-
-    /**
-     * Regex value used to compute ocurrences number
-     */
-    private String regex = DEFAULT_REGEX_VALUE;
-
-    /**
-     * Build a ComputeOcurrencesTransformer using regex value
+     * Transform an input url to double, that represents if this input has an
+     * url or not.
      *
-     * @param regex Regex value
-     */
-    public ComputeOcurrencesTransformer(String regex) {
-        this.regex = regex;
-    }
-
-    /**
-     * Return the regex used to transform input data
-     *
-     * @return the regex used to transform input data
-     */
-    public String getRegex() {
-        return this.regex;
-    }
-
-    /**
-     * Estabilish the regex used to transform input data
-     *
-     * @param regex The regex used to transform input data
-     */
-    public void setRegex(String regex) {
-        this.regex = regex;
-
-    }
-
-    /**
-     * Transform an input value from input scale to output scale
-     *
-     * @param input A value to change from input scale to output scale
-     * @return A double value that represents the input value in an output scale
+     * @param input A url to transform in 0 or 1
+     * @return A double value that represents if contains a url or not
      */
     @Override
     public double transform(Object input) {
         try {
-            if (input == null || input.equals("null") || input.equals(" ") || input.equals("")) {
-                return 0;
-            }
-            String[] ocurrences = input.toString().split(this.regex);
-            return ocurrences.length;
-        } catch (Exception ex) {
+            return (((input.toString().indexOf("http:")) != -1 || (input.toString().indexOf("https:")) != -1 || (input.toString().indexOf("www.")) != -1) ? 1 : 0);
+        } catch (NullPointerException ex) {
             return 0;
         }
     }
@@ -107,9 +67,9 @@ public class ComputeOcurrencesTransformer extends Transformer {
     }
 
     /**
-     * Return the input type to transform
+     * Get a List who contains the transformated values
      *
-     * @return the input type to transform
+     * @return List who contains the transformated values
      */
     @Override
     public Class<?> getInputType() {
@@ -125,5 +85,4 @@ public class ComputeOcurrencesTransformer extends Transformer {
     public List<Integer> getListValues() {
         return new ArrayList<>();
     }
-
 }

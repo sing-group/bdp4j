@@ -344,7 +344,7 @@ public class DatasetTest {
         List<Instance> expected = new ArrayList<>();
         expected.add(expectedInstance);
 
-        Dataset actual = this.dataset.joinAttributesByRegularExpression("drug2", "Math.round((length_after_drop/length)*100d)/100d", Double.class, new String[]{"length", "length_after_drop"}, new Class[]{Double.class, Double.class}, false);
+        Dataset actual = this.dataset.joinAttributesByMathExpression("drug2", "Math.round((length_after_drop/length)*100d)/100d", Double.class, new String[]{"length", "length_after_drop"}, new Class[]{Double.class, Double.class}, false, false,0d);
         List<String> actualAttributes = actual.getAttributes();
         List<Instance> actualInstances = actual.getInstances();
         System.out.println("actualAttributes: " + actualAttributes);
@@ -372,7 +372,7 @@ public class DatasetTest {
         expected = new ArrayList<>();
         expected.add(expectedInstance);
 
-        actual = cloneDataset.joinAttributesByRegularExpression("length_after_drop", "Math.round((length_after_drop/length)*100d)/100d", Double.class, new String[]{"length", "length_after_drop"}, new Class[]{Double.class, Double.class}, true);
+        actual = cloneDataset.joinAttributesByMathExpression("length_after_drop", "Math.round((length_after_drop/length)*100d)/100d", Double.class, new String[]{"length", "length_after_drop"}, new Class[]{Double.class, Double.class}, true,Boolean.FALSE, 0d);
         actualAttributes = actual.getAttributes();
         actualInstances = actual.getInstances();
 
