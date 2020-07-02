@@ -36,8 +36,10 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Enumeration;
 import java.util.HashMap;
+import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
+import java.util.UUID;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import org.bdp4j.util.MCD;
@@ -395,9 +397,9 @@ public class Dataset implements Serializable, Cloneable {
         Instances instances = this.dataset;
         for (String attributeName : listAttributeName) {
             try {
-                Attribute attName = instances.attribute(attributeName);
-                if (attName != null) {
-                    int attPosition = instances.attribute(attributeName).index();
+                Attribute attribute = instances.attribute(attributeName);
+                if (attribute != null) {
+                    int attPosition = attribute.index();
                     if (attPosition >= 0) {
                         instances.deleteAttributeAt(attPosition);
                     }
@@ -438,54 +440,58 @@ public class Dataset implements Serializable, Cloneable {
      * one
      * @return A Dataset where some attributes have been combined
      */
-    public Dataset joinAttributes(List<String> listAttributeNameToJoin, String newAttributeName, CombineOperator op, Boolean joinExistingAttribute) {
+    public Dataset joinAttributes(List<String> listAttributeNameToJoin, String newAttributeName, CombineOperator op, boolean joinExistingAttribute) {
         Instances instances = this.dataset;
-        String tmpName = "temporalAttName";
-        try {
 
-            if (instances.attribute(newAttributeName) != null) {
+        try {
+            Attribute newAttribute;
+            if ((newAttribute = instances.attribute(newAttributeName)) != null) {
                 if (joinExistingAttribute) {
-                    listAttributeNameToJoin.add(newAttributeName);
+                    if (!listAttributeNameToJoin.get(0).equals(newAttributeName)) {
+                        listAttributeNameToJoin = new LinkedList<>(listAttributeNameToJoin);
+                        listAttributeNameToJoin.remove(newAttributeName);
+                        listAttributeNameToJoin.add(0, newAttributeName);
+                    }
                 } else {
                     logger.fatal("Attributes have not been joined because  '" + newAttributeName + "' already exists. If you want to join with existing attribute, set joinExistingAttribute true.");
                     System.exit(-1);
                 }
             }
+
+            int[] listAttributeIndexToJoin = listAttributeNameToJoin.stream()
+                    .map(instances::attribute)
+                    .mapToInt(Attribute::index)
+                    .toArray();
+
+            int firstAttrIndex = listAttributeIndexToJoin[0];
             for (Instance instance : instances) {
-                Double newAttributeValue = 0d;
-                boolean isFirstInstance = instances.firstInstance().equals(instance);
+                double newAttributeValue = instance.value(firstAttrIndex);
 
-                for (String attributeToJoin : listAttributeNameToJoin) {
+                for (int i = 1; i < listAttributeIndexToJoin.length; i++) {
+                    int attrIndex = listAttributeIndexToJoin[i];
                     try {
-                        boolean isFirstAtt = listAttributeNameToJoin.get(0).equals(attributeToJoin);
-                        Double attributeValue;
-
-                        if (isFirstAtt && !isFirstInstance) {
-                            attributeValue = instance.value(instances.attribute(tmpName).index());
-                        } else {
-                            attributeValue = instance.value(instances.attribute(attributeToJoin).index());
-                            if (isFirstAtt && isFirstInstance) {
-                                Attribute attribute = instances.attribute(attributeToJoin);
-                                instances.renameAttribute(attribute, tmpName);
-                            }
-                        }
-                        newAttributeValue = op.combine(newAttributeValue, attributeValue);
-                        instance.setValue(instances.attribute(tmpName), newAttributeValue);
-
+                        newAttributeValue = op.combine(newAttributeValue, instance.value(attrIndex));
                     } catch (NullPointerException ex) {
+                        String attributeToJoin = instance.attribute(attrIndex).name();
                         logger.warn(Dataset.class.getClass().getName() + ". Attribute >>" + attributeToJoin + "<< doesn't exist. " + ex.getMessage());
-
                     }
                 }
-            }
-            deleteAttributeColumns(listAttributeNameToJoin);
-            //   Replace temporal name with the new attribute name
-            Attribute attribute = instances.attribute(tmpName);
-            instances.renameAttribute(attribute, newAttributeName);
 
+                instance.setValue(firstAttrIndex, newAttributeValue);
+            }
+
+            String firstAttrName = instances.attribute(firstAttrIndex).name();
+
+            // Deletes all join attributes but last
+            deleteAttributeColumns(listAttributeNameToJoin.subList(1, listAttributeNameToJoin.size()));
+
+            if (newAttribute == null) {
+                instances.renameAttribute(instances.attribute(firstAttrName), newAttributeName);
+            }
         } catch (Exception ex) {
             logger.warn(ex.getMessage());
         }
+
         return this;
     }
 
@@ -529,6 +535,13 @@ public class Dataset implements Serializable, Cloneable {
                 tmpName = newAttributeName;
             }
 
+            String[] formattedParameterNames = new String[parameterNames.length];
+            String formattedExpression = expression;
+            for (String attributeToJoin : parameterNames) {
+                // This is necessary because RegularExpressionEvaluator doesn't allow non alphanumeric characters. 
+                formattedParameterNames = ree.formatParameterNames(parameterNames);
+                formattedExpression = ree.formatExpression(expression, parameterNames);
+            }
             Instances instances = this.dataset;
             int instanceIndex = 0;
             for (Instance instance : instances) {
@@ -545,50 +558,33 @@ public class Dataset implements Serializable, Cloneable {
 
                 for (String attributeToJoin : parameterNames) {
                     try {
-                        // This is necessary because RegularExpressionEvaluator doesn't allow non alphanumeric characters. 
-                        String[] formattedParameterNames = ree.formatParameterNames(parameterNames);
-                        String formattedExpression = ree.formatExpression(expression, parameterNames);
-                        try {
-
-                            Object result = ree.evaluateExpression(formattedExpression, expressionType, formattedParameterNames, parameterTypes, parameterValues);
-
-                            if (expressionType.equals(Integer.class)) {
-                                if (result != null) {
-                                    instance.setValue(instances.attribute(tmpName), (Integer) result);
+                        Object result = ree.evaluateExpression(formattedExpression, expressionType, formattedParameterNames, parameterTypes, parameterValues);
+                        if (expressionType.equals(Integer.class)) {
+                            Integer intVal = (result != null) ? (Integer) result : 0;
+                            instance.setValue(instances.attribute(tmpName), intVal);
+                        } else if (expressionType.equals(Double.class)) {
+                            Double resultToDouble = new Double(result.toString());
+                            if (resultToDouble.isNaN()) {
+                                if (invalidateInstance) {
+                                    this.dataset.delete(instanceIndex);
+                                    logger.info("[JOIN ATTRIBUTES BY MATH EXPRESSION]: Instance has been delete because the result of the operation is NaN (Not a Number)");
                                 } else {
-                                    instance.setValue(instances.attribute(tmpName), 0d);
-                                }
-                            } else if (expressionType.equals(Double.class)) {
-                                Double resultToDouble = new Double(result.toString());
-                                if (resultToDouble.isNaN()) {
-                                    if (invalidateInstance) {
-                                        this.dataset.delete(instanceIndex);
-                                        logger.info("[JOIN ATTRIBUTES BY MATH EXPRESSION]: Instance has been delete because the result of the operation is NaN (Not a Number)");
-                                    } else {
-                                        instance.setValue(instances.attribute(tmpName), defaultNaNValue);
-                                    }
-                                } else {
-                                    if (result != null) {
-                                        instance.setValue(instances.attribute(tmpName), resultToDouble);
-                                    } else {
-                                        instance.setValue(instances.attribute(tmpName), 0d);
-                                    }
+                                    instance.setValue(instances.attribute(tmpName), defaultNaNValue);
                                 }
                             } else {
-                                if (result != null) {
-                                    instance.setValue(instances.attribute(tmpName), (String) result);
-                                } else {
-                                    instance.setValue(instances.attribute(tmpName), null);
-                                }
+                                //Double doubleVal = (result != null) ? resultToDouble : 0d;
+                                instance.setValue(instances.attribute(tmpName), resultToDouble);
                             }
-
-                        } catch (Exception ex) {
-                            instance.setValue(instances.attribute(tmpName), 0d);
-                            logger.error("ERROR: " + this.getClass() + ". " + ex.getMessage());
+                        } else {
+                            //String stringVal = (result != null) ? (String) result : null;
+                            instance.setValue(instances.attribute(tmpName), (String) result);
                         }
                     } catch (NullPointerException ex) {
                         instance.setValue(instances.attribute(tmpName), 0d);
                         logger.warn(Dataset.class.getClass().getName() + ". Attribute >>" + attributeToJoin + "<< doesn't exist. " + ex.getMessage());
+                    } catch (Exception ex) {
+                        instance.setValue(instances.attribute(tmpName), 0d);
+                        logger.error("ERROR: " + this.getClass() + ". " + ex.getMessage());
                     }
                 }
                 instanceIndex++;
@@ -1009,6 +1005,7 @@ public class Dataset implements Serializable, Cloneable {
                     }
                 }
             }
+
             try {
                 RegularExpressionEvaluator ree = new RegularExpressionEvaluator();
                 // This is necessary because RegularExpressionEvaluator doesn't allow non alphanumeric characters. 
@@ -1031,6 +1028,23 @@ public class Dataset implements Serializable, Cloneable {
                         result.put(targetValue, incrementedValue);
                     }
                 } else if (evaluateResult instanceof Double) {
+                    /*Double resultToDouble = new Double(evaluateResult.toString());
+
+                    Double resultToDouble = new Double(evaluateResult.toString());
+                    if (resultToDouble.isNaN()) {
+                        if (invalidateInstance) {
+                            this.dataset.delete(i);
+                            logger.info("[JOIN ATTRIBUTES BY MATH EXPRESSION]: Instance has been delete because the result of the operation is NaN (Not a Number)");
+                        } else {
+                            if (defaultNaNValue > 0) { // The condition is met
+                                int incrementedValue = result.get(targetValue) + 1;
+                                result.put(targetValue, incrementedValue);
+                            }
+                        }
+                    } else if ((Double) evaluateResult > 0) { // The condition is met
+                        int incrementedValue = result.get(targetValue) + 1;
+                        result.put(targetValue, incrementedValue);
+                    }*/
                     if ((Double) evaluateResult > 0) { // The condition is met
                         int incrementedValue = result.get(targetValue) + 1;
                         result.put(targetValue, incrementedValue);

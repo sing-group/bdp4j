@@ -55,7 +55,7 @@ public class DatasetTest {
         attributes.add(new Attribute("length_after_drop"));
         attributes.add(new Attribute("bn:00071570n"));
         attributes.add(new Attribute("bn:00019048n"));
-        // attributes.add(new Attribute("bn:00019049n"));
+        //attributes.add(new Attribute("bn:00019049n"));
         attributes.add(new Attribute("target", target_values));
         dataset = new Dataset(name, attributes, 0);
 
@@ -203,7 +203,6 @@ public class DatasetTest {
 
     @Test
     public void testJoinAttributes() {
-
         attributes = new ArrayList<>();
         attributes.add(new Attribute("id", true));
         attributes.add(new Attribute("length"));
@@ -224,7 +223,7 @@ public class DatasetTest {
         listAttributeName.add("bn:00071570n");
         listAttributeName.add("bn:00019048n");
 
-        Dataset actual = this.dataset.joinAttributes(listAttributeName, "drug", Dataset.COMBINE_SUM);
+        Dataset actual = this.dataset.joinAttributes(listAttributeName, "drug", Dataset.COMBINE_SUM, true);
         List<String> actualAttributes = actual.getAttributes();
         List<Instance> actualInstances = actual.getInstances();
 
@@ -256,16 +255,18 @@ public class DatasetTest {
 
         assertThat(actualAttributes, contains("id", "drug", "target"));
         assertThat(actualInstances, containsInstancesInOrder(expected));
+    }
 
-        // Test 2
-        /*
+    @Test
+    public void testJoinAttributesExistingName() {
+
         attributes = new ArrayList<>();
         attributes.add(new Attribute("id", true));
         attributes.add(new Attribute("length"));
         attributes.add(new Attribute("length_after_drop"));
         attributes.add(new Attribute("bn:00071570n"));
         attributes.add(new Attribute("target", target_values));
-        
+
         Dataset expectedDataset = new Dataset(name, attributes, 0);
         Instance expectedInstance = expectedDataset.createDenseInstance();
         expectedInstance.setValue(0, "1");
@@ -277,48 +278,50 @@ public class DatasetTest {
         List<Instance> expected = new ArrayList<>();
         expected.add(expectedInstance);
 
-         List<String> listAttributeName = new ArrayList<>();
+        List<String> listAttributeName = new ArrayList<>();
         listAttributeName.add("bn:00071570n");
         listAttributeName.add("bn:00019048n");
 
-        Dataset actual = this.dataset.joinAttributes(listAttributeName, "bn:00071570n", Dataset.COMBINE_SUM);
-         List<String> actualAttributes = actual.getAttributes();
+        Dataset actual = this.dataset.joinAttributes(listAttributeName, "bn:00071570n", Dataset.COMBINE_SUM, true);
+        List<String> actualAttributes = actual.getAttributes();
         List<Instance> actualInstances = actual.getInstances();
 
         assertThat(actualAttributes, contains("id", "length", "length_after_drop", "bn:00071570n", "target"));
         assertThat(actualInstances, containsInstancesInOrder(expected));
-         
-          // Test 3
+    }
+
+    @Test
+    public void testJoinAttributesExistingNameSeveralAttributes() {
         attributes = new ArrayList<>();
         attributes.add(new Attribute("id", true));
         attributes.add(new Attribute("length"));
         attributes.add(new Attribute("length_after_drop"));
         attributes.add(new Attribute("bn:00071570n"));
         attributes.add(new Attribute("target", target_values));
-        
+
         Dataset expectedDataset = new Dataset(name, attributes, 0);
         Instance expectedInstance = expectedDataset.createDenseInstance();
         expectedInstance.setValue(0, "1");
         expectedInstance.setValue(1, 18d);
         expectedInstance.setValue(2, 12d);
-        expectedInstance.setValue(3, 3d);
+        expectedInstance.setValue(3, 2d);
         expectedInstance.setValue(4, 1);
 
         List<Instance> expected = new ArrayList<>();
         expected.add(expectedInstance);
 
-         List<String> listAttributeName = new ArrayList<>();
+        List<String> listAttributeName = new ArrayList<>();
         listAttributeName.add("bn:00071570n");
         listAttributeName.add("bn:00019048n");
-        listAttributeName.add("bn:00019049n");
+        // listAttributeName.add("bn:00019049n");
 
-        Dataset actual = this.dataset.joinAttributes(listAttributeName, "bn:00071570n", Dataset.COMBINE_SUM);
-         List<String> actualAttributes = actual.getAttributes();
+        Dataset actual = this.dataset.joinAttributes(listAttributeName, "bn:00071570n", Dataset.COMBINE_SUM, true);
+        List<String> actualAttributes = actual.getAttributes();
         List<Instance> actualInstances = actual.getInstances();
+        System.out.println("current attributes: " + actual.getAttributes());
 
         assertThat(actualAttributes, contains("id", "length", "length_after_drop", "bn:00071570n", "target"));
         assertThat(actualInstances, containsInstancesInOrder(expected));
-         */
     }
 
     @Test
@@ -344,11 +347,11 @@ public class DatasetTest {
         List<Instance> expected = new ArrayList<>();
         expected.add(expectedInstance);
 
-        Dataset actual = this.dataset.joinAttributesByMathExpression("drug2", "Math.round((length_after_drop/length)*100d)/100d", Double.class, new String[]{"length", "length_after_drop"}, new Class[]{Double.class, Double.class}, false, false,0d);
+        Dataset actual = this.dataset.joinAttributesByMathExpression("drug2", "Math.round((length_after_drop/length)*100d)/100d", Double.class, new String[]{"length", "length_after_drop"}, new Class[]{Double.class, Double.class}, false, false, 0d);
         List<String> actualAttributes = actual.getAttributes();
         List<Instance> actualInstances = actual.getInstances();
-        System.out.println("actualAttributes: " + actualAttributes);
-        System.out.println("expectedAttributes: " + expectedDataset.getAttributes());
+//        System.out.println("actualAttributes: " + actualAttributes);
+//        System.out.println("expectedAttributes: " + expectedDataset.getAttributes());
 
         assertThat(actualAttributes, contains("id", "length", "length_after_drop", "drug2", "bn:00071570n", "bn:00019048n", "target"));
         assertThat(actualInstances, containsInstancesInOrder(expected));
@@ -372,7 +375,7 @@ public class DatasetTest {
         expected = new ArrayList<>();
         expected.add(expectedInstance);
 
-        actual = cloneDataset.joinAttributesByMathExpression("length_after_drop", "Math.round((length_after_drop/length)*100d)/100d", Double.class, new String[]{"length", "length_after_drop"}, new Class[]{Double.class, Double.class}, true,Boolean.FALSE, 0d);
+        actual = cloneDataset.joinAttributesByMathExpression("length_after_drop", "Math.round((length_after_drop/length)*100d)/100d", Double.class, new String[]{"length", "length_after_drop"}, new Class[]{Double.class, Double.class}, true, Boolean.FALSE, 0d);
         actualAttributes = actual.getAttributes();
         actualInstances = actual.getInstances();
 

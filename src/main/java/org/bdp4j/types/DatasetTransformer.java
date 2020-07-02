@@ -22,7 +22,7 @@
 package org.bdp4j.types;
 
 /**
- * Transform a Dataset into another Dataset. 
+ * Transform a dataset.
  *
  * @author María Novo
  */
@@ -30,8 +30,7 @@ public abstract class DatasetTransformer {
 
     public final Dataset transform(Dataset dataset) {
         Dataset clone = dataset.clone();
-        this.transformTemplate(clone);
-        return clone;
+        return this.transformTemplate(clone);        
     }
 
     protected abstract Dataset transformTemplate(Dataset dataset);
