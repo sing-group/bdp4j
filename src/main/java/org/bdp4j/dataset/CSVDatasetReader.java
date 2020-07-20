@@ -177,36 +177,36 @@ public class CSVDatasetReader {
                     String type;
                     for (int index = 0; index < record.size(); index++) {
                         field = record.get(index);
-                        if (field != null && !field.isEmpty() && !field.equals("") && !field.equals(" ")) {
-                            type = identifyType(field);
-                            if (detectedTypes.contains(headers.get(index))) {
-                                int columnTypeIndex = indexColumnTypes.get(headers.get(index));
-                                pair = columnTypes.get(columnTypeIndex);
-                                if (!pair.getObj2().equals(type)) {
-                                    columnTypes.remove(columnTypeIndex);
-                                    newPair = new Pair<>(headers.get(index), "String");
-                                    columnTypes.add(columnTypeIndex, newPair);
-                                }
+                        // if (field != null && !field.isEmpty() && !field.equals("") && !field.equals(" ")) {
+                        type = identifyType(field);
+                        if (detectedTypes.contains(headers.get(index))) {
+                            int columnTypeIndex = indexColumnTypes.get(headers.get(index));
+                            pair = columnTypes.get(columnTypeIndex);
+                            if (!pair.getObj2().equals(type)) {
+                                columnTypes.remove(columnTypeIndex);
+                                newPair = new Pair<>(headers.get(index), "String");
+                                columnTypes.add(columnTypeIndex, newPair);
+                            }
+                        } else {
+                            // Create a Map to an easier generation of dataset
+                            detectedTypes.add(headers.get(index));
+                            if (isDetectedColumnType.test("target")) {
+                                // Target field always has to be the last one
+                                int lastColumnTypesPosition = columnTypes.size() - 1;
+                                Pair<String, String> targetPair = columnTypes.get(lastColumnTypesPosition);
+                                columnTypes.remove(lastColumnTypesPosition);
+                                pair = new Pair<>(headers.get(index), type);
+                                columnTypes.add(pair);
+                                indexColumnTypes.put(headers.get(index), columnTypes.indexOf(pair));
+                                columnTypes.add(targetPair);
+                                indexColumnTypes.put("target", columnTypes.indexOf(pair));
                             } else {
-                                // Create a Map to an easier generation of dataset
-                                detectedTypes.add(headers.get(index));
-                                if (isDetectedColumnType.test("target")) {
-                                    // Target field always has to be the last one
-                                    int lastColumnTypesPosition = columnTypes.size() - 1;
-                                    Pair<String, String> targetPair = columnTypes.get(lastColumnTypesPosition);
-                                    columnTypes.remove(lastColumnTypesPosition);
-                                    pair = new Pair<>(headers.get(index), type);
-                                    columnTypes.add(pair);
-                                    indexColumnTypes.put(headers.get(index), columnTypes.indexOf(pair));
-                                    columnTypes.add(targetPair);
-                                    indexColumnTypes.put("target", columnTypes.indexOf(pair));
-                                } else {
-                                    pair = new Pair<>(headers.get(index), type);
-                                    columnTypes.add(pair);
-                                    indexColumnTypes.put(headers.get(index), columnTypes.indexOf(pair));
-                                }
+                                pair = new Pair<>(headers.get(index), type);
+                                columnTypes.add(pair);
+                                indexColumnTypes.put(headers.get(index), columnTypes.indexOf(pair));
                             }
                         }
+                        // }
                     }
                 }
             }
@@ -295,11 +295,7 @@ public class CSVDatasetReader {
                         }
                     }
                 }
-            }
-            //---------------------------------------------------------------------------
-            // Generates csv file with the content of dataset
-            //---------------------------------------------------------------------------
-            dataset.generateCSV();
+            }          
         } catch (IOException e) {
             logger.error("[LOAD FILE] " + e.getMessage());
         }
