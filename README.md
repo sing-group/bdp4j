@@ -1,4 +1,4 @@
-﻿[![Build Status](https://travis-ci.com/sing-group/bdp4j.svg?branch=develop)](https://travis-ci.com/sing-group/bdp4j)
+[![Build Status](https://travis-ci.com/sing-group/bdp4j.svg?branch=develop)](https://travis-ci.com/sing-group/bdp4j)
 [![lifecycle](https://img.shields.io/badge/lifecycle-maturing-blue.svg)](https://www.tidyverse.org/lifecycle/#maturing)
 
 # Big Data Pre-processing For Java (BDP4J)
@@ -270,7 +270,7 @@ Add the following dependency to your project:
         <dependency>
             <groupId>org.bdp4j</groupId>
             <artifactId>bdp4j</artifactId>
-            <version>1.0.1</version>
+            <version>1.0.2</version>
         </dependency>
     <dependencies>
 ```
