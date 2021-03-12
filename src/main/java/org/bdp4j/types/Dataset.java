@@ -37,7 +37,6 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Enumeration;
 import java.util.HashMap;
-import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
@@ -54,7 +53,6 @@ import weka.filters.MultiFilter;
 import weka.filters.unsupervised.attribute.AddExpression;
 import weka.filters.unsupervised.attribute.NumericToBinary;
 import weka.filters.unsupervised.attribute.Remove;
-import weka.filters.unsupervised.attribute.RenameAttribute;
 import weka.filters.unsupervised.attribute.Reorder;
 
 /**
