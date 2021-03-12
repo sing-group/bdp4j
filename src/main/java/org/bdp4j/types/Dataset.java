@@ -30,21 +30,30 @@ import weka.core.Instance;
 import weka.core.Instances;
 import weka.core.converters.ArffSaver;
 import weka.core.converters.CSVSaver;
+import weka.filters.Filter;
 
 import java.io.*;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Enumeration;
 import java.util.HashMap;
-import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
 import java.util.UUID;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
+import static java.util.stream.Collectors.joining;
+import static java.util.stream.Collectors.toList;
+import java.util.stream.Stream;
 import org.bdp4j.util.MCD;
 import org.bdp4j.util.RegularExpressionEvaluator;
 import org.codehaus.janino.CompileException;
+import weka.filters.MultiFilter;
+import weka.filters.unsupervised.attribute.AddExpression;
+import weka.filters.unsupervised.attribute.NumericToBinary;
+import weka.filters.unsupervised.attribute.Remove;
+import weka.filters.unsupervised.attribute.Reorder;
 
 /**
  * Build a weka dataset
@@ -72,6 +81,23 @@ public class Dataset implements Serializable, Cloneable {
             return (a > 0 || b > 0) ? 1d : 0d;
         }
     };
+
+    public static enum Combine implements CombineOperator {
+        SUM,
+        OR;
+
+        @Override
+        public Double combine(Double a, Double b) {
+            switch (this) {
+                case SUM:
+                    return a + b;
+                case OR:
+                    return (a > 0 || b > 0) ? 1d : 0d;
+                default:
+                    throw new IllegalStateException();
+            }
+        }
+    }
 
     /**
      * The serial version UID
@@ -405,7 +431,7 @@ public class Dataset implements Serializable, Cloneable {
                     }
                 }
             } catch (NullPointerException ex) {
-                logger.warn(Dataset.class.getClass().getName() + ". Attribute >>" + attributeName + "<< doesn't exist. ");
+                logger.warn("[WARNING DELETE ATTRIBUTES COLUMNS] . Attribute >>" + attributeName + "<< doesn't exist. ");
             }
         }
         return this;
@@ -440,59 +466,52 @@ public class Dataset implements Serializable, Cloneable {
      * one
      * @return A Dataset where some attributes have been combined
      */
-    public Dataset joinAttributes(List<String> listAttributeNameToJoin, String newAttributeName, CombineOperator op, boolean joinExistingAttribute) {
-        Instances instances = this.dataset;
-
+    public Dataset joinAttributes(List<String> listAttributeNameToJoin, String newAttributeName, CombineOperator op, boolean joinExistingAttribute) {//, Combine combine
         try {
-            Attribute newAttribute;
-            if ((newAttribute = instances.attribute(newAttributeName)) != null) {
-                if (joinExistingAttribute) {
-                    if (!listAttributeNameToJoin.get(0).equals(newAttributeName)) {
-                        listAttributeNameToJoin = new LinkedList<>(listAttributeNameToJoin);
-                        listAttributeNameToJoin.remove(newAttributeName);
-                        listAttributeNameToJoin.add(0, newAttributeName);
-                    }
-                } else {
-                    logger.fatal("Attributes have not been joined because  '" + newAttributeName + "' already exists. If you want to join with existing attribute, set joinExistingAttribute true.");
-                    System.exit(-1);
-                }
+            boolean binarize = op == Dataset.COMBINE_OR;
+
+            List<Integer> indexes = Stream.concat(listAttributeNameToJoin.stream(), Stream.of(newAttributeName))
+                    .map(name -> this.dataset.attribute(name))
+                    .filter(Objects::nonNull)
+                    .map(Attribute::index)
+                    .collect(toList());
+
+            String id = UUID.randomUUID().toString();
+
+            AddExpression expressionFilter = new AddExpression();
+            final String expression = indexes.stream()
+                    .map(index -> "a" + (index + 1))
+                    .collect(joining("+"));
+            expressionFilter.setExpression(expression);
+            expressionFilter.setName(id);
+
+            Remove removeFilter = new Remove();
+            int[] indices = indexes.stream().mapToInt(Integer::intValue).toArray();
+            removeFilter.setAttributeIndicesArray(indices);
+
+            Reorder reorderFilter = new Reorder();
+            int outputSize = this.dataset.numAttributes() - indexes.size() + 1;
+            reorderFilter.setAttributeIndices("1-" + (outputSize - 2) + "," + outputSize + "," + (outputSize - 1));
+            
+            MultiFilter filter = new MultiFilter();
+
+            if (binarize) {
+                NumericToBinary binarizeFilter = new NumericToBinary();
+                binarizeFilter.setAttributeIndices(Integer.toString(outputSize - 1));
+
+                filter.setFilters(new Filter[]{expressionFilter, removeFilter, binarizeFilter, reorderFilter});
+            } else {
+                filter.setFilters(new Filter[]{expressionFilter, removeFilter, reorderFilter});
             }
 
-            int[] listAttributeIndexToJoin = listAttributeNameToJoin.stream()
-                    .map(instances::attribute)
-                    .mapToInt(Attribute::index)
-                    .toArray();
+            filter.setInputFormat(this.dataset);
+            this.dataset = Filter.useFilter(this.dataset, filter);
+            this.dataset.renameAttribute(this.dataset.attribute(id), newAttributeName);
 
-            int firstAttrIndex = listAttributeIndexToJoin[0];
-            for (Instance instance : instances) {
-                double newAttributeValue = instance.value(firstAttrIndex);
-
-                for (int i = 1; i < listAttributeIndexToJoin.length; i++) {
-                    int attrIndex = listAttributeIndexToJoin[i];
-                    try {
-                        newAttributeValue = op.combine(newAttributeValue, instance.value(attrIndex));
-                    } catch (NullPointerException ex) {
-                        String attributeToJoin = instance.attribute(attrIndex).name();
-                        logger.warn(Dataset.class.getClass().getName() + ". Attribute >>" + attributeToJoin + "<< doesn't exist. " + ex.getMessage());
-                    }
-                }
-
-                instance.setValue(firstAttrIndex, newAttributeValue);
-            }
-
-            String firstAttrName = instances.attribute(firstAttrIndex).name();
-
-            // Deletes all join attributes but last
-            deleteAttributeColumns(listAttributeNameToJoin.subList(1, listAttributeNameToJoin.size()));
-
-            if (newAttribute == null) {
-                instances.renameAttribute(instances.attribute(firstAttrName), newAttributeName);
-            }
-        } catch (Exception ex) {
-            logger.warn(ex.getMessage());
+            return this;
+        } catch (Exception e) {
+            throw new RuntimeException(e);
         }
-
-        return this;
     }
 
     /**
@@ -581,7 +600,7 @@ public class Dataset implements Serializable, Cloneable {
                         }
                     } catch (NullPointerException ex) {
                         instance.setValue(instances.attribute(tmpName), 0d);
-                        logger.warn(Dataset.class.getClass().getName() + ". Attribute >>" + attributeToJoin + "<< doesn't exist. " + ex.getMessage());
+                        logger.warn("[WARNING JOIN ATTRIBUTES BY MATH EXPRESSION] . Attribute >>" + attributeToJoin + "<< doesn't exist. " + ex.getMessage());
                     } catch (Exception ex) {
                         instance.setValue(instances.attribute(tmpName), 0d);
                         logger.error("ERROR: " + this.getClass() + ". " + ex.getMessage());
