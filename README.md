@@ -23,7 +23,7 @@ Extending the `AbstractPipe` class implies to call `super` constructor and provi
 **Constraints based on the kind of pipes.**
 
 BDP4J incorporates some annotations to include each task into one of the following types:
- 
+
   * `PropertyComputingPipe`: Those used only for calculating properties; 
   * `TeePipe`: Used to save the current status of an instance; 
   * `TargetAssigningPipe`: They associate labels to an instance (used only in classification contexts); 
@@ -262,7 +262,7 @@ Add the following repositories to your POM file:
         </repository>
      </repositories>
 ```
-    
+
 Add the following dependency to your project:
 
 ```XML
@@ -286,22 +286,22 @@ The development team is composed by:
 * María Novo: Software Architecture Design and Team Leader
 
 ## License
-BDP4j implements a pipeline framework to allow defining 
-project pipelines from XML. The main goal of the pipelines of this 
-application is to transform input data received from multiple sources 
-into fully qualified datasets to be used with Machine Learning.
+BDP4j implements a pipeline framework to allow defining project pipelines from XML. The main goal of the pipelines of this  application is to transform input data received from multiple sources  into fully qualified datasets to be used with Machine Learning.
 
 Copyright (C) 2018  Sing Group (University of Vigo)
 
-This program is free software: you can redistribute it and/or modify
-it under the terms of the GNU General Public License as published by
-the Free Software Foundation, either version 3 of the License, or
-(at your option) any later version.
+This program is free software: you can redistribute it and/or modify it under the terms of the GNU General Public License as published by
+the Free Software Foundation, either version 3 of the License, or (at your option) any later version.
 
-This program is distributed in the hope that it will be useful,
-but WITHOUT ANY WARRANTY; without even the implied warranty of
-MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-GNU General Public License for more details.
+This program is distributed in the hope that it will be useful, but WITHOUT ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License for more details.
 
-You should have received a copy of the GNU General Public License
-along with this program.  If not, see <https://www.gnu.org/licenses/>.
+You should have received a copy of the GNU General Public License along with this program.  If not, see <https://www.gnu.org/licenses/>.
+
+
+
+# Citing
+
+Please, cite the following publication if you use BDP4J:
+
+M. Novo-Lourés; Y. Lage; R. Pavón; R. Laza; D. Ruano-Ordás; J. R. Méndez (2022) [Improving Pipelining Tools for Pre-processing Data](http://dx.doi.org/10.9781/ijimai.2021.10.004). International Journal of Interactive Multimedia and Artificial Intelligence. Volume 7(4), pp. 214-224. ISSN: 1989 - 1660. [DOI: 10.9781/ijimai.2021.10.004](http://dx.doi.org/10.9781/ijimai.2021.10.004)
+
