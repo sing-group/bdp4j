@@ -48,7 +48,7 @@ import static java.util.stream.Collectors.toList;
 import java.util.stream.Stream;
 import org.bdp4j.util.MCD;
 import org.bdp4j.util.RegularExpressionEvaluator;
-import org.codehaus.janino.CompileException;
+import org.codehaus.commons.compiler.CompileException;
 import weka.filters.MultiFilter;
 import weka.filters.unsupervised.attribute.AddExpression;
 import weka.filters.unsupervised.attribute.NumericToBinary;
