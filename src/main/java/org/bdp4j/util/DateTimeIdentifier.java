@@ -82,6 +82,13 @@ public class DateTimeIdentifier {
             "EEE, dd MMM yyyy HH:mm:ss", 
             "EEE, d MMM yyyy HH:mm:ss", 
             "dd-MMM-yyyy HH:mm:ss ZZZZZ", 
+            // Formerly produced by localized styles with the JRE (COMPAT) locale data;
+            // JDK 9+ uses CLDR locale data, which no longer yields them
+            "dd-MMM-yyyy HH:mm:ss",
+            "dd/MM/yy HH'H'mm'' z",
+            "EEEE, MMMM d, yyyy hh:mm:ss a",
+            "MMMM d, yyyy h:mm:ss a",
+            "EEEE, d MMMM yyyy HH:mm:ss",
             "dd/MM/yyyy HH:mm:ss", 
             "EEE, MMM dd yyyy HH:mm:ss ZZZZZ", 
             "dd MMM yyyy HH:mm:ss", 
