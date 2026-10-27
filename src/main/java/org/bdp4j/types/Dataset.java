@@ -474,6 +474,8 @@ public class Dataset implements Serializable, Cloneable {
                     .map(name -> this.dataset.attribute(name))
                     .filter(Objects::nonNull)
                     .map(Attribute::index)
+                    // newAttributeName may already be in the list when joining into an existing attribute
+                    .distinct()
                     .collect(toList());
 
             String id = UUID.randomUUID().toString();
